@@ -1,3 +1,3 @@
 # ReadDay
-A Inoreader Desktop App  
+An Inoreader Desktop App  
 Still in very early stage.
