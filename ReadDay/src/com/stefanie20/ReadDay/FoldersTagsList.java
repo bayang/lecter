@@ -17,7 +17,7 @@ public class FoldersTagsList {
     }
 }
 
-class Tag{
+class Tag implements Feed{
     private String id;
     private String sortid;
 
@@ -32,5 +32,10 @@ class Tag{
 
     public String getSortid() {
         return sortid;
+    }
+
+    @Override
+    public String toString() {
+        return id.substring(id.lastIndexOf("/") + 1);
     }
 }

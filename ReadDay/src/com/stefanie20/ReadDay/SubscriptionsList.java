@@ -16,7 +16,7 @@ public class SubscriptionsList {
         return subscriptions;
     }
 }
-class Subscription{
+class Subscription implements Feed{
     private String id;
     private String title;
     private ArrayList<Categories> categories;
@@ -67,6 +67,11 @@ class Subscription{
 
     public String getIconUrl() {
         return iconUrl;
+    }
+
+    @Override
+    public String toString() {
+        return title;
     }
 }
 class Categories{

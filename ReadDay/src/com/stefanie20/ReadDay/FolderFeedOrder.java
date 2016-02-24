@@ -5,13 +5,15 @@ import com.google.gson.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by F317 on 16/2/22.
  */
 public class FolderFeedOrder {
-    public static void getOrder() {
+    public static Map<Feed, List<Subscription>> getOrder() {
         String userId = UserInfo.getUserId();
         //get the streamprefs
         String streamprefs = null;
@@ -27,7 +29,7 @@ public class FolderFeedOrder {
         JsonObject object = element.getAsJsonObject();
         JsonArray root = object.getAsJsonObject("streamprefs").getAsJsonArray("user/" + userId + "/state/com.google/root");
         String folderOrderString = root.get(0).getAsJsonObject().get("value").getAsString();
-        System.out.println(folderOrderString);
+//        System.out.println(folderOrderString);
         List<String> folderOrderList = sortOrder(folderOrderString);
 
         //get the folderTagList and the subscriptionList
@@ -36,28 +38,33 @@ public class FolderFeedOrder {
         SubscriptionsList subscriptionsList = gson.fromJson(ConnectServer.connectServer(ConnectServer.subscriptionListURL), SubscriptionsList.class);
 
         //sort the folder order
+        Map<Feed, List<Subscription>> orderMap = new LinkedHashMap<>();
+        orderMap.put(new Tag("All Items", null), null);
+        orderMap.put(foldersTagsList.getTags().get(0),null);
         for (String s : folderOrderList) {
             boolean isFolder = false;
             for (Tag tag : foldersTagsList.getTags()) {
                 if (s.equals(tag.getSortid())) {
-                    System.out.println("sortid = " + s + " id = " + tag.getId());
+//                    System.out.println("sortid = " + s + " id = " + tag.getId());
                     isFolder = true;
-                    //get the feed order in the folder
-                    getFeedOrder(object,tag.getId(),subscriptionsList);
 
-                    continue;
+                    //get the feed order in the folder
+                    List<Subscription> list = getFeedOrder(object, tag.getId(), subscriptionsList);
+                    orderMap.put(tag, list);
+                    break;
                 }
             }
-            if (isFolder == false) {
+            if (!isFolder) {
                 for (Subscription subscription : subscriptionsList.getSubscriptions()) {
                     if (s.equals(subscription.getSortid())) {
-                        System.out.println("sortid = " + s + " id = " + subscription.getTitle());
-                        continue;
+//                        System.out.println("sortid = " + s + " id = " + subscription.getTitle());
+                        orderMap.put(subscription, null);
+                        break;
                     }
                 }
             }
         }
-
+        return orderMap;
 
     }
 
@@ -69,16 +76,19 @@ public class FolderFeedOrder {
         return list;
     }
 
-    public static void getFeedOrder(JsonObject streamprefs, String folderId, SubscriptionsList subscriptionsList) {
+    public static List<Subscription> getFeedOrder(JsonObject streamprefs, String folderId, SubscriptionsList subscriptionsList) {
         String feedOrderString = streamprefs.getAsJsonObject("streamprefs").getAsJsonArray(folderId).get(1).getAsJsonObject().get("value").getAsString();
         List<String> feedOrderList = sortOrder(feedOrderString);
+        List<Subscription> list = new ArrayList<>();             //the list to return, contains the feed order
         for (String s : feedOrderList) {
             for (Subscription subscription : subscriptionsList.getSubscriptions()) {
                 if (s.equals(subscription.getSortid())) {
-                    System.out.println("        "+subscription.getTitle());
+                    list.add(subscription);
+//                    System.out.println("        "+subscription.getTitle());
                 }
             }
         }
+        return list;
     }
 
 
