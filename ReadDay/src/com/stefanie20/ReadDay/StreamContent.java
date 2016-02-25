@@ -1,6 +1,13 @@
 package com.stefanie20.ReadDay;
 
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by F317 on 16/2/21.
@@ -26,6 +33,18 @@ public class StreamContent {
         this.updatedUsec = updatedUsec;
         this.items = items;
         this.continuation = continuation;
+    }
+
+    public static List<Item> getStreamContent() {
+//        BufferedReader reader = ConnectServer.connectServer(ConnectServer.streamContentURL);
+        try (BufferedReader reader = new BufferedReader(new FileReader("streamContent.txt"))) {
+            Gson gson = new Gson();
+            StreamContent content = gson.fromJson(reader, StreamContent.class);
+            return content.getItems();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String getDirection() {
@@ -112,6 +131,11 @@ class Item{
         this.commentsNum = commentsNum;
         this.annotations = annotations;
         this.origin = origin;
+    }
+
+    @Override
+    public String toString() {
+        return this.title;
     }
 
     public String getCrawlTimeMsec() {
