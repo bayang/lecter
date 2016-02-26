@@ -2,10 +2,7 @@ package com.stefanie20.ReadDay;
 
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,16 +32,34 @@ public class StreamContent {
         this.continuation = continuation;
     }
 
-    public static List<Item> getStreamContent() {
-//        BufferedReader reader = ConnectServer.connectServer(ConnectServer.streamContentURL);
-        try (BufferedReader reader = new BufferedReader(new FileReader("streamContent.txt"))) {
-            Gson gson = new Gson();
-            StreamContent content = gson.fromJson(reader, StreamContent.class);
-            return content.getItems();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static List<Item> getStreamContent(String URLString) {
+        BufferedReader reader = ConnectServer.connectServer(URLString);
+//        try (BufferedReader reader = new BufferedReader(new FileReader("streamContent.txt"))) {
+        Gson gson = new Gson();
+        StreamContent content = gson.fromJson(reader, StreamContent.class);
+        List<Item> itemList = new ArrayList<>(content.getItems());
+
+        while (content.getContinuation() != null) {
+            reader = ConnectServer.connectServer(URLString + "&c=" + content.getContinuation());
+            content = gson.fromJson(reader, StreamContent.class);
+            itemList.addAll(content.getItems());
         }
-        return null;
+        return itemList;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+    }
+
+
+    public static void main(String[] args) throws Exception{
+        List<Item> list = getStreamContent(ConnectServer.starredContentURL);
+        PrintWriter pw = new PrintWriter("output.txt");
+        for (Item item : list) {
+            pw.println(item.getTitle());
+            pw.println(item.getCategories());
+        }
+        pw.close();
     }
 
     public String getDirection() {
@@ -133,10 +148,6 @@ class Item{
         this.origin = origin;
     }
 
-    @Override
-    public String toString() {
-        return this.title;
-    }
 
     public String getCrawlTimeMsec() {
         return crawlTimeMsec;

@@ -27,10 +27,11 @@ public class ConnectServer {
     public static String unreadCountURL = "https://www.inoreader.com/reader/api/0/unread-count";
     public static String subscriptionListURL = "https://www.inoreader.com/reader/api/0/subscription/list";
     public static String folderTagListURL = "https://www.inoreader.com/reader/api/0/tag/list";
-    public static String streamContentURL = "https://www.inoreader.com/reader/api/0/stream/contents/user/1005907486/state/com.google/root?xt=user/-/state/com.google/read";
+    public static String streamContentURL = "https://www.inoreader.com/reader/api/0/stream/contents/user/-/state/com.google/root?xt=user/-/state/com.google/read&n=100";
+    public static String starredContentURL = "https://www.inoreader.com/reader/api/0/stream/contents/user/-/state/com.google/starred?n=100";
     public static String streamPreferenceListURL = "https://www.inoreader.com/reader/api/0/preference/stream/list";
     public static String itemIDsURL = "https://www.inoreader.com/reader/api/0/stream/items/ids?xt=user/-/state/com.google/read";
-    public static String markReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?s=user/1005907486/label/IT&ts=" + LocalDateTime.of(2016, 2, 19, 10, 0).toInstant(ZoneOffset.ofHours(8)).getEpochSecond();
+    public static String markReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?s=user/-/label/IT&ts=" + LocalDateTime.of(2016, 2, 19, 10, 0).toInstant(ZoneOffset.ofHours(8)).getEpochSecond();
 
 
     public static BufferedReader connectServer(String url) {

@@ -69,10 +69,6 @@ class Subscription implements Feed{
         return iconUrl;
     }
 
-    @Override
-    public String toString() {
-        return title;
-    }
 }
 class Categories{
     private String id;

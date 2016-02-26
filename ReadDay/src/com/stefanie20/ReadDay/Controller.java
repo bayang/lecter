@@ -1,18 +1,21 @@
 package com.stefanie20.ReadDay;
 
-import javafx.application.Platform;
+import com.google.gson.Gson;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.web.WebView;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.Buffer;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Created by F317 on 16/2/22.
@@ -28,12 +31,17 @@ public class Controller {
     private WebView webView;
 
     private List<Item> itemList;
+    private List<Item> starredList;
     @FXML
     private void initialize() {
         eventHandleInitialize();
     }
 
     private void eventHandleInitialize() {
+        listView.setCellFactory(l->new listCell());
+        treeView.setCellFactory(t->new treeCell());
+
+
         //handle event between listView and webView
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getSummary().getContent() != null) {
@@ -44,6 +52,11 @@ public class Controller {
         treeView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             List<Item> chosenItemList = new ArrayList<>();
 
+            if (starredList != null) {
+                if (newValue.getValue().getId().equals("user/"+UserInfo.getUserId()+"/state/com.google/starred")) {
+                    chosenItemList = starredList;
+                }
+            }
             if (itemList != null) {
                 if (newValue.getValue().getId().equals("All Items")) {//handle the special all items tag
                     chosenItemList = itemList;
@@ -68,13 +81,43 @@ public class Controller {
         }));
     }
 
+    static class listCell extends ListCell<Item> {
+        @Override
+        protected void updateItem(Item item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || item == null) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                setText(item.getOrigin().getTitle() + "    " + Instant.ofEpochSecond(item.getPublished()) + "\n" + item.getTitle());
+            }
+        }
+    }
+
+    static class treeCell extends TreeCell<Feed> {
+        @Override
+        protected void updateItem(Feed item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || item == null) {
+                setText(null);
+                setGraphic(null);
+            }else{
+                if (item instanceof Subscription) {
+                    setText(((Subscription) item).getTitle());
+                } else {
+                    String s = item.getId();
+                    setText(s.substring(s.lastIndexOf("/") + 1));
+                }
+            }
+        }
+    }
+
+
+
     @FXML
     private void refreshFired() {
-        Platform.runLater(()->{
             handleFolderFeedOrder();
             handleListView();
-        });
-
     }
 
     private void handleFolderFeedOrder() {
@@ -100,9 +143,26 @@ public class Controller {
     }
 
     private void handleListView() {
-        itemList = StreamContent.getStreamContent();
-        ObservableList<Item> observableList = FXCollections.observableArrayList(itemList);
-        listView.setItems(observableList);
+        try (BufferedReader reader = new BufferedReader(new FileReader("streamContent.txt"))) {
+            Gson gson = new Gson();
+            StreamContent content = gson.fromJson(reader, StreamContent.class);
+            itemList = content.getItems();
+        } catch (IOException e) {
+        }
+
+
+
+
+
+
+
+//        itemList = StreamContent.getStreamContent(ConnectServer.streamContentURL);
+//        ObservableList<Item> observableList = FXCollections.observableArrayList(itemList);
+//        listView.setItems(observableList);
+        //get star list
+//        starredList = StreamContent.getStreamContent(ConnectServer.starredContentURL);
+//        ObservableList<Item> observableStarredList = FXCollections.observableArrayList(starredList);
+
     }
 }
 

@@ -34,8 +34,4 @@ class Tag implements Feed{
         return sortid;
     }
 
-    @Override
-    public String toString() {
-        return id.substring(id.lastIndexOf("/") + 1);
-    }
 }
