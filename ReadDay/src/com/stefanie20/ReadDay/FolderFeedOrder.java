@@ -1,18 +1,18 @@
 package com.stefanie20.ReadDay;
 
 import com.google.gson.*;
+import javafx.scene.image.Image;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by F317 on 16/2/22.
  */
 public class FolderFeedOrder {
+    public static Map<String,Image> iconMap;
+
     public static Map<Feed, List<Subscription>> getOrder() {
         String userId = UserInfo.getUserId();
         //get the streamprefs
@@ -36,6 +36,14 @@ public class FolderFeedOrder {
         Gson gson = new Gson();
         FoldersTagsList foldersTagsList = gson.fromJson(ConnectServer.connectServer(ConnectServer.folderTagListURL), FoldersTagsList.class);
         SubscriptionsList subscriptionsList = gson.fromJson(ConnectServer.connectServer(ConnectServer.subscriptionListURL), SubscriptionsList.class);
+
+        //get the icon map
+        iconMap = new HashMap<>();
+        for (Subscription subscription : subscriptionsList.getSubscriptions()) {
+            if (!subscription.getIconUrl().equals("")) {
+                iconMap.put(subscription.getId(), new Image(subscription.getIconUrl()));
+            }
+        }
 
         //sort the folder order
         Map<Feed, List<Subscription>> orderMap = new LinkedHashMap<>();

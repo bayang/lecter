@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.web.WebView;
 
 import java.io.BufferedReader;
@@ -12,6 +13,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -77,11 +81,13 @@ public class Controller {
                     }
                 }
             }
+            chosenItemList.sort((o1, o2) -> (int) (Long.parseLong(o1.getCrawlTimeMsec()) - Long.parseLong(o2.getCrawlTimeMsec())));
             listView.setItems(FXCollections.observableArrayList(chosenItemList));
         }));
     }
 
-    static class listCell extends ListCell<Item> {
+    static class listCell extends ListCell<Item> {//set the listView show content and icon
+        private static ZoneId defaultZoneId = ZoneId.systemDefault();
         @Override
         protected void updateItem(Item item, boolean empty) {
             super.updateItem(item, empty);
@@ -89,21 +95,41 @@ public class Controller {
                 setText(null);
                 setGraphic(null);
             } else {
-                setText(item.getOrigin().getTitle() + "    " + Instant.ofEpochSecond(item.getPublished()) + "\n" + item.getTitle());
+                //get the time style
+                LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(item.getCrawlTimeMsec())), defaultZoneId);
+                String timeString = localDateTime.toLocalTime().toString();
+                if (!localDateTime.toLocalDate().equals(LocalDate.now())) {
+                    timeString = localDateTime.toString();
+                }
+                setText(item.getOrigin().getTitle() + "    " + timeString + "\n" + item.getTitle());
+
+                if (FolderFeedOrder.iconMap != null) {
+                    ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));
+                    imageView.setFitWidth(16);
+                    imageView.setFitHeight(16);
+                    setGraphic(imageView);
+                }
             }
         }
     }
 
     static class treeCell extends TreeCell<Feed> {
         @Override
-        protected void updateItem(Feed item, boolean empty) {
+        protected void updateItem(Feed item, boolean empty) {//set the treeView style show title and icons
             super.updateItem(item, empty);
             if (empty || item == null) {
                 setText(null);
                 setGraphic(null);
             }else{
                 if (item instanceof Subscription) {
-                    setText(((Subscription) item).getTitle());
+                    String title = ((Subscription) item).getTitle();
+                    setText(title);
+                    if (FolderFeedOrder.iconMap != null) {
+                        ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getId()));
+                        imageView.setFitHeight(16);
+                        imageView.setFitWidth(16);
+                        setGraphic(imageView);
+                    }
                 } else {
                     String s = item.getId();
                     setText(s.substring(s.lastIndexOf("/") + 1));
@@ -143,12 +169,12 @@ public class Controller {
     }
 
     private void handleListView() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("streamContent.txt"))) {
-            Gson gson = new Gson();
-            StreamContent content = gson.fromJson(reader, StreamContent.class);
-            itemList = content.getItems();
-        } catch (IOException e) {
-        }
+//        try (BufferedReader reader = new BufferedReader(new FileReader("streamContent.txt"))) {
+//            Gson gson = new Gson();
+//            StreamContent content = gson.fromJson(reader, StreamContent.class);
+//            itemList = content.getItems();
+//        } catch (IOException e) {
+//        }
 
 
 
@@ -156,11 +182,11 @@ public class Controller {
 
 
 
-//        itemList = StreamContent.getStreamContent(ConnectServer.streamContentURL);
+        itemList = StreamContent.getStreamContent(ConnectServer.streamContentURL);
 //        ObservableList<Item> observableList = FXCollections.observableArrayList(itemList);
 //        listView.setItems(observableList);
         //get star list
-//        starredList = StreamContent.getStreamContent(ConnectServer.starredContentURL);
+        starredList = StreamContent.getStreamContent(ConnectServer.starredContentURL);
 //        ObservableList<Item> observableStarredList = FXCollections.observableArrayList(starredList);
 
     }
