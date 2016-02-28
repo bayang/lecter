@@ -31,8 +31,8 @@ public class ConnectServer {
     public static String starredContentURL = "https://www.inoreader.com/reader/api/0/stream/contents/user/-/state/com.google/starred?n=100";
     public static String streamPreferenceListURL = "https://www.inoreader.com/reader/api/0/preference/stream/list";
     public static String itemIDsURL = "https://www.inoreader.com/reader/api/0/stream/items/ids?xt=user/-/state/com.google/read";
-    public static String markReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?s=user/-/label/IT&ts=" + LocalDateTime.of(2016, 2, 19, 10, 0).toInstant(ZoneOffset.ofHours(8)).getEpochSecond();
-
+    public static String markAllReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?ts=";
+    public static String markFeedReadURL = "https://www.inoreader.com/reader/api/0/edit-tag?a=user/-/state/com.google/read&i=";
 
     public static BufferedReader connectServer(String url) {
         try {

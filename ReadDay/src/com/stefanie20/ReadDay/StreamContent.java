@@ -3,6 +3,7 @@ package com.stefanie20.ReadDay;
 import com.google.gson.Gson;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,6 +98,7 @@ public class StreamContent {
     public String getContinuation() {
         return continuation;
     }
+
 }
 
 class Self {
@@ -128,6 +130,7 @@ class Item{
     private int commentsNum;
     private ArrayList annotations;
     private Origin origin;
+    private boolean isRead = false;//doesn't include in the stream, but add this boolean to determine the color in listView
 
     public Item(String crawlTimeMsec, String timestampUsec, String id, ArrayList<String> categories, String title, long published, long updated, ArrayList<Canonical> canonical, ArrayList<Alternate> alternate, Summary summary, String author, ArrayList likingUsers, ArrayList comments, int commentsNum, ArrayList annotations, Origin origin) {
         this.crawlTimeMsec = crawlTimeMsec;
@@ -211,6 +214,18 @@ class Item{
 
     public Origin getOrigin() {
         return origin;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
+    }
+
+    public String getDecimalId() {
+        return String.valueOf(Long.parseLong(id.substring(id.lastIndexOf("/") + 1), 16));
     }
 }
 

@@ -1,17 +1,11 @@
 package com.stefanie20.ReadDay;
 
-import com.google.gson.Gson;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.Buffer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,7 +13,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Created by F317 on 16/2/22.
@@ -33,9 +26,13 @@ public class Controller {
     private ListView<Item> listView;
     @FXML
     private WebView webView;
+    @FXML
+    private Button markReadButton;
 
     private List<Item> itemList;
     private List<Item> starredList;
+    private Instant lastUpdateTime;
+
     @FXML
     private void initialize() {
         eventHandleInitialize();
@@ -50,6 +47,10 @@ public class Controller {
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getSummary().getContent() != null) {
                 webView.getEngine().loadContent(newValue.getSummary().getContent());
+                newValue.setRead(true);//change state to read and change color in listView
+                listView.refresh();//force refresh, or it will take a while to show the difference
+                //send mark feed read to server
+                new Thread(()->ConnectServer.connectServer(ConnectServer.markFeedReadURL+newValue.getDecimalId())).start();
             }
         }));
         //handle event between treeView and listView
@@ -102,7 +103,7 @@ public class Controller {
                     timeString = localDateTime.toString();
                 }
                 setText(item.getOrigin().getTitle() + "    " + timeString + "\n" + item.getTitle());
-
+                setTextFill(item.isRead()? Color.GRAY:Color.BLACK);
                 if (FolderFeedOrder.iconMap != null) {
                     ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));
                     imageView.setFitWidth(16);
@@ -142,8 +143,21 @@ public class Controller {
 
     @FXML
     private void refreshFired() {
-            handleFolderFeedOrder();
-            handleListView();
+        handleFolderFeedOrder();
+        handleListView();
+        lastUpdateTime = Instant.now();
+    }
+    @FXML
+    private void markReadButtonFired() {
+        for (Item item : listView.getItems()) {
+            item.setRead(true);
+        }
+        listView.refresh();
+
+        new Thread(()->{
+            ConnectServer.connectServer(ConnectServer.markAllReadURL + lastUpdateTime.getEpochSecond() + "&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
+        }).start();
+
     }
 
     private void handleFolderFeedOrder() {
