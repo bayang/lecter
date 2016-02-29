@@ -48,7 +48,7 @@ public class Controller {
     private List<Item> itemList;
     private List<Item> starredList;
     private Instant lastUpdateTime;
-    private Stage loginStage;
+    private static Stage loginStage;
 
     @FXML
     private void initialize() {
@@ -62,6 +62,7 @@ public class Controller {
         if (!file.exists()) {
             loginStage.show();
         } else {
+            FXMain.getPrimaryStage().show();
             try (Scanner scanner = new Scanner(file)) {
                 UserInfo.setAuthString(scanner.nextLine().substring(5));
                 UserInfo.setUserId(scanner.nextLine().substring(7));
@@ -262,6 +263,10 @@ public class Controller {
         starredList = StreamContent.getStreamContent(ConnectServer.starredContentURL);
 //        ObservableList<Item> observableStarredList = FXCollections.observableArrayList(starredList);
 
+    }
+
+    public static Stage getLoginStage() {
+        return loginStage;
     }
 }
 

@@ -8,15 +8,8 @@ import java.util.Scanner;
  */
 public class Test1 {
     public static void main(String[] args) throws Exception{
-        File file = new File("UserInfo.dat");
-        System.out.println(file.exists());
-        System.out.println(file.isFile());
-        Scanner scanner = new Scanner(file);
-        scanner.nextLine();
-        scanner.nextLine();
-        String authString = scanner.nextLine();
-        authString = authString.substring(5);
-        System.out.println(authString);
+        String s = "\uD835\uDD46 is the set of octonions";
+        System.out.println(s.length());
     }
 
 

@@ -56,6 +56,9 @@ public class LoginController {
 
             scanner.close();
             printWriter.close();
+            //close the login panel
+            Controller.getLoginStage().close();
+            FXMain.getPrimaryStage().show();
         } catch (MalformedURLException murl) {
             murl.printStackTrace();
         } catch (IOException ioe) {
