@@ -53,13 +53,16 @@ public class Controller {
     @FXML
     private void initialize() {
         eventHandleInitialize();
-        loginPaneInitialize();
+//        loginPaneInitialize();
         userInfoInitialize();
     }
 
     private void userInfoInitialize() {
         File file = new File("UserInfo.dat");
         if (!file.exists()) {
+            if (loginStage == null) {
+                loginPaneInitialize();
+            }
             loginStage.show();
         } else {
             FXMain.getPrimaryStage().show();
@@ -73,7 +76,7 @@ public class Controller {
 
     }
 
-    private void loginPaneInitialize() {
+    private void loginPaneInitialize() {//lazy init
         loginStage = new Stage();
         loginStage.setTitle("Login");
         loginStage.setScene(new Scene(loginPane));
@@ -81,7 +84,10 @@ public class Controller {
     }
     @FXML
     private void loginMenuFired() {
-        loginStage.show();
+        if (loginStage == null) {
+            loginPaneInitialize();
+        }
+            loginStage.show();
     }
     @FXML
     private void exitMenuFired() {
