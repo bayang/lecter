@@ -2,10 +2,20 @@ package com.stefanie20.ReadDay;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,11 +23,14 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Created by F317 on 16/2/22.
  */
 public class Controller {
+    @FXML
+    private AnchorPane loginPane;
     @FXML
     private TreeView<Feed> treeView;
     @FXML
@@ -28,15 +41,52 @@ public class Controller {
     private WebView webView;
     @FXML
     private Button markReadButton;
+    @FXML
+    private Label statusLabel;
+
 
     private List<Item> itemList;
     private List<Item> starredList;
     private Instant lastUpdateTime;
+    private Stage loginStage;
 
     @FXML
     private void initialize() {
         eventHandleInitialize();
+        loginPaneInitialize();
+        userInfoInitialize();
     }
+
+    private void userInfoInitialize() {
+        File file = new File("UserInfo.dat");
+        if (!file.exists()) {
+            loginStage.show();
+        } else {
+            try (Scanner scanner = new Scanner(file)) {
+                UserInfo.setAuthString(scanner.nextLine().substring(5));
+                UserInfo.setUserId(scanner.nextLine().substring(7));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private void loginPaneInitialize() {
+        loginStage = new Stage();
+        loginStage.setTitle("Login");
+        loginStage.setScene(new Scene(loginPane));
+        loginStage.setResizable(false);
+    }
+    @FXML
+    private void loginMenuFired() {
+        loginStage.show();
+    }
+    @FXML
+    private void exitMenuFired() {
+        System.exit(0);
+    }
+
 
     private void eventHandleInitialize() {
         listView.setCellFactory(l->new listCell());
@@ -143,21 +193,30 @@ public class Controller {
 
     @FXML
     private void refreshFired() {
-        handleFolderFeedOrder();
-        handleListView();
-        lastUpdateTime = Instant.now();
+        if (UserInfo.getAuthString() == null) {
+            statusLabel.setText("Please Login");
+        } else {
+            statusLabel.setText("Refreshing...");
+            handleFolderFeedOrder();
+            handleListView();
+            lastUpdateTime = Instant.now();
+            statusLabel.setText("Refresh Complete");
+        }
     }
     @FXML
     private void markReadButtonFired() {
-        for (Item item : listView.getItems()) {
-            item.setRead(true);
+        if (UserInfo.getAuthString() == null) {
+            statusLabel.setText("Please Login");
+        } else {
+            for (Item item : listView.getItems()) {
+                item.setRead(true);
+            }
+            listView.refresh();
+
+            new Thread(() -> {
+                ConnectServer.connectServer(ConnectServer.markAllReadURL + lastUpdateTime.getEpochSecond() + "&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
+            }).start();
         }
-        listView.refresh();
-
-        new Thread(()->{
-            ConnectServer.connectServer(ConnectServer.markAllReadURL + lastUpdateTime.getEpochSecond() + "&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
-        }).start();
-
     }
 
     private void handleFolderFeedOrder() {

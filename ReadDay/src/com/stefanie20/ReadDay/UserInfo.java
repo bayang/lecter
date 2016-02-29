@@ -6,12 +6,22 @@ package com.stefanie20.ReadDay;
  */
 public class UserInfo {
 
-    private static String userId = "1005907486";
+    private static String userId;
+    private static String authString;
 
+    public static void setUserId(String userId) {
+        UserInfo.userId = userId;
+    }
 
     public static String getUserId() {
         return userId;
     }
 
+    public static String getAuthString() {
+        return authString;
+    }
 
+    public static void setAuthString(String authString) {
+        UserInfo.authString = authString;
+    }
 }

@@ -16,14 +16,11 @@ import java.util.Map;
  * Created by F317 on 16/2/22.
  */
 public class ConnectServer {
-    private static String AppId = "1000001097";
-    private static String AppKey = "ALuNA3QjaXb8fOiDC_n1pt0IR0wZMIIg";
-    private static String Email = "zhang.stef@gmail.com";
-    private static String Passwd = "tlSYCigsJ3koja";
-    private static String Auth = "sWmAk7Od2RkZYj7FPJhaeyDG3hjpidZl";
+    public static String AppId = "1000001097";
+    public static String AppKey = "ALuNA3QjaXb8fOiDC_n1pt0IR0wZMIIg";
 
     public static String userinfoURL = "https://www.inoreader.com/reader/api/0/user-info";
-    public static String loginURL = "https://www.inoreader.com/accounts/ClientLogin?" + "Email=" + Email + "&Passwd=" + Passwd;
+    public static String loginURL = "https://www.inoreader.com/accounts/ClientLogin?";
     public static String unreadCountURL = "https://www.inoreader.com/reader/api/0/unread-count";
     public static String subscriptionListURL = "https://www.inoreader.com/reader/api/0/subscription/list";
     public static String folderTagListURL = "https://www.inoreader.com/reader/api/0/tag/list";
@@ -39,7 +36,8 @@ public class ConnectServer {
             URLConnection connection = new URL(url).openConnection();
             connection.setRequestProperty("AppId", AppId);
             connection.setRequestProperty("AppKey", AppKey);
-            connection.setRequestProperty("Authorization", "GoogleLogin auth=" + Auth);
+            connection.setRequestProperty("Authorization", "GoogleLogin auth=" + UserInfo.getAuthString());
+
             connection.connect();
 
             //need to check the received header, do it in the future!!!
