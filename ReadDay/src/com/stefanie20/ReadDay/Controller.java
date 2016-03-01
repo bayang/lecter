@@ -1,6 +1,7 @@
 package com.stefanie20.ReadDay;
 
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -49,9 +50,14 @@ public class Controller {
     private List<Item> starredList;
     private Instant lastUpdateTime;
     private static Stage loginStage;
+    private Task<TreeItem<Feed>> treeTask;
+    private Task<List<Item>> itemListTask;
+    private Task<List<Item>> starredListTask;
+
 
     @FXML
     private void initialize() {
+//        taskInitialize();
         eventHandleInitialize();
 //        loginPaneInitialize();
         userInfoInitialize();
@@ -114,12 +120,12 @@ public class Controller {
         treeView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             List<Item> chosenItemList = new ArrayList<>();
 
-            if (starredList != null) {
-                if (newValue.getValue().getId().equals("user/"+UserInfo.getUserId()+"/state/com.google/starred")) {
+            if (starredList != null && newValue != null) {
+                if (newValue.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
                     chosenItemList = starredList;
                 }
             }
-            if (itemList != null) {
+            if (itemList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("All Items")) {//handle the special all items tag
                     chosenItemList = itemList;
                 }
@@ -129,7 +135,7 @@ public class Controller {
                             chosenItemList.add(item);
                         }
                     }
-                } else{//handle the folder chosen list
+                } else {//handle the folder chosen list
                     for (Item item : itemList) {
                         for (String s : item.getCategories()) {
                             if (newValue.getValue().getId().equals(s)) {
@@ -142,6 +148,52 @@ public class Controller {
             chosenItemList.sort((o1, o2) -> (int) (Long.parseLong(o1.getCrawlTimeMsec()) - Long.parseLong(o2.getCrawlTimeMsec())));
             listView.setItems(FXCollections.observableArrayList(chosenItemList));
         }));
+
+
+    }
+
+    private void taskInitialize() {
+        //when get the treeItem from the URL, change the view
+        treeTask = new Task<TreeItem<Feed>>() {
+            @Override
+            protected TreeItem<Feed> call() throws Exception {
+                System.out.println("start treeTask");
+                return handleFolderFeedOrder();
+            }
+        };
+        treeTask.setOnSucceeded(event -> {
+            treeView.setRoot(treeTask.getValue());
+            treeView.setShowRoot(false);
+            statusLabel.setText("Get Feeds Complete.");
+            System.out.println("finish treeTask");
+        });
+
+        //initialize itemList
+        itemListTask = new Task<List<Item>>() {
+            @Override
+            protected List<Item> call() throws Exception {
+                System.out.println("start itemListTask");
+                return StreamContent.getStreamContent(ConnectServer.streamContentURL);
+            }
+        };
+        itemListTask.setOnSucceeded(event -> {
+            itemList = itemListTask.getValue();
+            statusLabel.setText("Get New Items Complete.");
+            System.out.println("finish itemListTask");
+        });
+        //initialize starredList
+        starredListTask = new Task<List<Item>>() {
+            @Override
+            protected List<Item> call() throws Exception {
+                System.out.println("start starredListTask");
+                return StreamContent.getStreamContent(ConnectServer.starredContentURL);
+            }
+        };
+        starredListTask.setOnSucceeded(event -> {
+            starredList = starredListTask.getValue();
+            statusLabel.setText("Get Starred Items Complete.");
+            System.out.println("finish starredListTask");
+        });
     }
 
     static class listCell extends ListCell<Item> {//set the listView show content and icon
@@ -204,10 +256,13 @@ public class Controller {
             statusLabel.setText("Please Login");
         } else {
             statusLabel.setText("Refreshing...");
-            handleFolderFeedOrder();
-            handleListView();
+            taskInitialize();
+            new Thread(treeTask).start();
+            new Thread(itemListTask).start();
+            new Thread(starredListTask).start();
+//            handleFolderFeedOrder();
+//            handleListView();
             lastUpdateTime = Instant.now();
-            statusLabel.setText("Refresh Complete");
         }
     }
     @FXML
@@ -226,11 +281,9 @@ public class Controller {
         }
     }
 
-    private void handleFolderFeedOrder() {
+    private TreeItem<Feed> handleFolderFeedOrder() {
         TreeItem<Feed> root = new TreeItem<>(new Tag("root","root")); //the root node doesn't show;
         root.setExpanded(true);
-        treeView.setRoot(root);
-        treeView.setShowRoot(false);
 
         Map<Feed, List<Subscription>> map = FolderFeedOrder.getOrder();
         for (Feed feed : map.keySet()) {
@@ -244,8 +297,10 @@ public class Controller {
             }
             root.getChildren().add(tag);
         }
+        return root;
 
-//        System.out.println(map);
+//        treeView.setRoot(root);
+//        treeView.setShowRoot(false);
     }
 
     private void handleListView() {
