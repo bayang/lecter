@@ -13,10 +13,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,7 +49,8 @@ public class Controller {
     private Task<TreeItem<Feed>> treeTask;
     private Task<List<Item>> itemListTask;
     private Task<List<Item>> starredListTask;
-
+    private Task<Map<String,Integer>> unreadCountsTask;
+    private static Map<String,Integer> unreadCountsMap;
 
     @FXML
     private void initialize() {
@@ -110,10 +107,12 @@ public class Controller {
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getSummary().getContent() != null) {
                 webView.getEngine().loadContent(newValue.getSummary().getContent());
+                //send mark feed read to server
+                if (newValue.isRead()==false) {
+                    new Thread(() -> ConnectServer.connectServer(ConnectServer.markFeedReadURL + newValue.getDecimalId())).start();
+                }
                 newValue.setRead(true);//change state to read and change color in listView
                 listView.refresh();//force refresh, or it will take a while to show the difference
-                //send mark feed read to server
-                new Thread(()->ConnectServer.connectServer(ConnectServer.markFeedReadURL+newValue.getDecimalId())).start();
             }
         }));
         //handle event between treeView and listView
@@ -194,6 +193,19 @@ public class Controller {
             statusLabel.setText("Get Starred Items Complete.");
             System.out.println("finish starredListTask");
         });
+        //initialize unreadCountsMap
+        unreadCountsTask = new Task<Map<String, Integer>>() {
+            @Override
+            protected Map<String, Integer> call() throws Exception {
+                System.out.println("start unreadCountsTask");
+                return UnreadCounter.getUnreadCountsMap();
+            }
+        };
+        unreadCountsTask.setOnSucceeded(event -> {
+            unreadCountsMap = unreadCountsTask.getValue();
+            statusLabel.setText("Get UnreadCounts Complete");
+            System.out.println("finish unreadCountsTask");
+        });
     }
 
     static class listCell extends ListCell<Item> {//set the listView show content and icon
@@ -233,7 +245,9 @@ public class Controller {
             }else{
                 if (item instanceof Subscription) {
                     String title = ((Subscription) item).getTitle();
-                    setText(title);
+                    Integer countInteger = unreadCountsMap.get(item.getId());
+                    //create spaces to make counts in a row
+                    setText(title + "    " + countInteger);
                     if (FolderFeedOrder.iconMap != null) {
                         ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getId()));
                         imageView.setFitHeight(16);
@@ -242,7 +256,14 @@ public class Controller {
                     }
                 } else {
                     String s = item.getId();
-                    setText(s.substring(s.lastIndexOf("/") + 1));
+                    Integer countInteger = unreadCountsMap.get(s);
+                    String countString;
+                    if (countInteger == null) {
+                        countString = "";
+                    } else {
+                        countString = countInteger.toString();
+                    }
+                    setText(s.substring(s.lastIndexOf("/") + 1) + "    " + countString);
                 }
             }
         }
@@ -259,6 +280,7 @@ public class Controller {
             taskInitialize();
             new Thread(treeTask).start();
             new Thread(itemListTask).start();
+            new Thread(unreadCountsTask).start();
             new Thread(starredListTask).start();
 //            handleFolderFeedOrder();
 //            handleListView();

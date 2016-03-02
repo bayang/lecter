@@ -1,5 +1,7 @@
 package com.stefanie20.ReadDay;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -56,7 +58,7 @@ public class ConnectServer {
     }
 
     public static void main(String[] args) throws Exception{
-        BufferedReader reader = connectServer(unreadCountURL);
+        BufferedReader reader = connectServer(subscriptionListURL);
         System.out.println(reader.readLine());
     }
 

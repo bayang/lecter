@@ -1,5 +1,11 @@
 package com.stefanie20.ReadDay;
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by F317 on 16/2/21.
@@ -19,6 +25,18 @@ public class UnreadCounter {
 
     public ArrayList<UnreadCounts> getUnreadcounts() {
         return unreadcounts;
+    }
+
+    public static Map<String,Integer> getUnreadCountsMap() {
+        HashMap<String, Integer> map = new HashMap<>();
+        Gson gson = new Gson();
+        UnreadCounter counter = gson.fromJson(ConnectServer.connectServer(ConnectServer.unreadCountURL), UnreadCounter.class);
+        List<UnreadCounts> counts = counter.getUnreadcounts();
+        for (UnreadCounts count : counts) {
+            map.put(count.getId(), count.getCount());
+        }
+        map.put("All Items", counts.get(0).getCount());
+        return map;
     }
 }
 
