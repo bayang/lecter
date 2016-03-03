@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -17,10 +18,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Created by F317 on 16/2/22.
@@ -243,28 +241,37 @@ public class Controller {
                 setText(null);
                 setGraphic(null);
             }else{
+                HBox hBox = new HBox();
+                hBox.setSpacing(10);
+                hBox.setMaxWidth(250);
                 if (item instanceof Subscription) {
                     String title = ((Subscription) item).getTitle();
                     Integer countInteger = unreadCountsMap.get(item.getId());
                     //create spaces to make counts in a row
-                    setText(title + "    " + countInteger);
+                    Label countLabel = new Label(Objects.toString(countInteger, ""));
+                    Label titleLabel = new Label(title);
+                    titleLabel.setPrefWidth(150);
+                    //using HBox to add all the content
                     if (FolderFeedOrder.iconMap != null) {
                         ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getId()));
                         imageView.setFitHeight(16);
                         imageView.setFitWidth(16);
-                        setGraphic(imageView);
+                        hBox.getChildren().addAll(imageView, titleLabel, countLabel);
+                    } else {
+                        hBox.getChildren().addAll(titleLabel, countLabel);
                     }
+
                 } else {
                     String s = item.getId();
                     Integer countInteger = unreadCountsMap.get(s);
-                    String countString;
-                    if (countInteger == null) {
-                        countString = "";
-                    } else {
-                        countString = countInteger.toString();
-                    }
-                    setText(s.substring(s.lastIndexOf("/") + 1) + "    " + countString);
+                    String countString = Objects.toString(countInteger, "");
+                    Label countLabel = new Label(countString);
+                    Label titleLabel = new Label(s.substring(s.lastIndexOf("/") + 1));
+                    titleLabel.setPrefWidth(120);
+
+                    hBox.getChildren().addAll(titleLabel, countLabel);
                 }
+                setGraphic(hBox);
             }
         }
     }
