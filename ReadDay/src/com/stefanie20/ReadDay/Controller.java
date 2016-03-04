@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Created by F317 on 16/2/22.
@@ -49,6 +50,7 @@ public class Controller {
     private Task<List<Item>> starredListTask;
     private Task<Map<String,Integer>> unreadCountsTask;
     private static Map<String,Integer> unreadCountsMap;
+    private static TreeItem<Feed> root;
 
     @FXML
     private void initialize() {
@@ -105,12 +107,24 @@ public class Controller {
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getSummary().getContent() != null) {
                 webView.getEngine().loadContent(newValue.getSummary().getContent());
-                //send mark feed read to server
-                if (newValue.isRead()==false) {
-                    new Thread(() -> ConnectServer.connectServer(ConnectServer.markFeedReadURL + newValue.getDecimalId())).start();
+                //send mark feed read to server if not in the starred list
+                if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
+                    if (newValue.isRead() == false) {
+                        new Thread(() -> ConnectServer.connectServer(ConnectServer.markFeedReadURL + newValue.getDecimalId())).start();
+                        String streamId = newValue.getOrigin().getStreamId();
+                        Integer count = unreadCountsMap.get(streamId);
+                        unreadCountsMap.put(streamId, --count);
+                        Integer allCount = unreadCountsMap.get("All Items");
+                        unreadCountsMap.put("All Items", --allCount);
+                        //set parent count
+                        String parent = getParentItem(streamId).getValue().getId();
+                        Integer parentCount = unreadCountsMap.get(parent);
+                        unreadCountsMap.put(parent, --parentCount);
+                        treeView.refresh();
+                    }
+                    newValue.setRead(true);//change state to read and change color in listView
+                    listView.refresh();//force refresh, or it will take a while to show the difference
                 }
-                newValue.setRead(true);//change state to read and change color in listView
-                listView.refresh();//force refresh, or it will take a while to show the difference
             }
         }));
         //handle event between treeView and listView
@@ -311,7 +325,7 @@ public class Controller {
     }
 
     private TreeItem<Feed> handleFolderFeedOrder() {
-        TreeItem<Feed> root = new TreeItem<>(new Tag("root","root")); //the root node doesn't show;
+        root = new TreeItem<>(new Tag("root","root")); //the root node doesn't show;
         root.setExpanded(true);
 
         Map<Feed, List<Subscription>> map = FolderFeedOrder.getOrder();
@@ -357,6 +371,17 @@ public class Controller {
 
     public static Stage getLoginStage() {
         return loginStage;
+    }
+
+    private TreeItem<Feed> getParentItem(String streamId) {
+        for (TreeItem<Feed> parent : root.getChildren()) {
+            for (TreeItem<Feed> item : parent.getChildren()) {
+                if (item.getValue().getId().equals(streamId)) {
+                    return parent;
+                }
+            }
+        }
+        return null;
     }
 }
 
