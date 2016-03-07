@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Created by F317 on 16/2/22.
@@ -109,7 +108,7 @@ public class Controller {
                 webView.getEngine().loadContent(newValue.getSummary().getContent());
                 //send mark feed read to server if not in the starred list
                 if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
-                    if (newValue.isRead() == false) {
+                    if (!newValue.isRead()) {
                         new Thread(() -> ConnectServer.connectServer(ConnectServer.markFeedReadURL + newValue.getDecimalId())).start();
                         String streamId = newValue.getOrigin().getStreamId();
                         Integer count = unreadCountsMap.get(streamId);
@@ -317,6 +316,40 @@ public class Controller {
                 item.setRead(true);
             }
             listView.refresh();
+            //inform treeView to refresh the unread count
+            if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
+                Feed feed = treeView.getSelectionModel().getSelectedItem().getValue();
+                if (feed instanceof Subscription) {
+                    Integer count = unreadCountsMap.get(feed.getId());
+                    unreadCountsMap.put(feed.getId(), 0);
+                    Feed parent = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
+                    unreadCountsMap.put(parent.getId(), unreadCountsMap.get(parent.getId()) - count);
+                    unreadCountsMap.put("All Items", unreadCountsMap.get("All Items") - count);
+                } else if (!feed.getId().equals("All Items")) {//parent treeItems, except All Items
+                    Integer count = unreadCountsMap.get(feed.getId());
+                    unreadCountsMap.put(feed.getId(), 0);
+                    for (TreeItem<Feed> son : treeView.getSelectionModel().getSelectedItem().getChildren()) {
+                        unreadCountsMap.put(son.getValue().getId(), 0);
+                    }
+                    unreadCountsMap.put("All Items", unreadCountsMap.get("All Items") - count);
+                } else {//All Items
+                    unreadCountsMap.put("All Items", 0);
+                    for (TreeItem<Feed> parent : root.getChildren()) {
+                        if (!parent.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
+                            if (parent.getValue() instanceof Tag) {
+                                for (TreeItem<Feed> son : parent.getChildren()) {
+                                    unreadCountsMap.put(son.getValue().getId(), 0);
+                                }
+                            }
+                            unreadCountsMap.put(parent.getValue().getId(), 0);
+                        }
+                    }
+                }
+            }
+            treeView.refresh();
+
+
+
 
             new Thread(() -> {
                 ConnectServer.connectServer(ConnectServer.markAllReadURL + lastUpdateTime.getEpochSecond() + "&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
