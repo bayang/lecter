@@ -1,17 +1,18 @@
 package com.stefanie20.ReadDay;
 
 import com.google.gson.Gson;
-import com.stefanie20.ReadDay.ConnectServer;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -25,6 +26,9 @@ public class LoginController {
     private PasswordField passwordField;
     @FXML
     private Button loginButton;
+    @FXML
+    private Label warnLabel;
+
 
 
 
@@ -44,21 +48,35 @@ public class LoginController {
             connection.setRequestProperty("AppKey", ConnectServer.AppKey);
             connection.connect();
 
-            Scanner scanner = new Scanner(connection.getInputStream());
-            PrintWriter printWriter = new PrintWriter("UserInfo.dat");
 
-            scanner.nextLine();
-            scanner.nextLine();
-            String authString = scanner.nextLine();
+            //check http header
+            Map<String, List<String>> header = connection.getHeaderFields();
+            header.forEach((a, b) -> System.out.println(a + "   " + b));
+            if (header.get(null).get(0).equals(ConnectServer.code200)) {
+                Scanner scanner = new Scanner(connection.getInputStream());
+                PrintWriter printWriter = new PrintWriter("UserInfo.dat");
 
-            printWriter.println(authString);
-            UserInfo.setAuthString(authString.substring(5));
+                scanner.nextLine();
+                scanner.nextLine();
+                String authString = scanner.nextLine();
 
-            scanner.close();
-            printWriter.close();
-            //close the login panel
-            Controller.getLoginStage().close();
-            FXMain.getPrimaryStage().show();
+                printWriter.println(authString);
+                UserInfo.setAuthString(authString.substring(5));
+
+                scanner.close();
+                printWriter.close();
+                //close the login panel
+                Controller.getLoginStage().close();
+                FXMain.getPrimaryStage().show();
+            } else if (header.get(null).get(0).equals(ConnectServer.code401)) {
+                warnLabel.setText("Wrong ID or Password");
+                return;
+            } else {
+                warnLabel.setText(header.get(null).get(0));
+                return;
+            }
+
+
         } catch (MalformedURLException murl) {
             murl.printStackTrace();
         } catch (IOException ioe) {

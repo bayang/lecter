@@ -13,5 +13,6 @@
       <TextField fx:id="emailTextField" layoutX="165.0" layoutY="99.0" prefHeight="30.0" prefWidth="202.0" />
       <Button fx:id="loginButton" layoutX="315.0" layoutY="206.0" mnemonicParsing="false" onAction="#loginButtonFired" text="Login" />
       <PasswordField fx:id="passwordField" layoutX="165.0" layoutY="147.0" prefHeight="27.0" prefWidth="202.0" />
+      <Label fx:id="warnLabel" layoutX="165.0" layoutY="210.0" prefHeight="15.0" prefWidth="131.0" />
    </children>
 </AnchorPane>

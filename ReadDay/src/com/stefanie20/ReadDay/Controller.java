@@ -310,7 +310,7 @@ public class Controller {
     @FXML
     private void markReadButtonFired() {
         if (UserInfo.getAuthString() == null) {
-            statusLabel.setText("Please Login");
+            new Alert(Alert.AlertType.ERROR, "Please Login.");
         } else {
             for (Item item : listView.getItems()) {
                 item.setRead(true);
@@ -405,6 +405,7 @@ public class Controller {
     public static Stage getLoginStage() {
         return loginStage;
     }
+
 
     private TreeItem<Feed> getParentItem(String streamId) {
         for (TreeItem<Feed> parent : root.getChildren()) {

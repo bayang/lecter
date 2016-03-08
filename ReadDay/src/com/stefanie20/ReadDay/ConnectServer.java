@@ -1,6 +1,8 @@
 package com.stefanie20.ReadDay;
 
 import com.google.gson.Gson;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -33,6 +36,9 @@ public class ConnectServer {
     public static String markAllReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?ts=";
     public static String markFeedReadURL = "https://www.inoreader.com/reader/api/0/edit-tag?a=user/-/state/com.google/read&i=";
 
+    public static String code401 = "HTTP/1.1 401 Authorization Required";
+    public static String code200 = "HTTP/1.1 200 OK";
+
     public static BufferedReader connectServer(String url) {
         try {
             URLConnection connection = new URL(url).openConnection();
@@ -42,13 +48,17 @@ public class ConnectServer {
 
             connection.connect();
 
-            //need to check the received header, do it in the future!!!
-//            Map<String, List<String>> header = connection.getHeaderFields();
-//            for (Map.Entry<String, List<String>> entry : header.entrySet()) {
-//                System.out.println(entry);
-//            }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-            return reader;
+            //check http header
+            Map<String, List<String>> header = connection.getHeaderFields();
+            if (header.get(null).get(0).equals(code200)) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                return reader;
+            } else {
+                new Alert(Alert.AlertType.ERROR, header.get(null).get(0)).show();
+            }
+
+        } catch (UnknownHostException uhe) {
+            new Alert(Alert.AlertType.ERROR,uhe.getMessage()).show();
         } catch (MalformedURLException murle) {
             murle.printStackTrace();
         } catch (IOException ioe) {

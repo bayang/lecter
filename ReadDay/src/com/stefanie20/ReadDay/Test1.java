@@ -1,6 +1,8 @@
 package com.stefanie20.ReadDay;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -8,8 +10,10 @@ import java.util.Scanner;
  */
 public class Test1 {
     public static void main(String[] args) throws Exception{
-        String s = "\uD835\uDD46 is the set of octonions";
-        System.out.println(s.length());
+        List<String> list = new ArrayList<>();
+        list.add("asfd");
+        list.add("ffff");
+        System.out.println();
     }
 
 
