@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.web.WebView?>
@@ -35,6 +36,8 @@
       <ListView fx:id="listView" layoutX="260.0" layoutY="30.0" prefHeight="647.0" prefWidth="260.0" AnchorPane.bottomAnchor="50.0" AnchorPane.topAnchor="30.0" />
       <WebView fx:id="webView" layoutX="520.0" layoutY="30.0" prefHeight="647.0" prefWidth="551.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="520.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
       <Button fx:id="markReadButton" layoutX="343.0" layoutY="677.0" mnemonicParsing="false" onAction="#markReadButtonFired" text="MarkRead" AnchorPane.bottomAnchor="20.0" />
-      <Label fx:id="statusLabel" layoutX="536.0" layoutY="682.0" prefHeight="20.0" prefWidth="524.0" AnchorPane.bottomAnchor="25.0" />
+      <Label fx:id="statusLabel" layoutX="534.0" layoutY="686.0" prefHeight="20.0" prefWidth="196.0" AnchorPane.bottomAnchor="21.0" />
+      <RadioButton fx:id="rssRadioButton" layoutX="774.0" layoutY="688.0" mnemonicParsing="false" text="RSS" AnchorPane.bottomAnchor="23.0" />
+      <RadioButton fx:id="webRadioButton" layoutX="825.0" layoutY="688.0" mnemonicParsing="false" text="Web" AnchorPane.bottomAnchor="23.0" />
    </children>
 </AnchorPane>

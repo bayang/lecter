@@ -5,6 +5,9 @@ apply plugin: "application"
 
 mainClassName = "com.stefanie20.ReadDay.FXMain"
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 repositories {
     mavenCentral()
 }
@@ -15,13 +18,4 @@ dependencies {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.11'
-}
-
-sourceSets {
-    main {
-        resources {
-            srcDirs = ["src/main/resources"]
-            includes = ["**/*.fxml"]
-        }
-    }
 }

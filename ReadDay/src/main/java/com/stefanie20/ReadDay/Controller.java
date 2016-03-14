@@ -38,6 +38,10 @@ public class Controller {
     private Button markReadButton;
     @FXML
     private Label statusLabel;
+    @FXML
+    private RadioButton rssRadioButton;
+    @FXML
+    private RadioButton webRadioButton;
 
 
     private List<Item> itemList;
@@ -57,6 +61,7 @@ public class Controller {
         eventHandleInitialize();
 //        loginPaneInitialize();
         userInfoInitialize();
+        radioButtonInitialize();
     }
 
     private void userInfoInitialize() {
@@ -105,7 +110,11 @@ public class Controller {
         //handle event between listView and webView
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getSummary().getContent() != null) {
-                webView.getEngine().loadContent(newValue.getSummary().getContent());
+                if (rssRadioButton.isSelected()) {
+                    webView.getEngine().loadContent(newValue.getSummary().getContent());
+                } else if (webRadioButton.isSelected()) {
+                    webView.getEngine().load(newValue.getCanonical().get(0).getHref());
+                }
                 //send mark feed read to server if not in the starred list
                 if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
                     if (!newValue.isRead()) {
@@ -217,6 +226,25 @@ public class Controller {
             statusLabel.setText("Get UnreadCounts Complete");
             System.out.println("finish unreadCountsTask");
         });
+    }
+
+    private void radioButtonInitialize() {
+        ToggleGroup toggleGroup = new ToggleGroup();
+        rssRadioButton.setToggleGroup(toggleGroup);
+        webRadioButton.setToggleGroup(toggleGroup);
+        rssRadioButton.setSelected(true);
+        toggleGroup.selectedToggleProperty().addListener(((observable, oldValue, newValue) -> {
+            if (toggleGroup.getSelectedToggle() != null) {
+                if (listView.getSelectionModel().getSelectedItem() != null) {
+                    if (rssRadioButton.isSelected()) {
+                        webView.getEngine().loadContent(listView.getSelectionModel().getSelectedItem().getSummary().getContent());
+                    } else if (webRadioButton.isSelected()) {
+                        webView.getEngine().load(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
+                    }
+                }
+            }
+        }));
+
     }
 
     static class listCell extends ListCell<Item> {//set the listView show content and icon
