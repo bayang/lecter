@@ -24,6 +24,8 @@ public class ConnectServer {
     public static String AppId = "1000001097";
     public static String AppKey = "ALuNA3QjaXb8fOiDC_n1pt0IR0wZMIIg";
 
+
+    //URLs for InoReader
     public static String userinfoURL = "https://www.inoreader.com/reader/api/0/user-info";
     public static String loginURL = "https://www.inoreader.com/accounts/ClientLogin?";
     public static String unreadCountURL = "https://www.inoreader.com/reader/api/0/unread-count";
@@ -36,9 +38,11 @@ public class ConnectServer {
     public static String markAllReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?ts=";
     public static String markFeedReadURL = "https://www.inoreader.com/reader/api/0/edit-tag?a=user/-/state/com.google/read&i=";
 
+
     public static String code401 = "HTTP/1.1 401 Authorization Required";
     public static String code200 = "HTTP/1.1 200 OK";
 
+    //connect InoReader server
     public static BufferedReader connectServer(String url) {
         try {
             URLConnection connection = new URL(url).openConnection();
@@ -66,6 +70,7 @@ public class ConnectServer {
         }
         return null;
     }
+
 
     public static void main(String[] args) throws Exception{
         BufferedReader reader = connectServer(subscriptionListURL);

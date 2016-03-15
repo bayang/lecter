@@ -39,5 +39,6 @@
       <Label fx:id="statusLabel" layoutX="534.0" layoutY="686.0" prefHeight="20.0" prefWidth="196.0" AnchorPane.bottomAnchor="21.0" />
       <RadioButton fx:id="rssRadioButton" layoutX="774.0" layoutY="688.0" mnemonicParsing="false" text="RSS" AnchorPane.bottomAnchor="23.0" />
       <RadioButton fx:id="webRadioButton" layoutX="825.0" layoutY="688.0" mnemonicParsing="false" text="Web" AnchorPane.bottomAnchor="23.0" />
+      <RadioButton fx:id="readabilityRadioButton" layoutX="882.0" layoutY="688.0" mnemonicParsing="false" text="Readability" AnchorPane.bottomAnchor="23.0" />
    </children>
 </AnchorPane>
