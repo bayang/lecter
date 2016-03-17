@@ -45,6 +45,8 @@ public class Controller {
     private RadioButton webRadioButton;
     @FXML
     private RadioButton readabilityRadioButton;
+    @FXML
+    private ProgressIndicator progressIndicator;
 
 
     private List<Item> itemList;
@@ -191,6 +193,7 @@ public class Controller {
         treeTask.setOnSucceeded(event -> {
             treeView.setRoot(treeTask.getValue());
             treeView.setShowRoot(false);
+            progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
             statusLabel.setText("Get Feeds Complete.");
             System.out.println("finish treeTask");
         });
@@ -205,6 +208,7 @@ public class Controller {
         };
         itemListTask.setOnSucceeded(event -> {
             itemList = itemListTask.getValue();
+            progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
             statusLabel.setText("Get New Items Complete.");
             System.out.println("finish itemListTask");
         });
@@ -218,6 +222,7 @@ public class Controller {
         };
         starredListTask.setOnSucceeded(event -> {
             starredList = starredListTask.getValue();
+            progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
             statusLabel.setText("Get Starred Items Complete.");
             System.out.println("finish starredListTask");
         });
@@ -231,6 +236,7 @@ public class Controller {
         };
         unreadCountsTask.setOnSucceeded(event -> {
             unreadCountsMap = unreadCountsTask.getValue();
+            progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
             statusLabel.setText("Get UnreadCounts Complete");
             System.out.println("finish unreadCountsTask");
         });
@@ -344,6 +350,7 @@ public class Controller {
         if (UserInfo.getAuthString() == null) {
             statusLabel.setText("Please Login");
         } else {
+            progressIndicator.setProgress(0);
             statusLabel.setText("Refreshing...");
             taskInitialize();
             new Thread(treeTask).start();
