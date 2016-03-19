@@ -14,7 +14,9 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,11 +80,20 @@ public class Controller {
             loginStage.show();
         } else {
             FXMain.getPrimaryStage().show();
-            try (Scanner scanner = new Scanner(file)) {
-                UserInfo.setAuthString(scanner.nextLine().substring(5));
-                UserInfo.setUserId(scanner.nextLine().substring(7));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+//            try (Scanner scanner = new Scanner(file)) {
+//                UserInfo.setAuthString(scanner.nextLine().substring(5));
+//                UserInfo.setUserId(scanner.nextLine().substring(7));
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            }
+
+            Properties properties = new Properties();
+            try {
+                properties.load(new FileInputStream(file));
+                UserInfo.setAuthString(properties.getProperty("Auth"));
+                UserInfo.setUserId(properties.getProperty("userId"));
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
         }
 

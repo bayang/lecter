@@ -2,7 +2,10 @@ package com.stefanie20.ReadDay;
 
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.Scanner;
 
 /**
@@ -29,11 +32,19 @@ public class UserInfo {
             if (!file.exists()) {
                 return null;
             } else {
-                try (Scanner scanner = new Scanner(file)) {
-                    UserInfo.setAuthString(scanner.nextLine().substring(5));
-                    UserInfo.setUserId(scanner.nextLine().substring(7));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+//                try (Scanner scanner = new Scanner(file)) {
+//                    UserInfo.setAuthString(scanner.nextLine().substring(5));
+//                    UserInfo.setUserId(scanner.nextLine().substring(7));
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+                Properties properties = new Properties();
+                try {
+                    properties.load(new FileInputStream(file));
+                    UserInfo.setAuthString(properties.getProperty("Auth"));
+                    UserInfo.setUserId(properties.getProperty("userId"));
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
             }
         }
