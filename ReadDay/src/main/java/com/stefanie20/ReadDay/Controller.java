@@ -4,6 +4,8 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -27,8 +29,6 @@ import java.util.*;
  * Created by F317 on 16/2/22.
  */
 public class Controller {
-    @FXML
-    private AnchorPane loginPane;
     @FXML
     private TreeView<Feed> treeView;
     @FXML
@@ -61,55 +61,45 @@ public class Controller {
     private Task<Map<String,Integer>> unreadCountsTask;
     private static Map<String,Integer> unreadCountsMap;
     private static TreeItem<Feed> root;
+    private static LoginController loginController;
 
     @FXML
     private void initialize() {
 //        taskInitialize();
         eventHandleInitialize();
-//        loginPaneInitialize();
+        loginPaneInitialize();
         userInfoInitialize();
         radioButtonInitialize();
     }
 
     private void userInfoInitialize() {
-        File file = new File("UserInfo.dat");
-        if (!file.exists()) {
-            if (loginStage == null) {
-                loginPaneInitialize();
-            }
+        if (UserInfo.getAuthString() == null) {
             loginStage.show();
         } else {
             FXMain.getPrimaryStage().show();
-//            try (Scanner scanner = new Scanner(file)) {
-//                UserInfo.setAuthString(scanner.nextLine().substring(5));
-//                UserInfo.setUserId(scanner.nextLine().substring(7));
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            }
-
-            Properties properties = new Properties();
-            try {
-                properties.load(new FileInputStream(file));
-                UserInfo.setAuthString(properties.getProperty("Auth"));
-                UserInfo.setUserId(properties.getProperty("userId"));
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
         }
-
     }
 
-    private void loginPaneInitialize() {//lazy init
+    private void loginPaneInitialize() {
         loginStage = new Stage();
         loginStage.setTitle("Login");
-        loginStage.setScene(new Scene(loginPane));
+//        loginStage.setScene(new Scene(loginPane));
         loginStage.setResizable(false);
+
+        FXMLLoader loginLoader = new FXMLLoader();
+
+        try {
+            loginLoader.setLocation(getClass().getClassLoader().getResource("LoginPanel.fxml"));
+            Parent loginNode = loginLoader.load(getClass().getClassLoader().getResource("LoginPanel.fxml").openStream());
+            loginController = loginLoader.getController();
+            loginStage.setScene(new Scene(loginNode));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
     @FXML
     private void loginMenuFired() {
-        if (loginStage == null) {
-            loginPaneInitialize();
-        }
             loginStage.show();
     }
     @FXML
@@ -482,6 +472,14 @@ public class Controller {
             }
         }
         return null;
+    }
+
+    public Label getStatusLabel() {
+        return statusLabel;
+    }
+
+    public static LoginController getLoginController() {
+        return loginController;
     }
 }
 

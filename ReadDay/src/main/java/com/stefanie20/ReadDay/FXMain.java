@@ -11,14 +11,17 @@ import java.io.IOException;
 /**
  * Created by F317 on 16/2/22.
  */
-public class FXMain extends Application{
+public class FXMain extends Application {
     private static Stage primaryStage;
+    private static FXMLLoader loader = new FXMLLoader();
 
     @Override
+
     public void start(Stage stage) {
         try {
             primaryStage = stage;
-            Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("UI.fxml"));
+            loader.setLocation(getClass().getClassLoader().getResource("UI.fxml"));
+            Parent root = loader.load(getClass().getClassLoader().getResource("UI.fxml").openStream());
             stage.setScene(new Scene(root));
             stage.setTitle("ReadDay");
 //            stage.show();
@@ -40,5 +43,9 @@ public class FXMain extends Application{
 
     public static void setPrimaryStage(Stage primaryStage) {
         FXMain.primaryStage = primaryStage;
+    }
+
+    public static Controller getController() {
+        return loader.getController();
     }
 }

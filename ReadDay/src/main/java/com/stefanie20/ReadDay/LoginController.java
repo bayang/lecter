@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Scanner;
 
 /**
@@ -54,19 +55,21 @@ public class LoginController {
             header.forEach((a, b) -> System.out.println(a + "   " + b));
             if (header.get(null).get(0).equals(ConnectServer.code200)) {
                 Scanner scanner = new Scanner(connection.getInputStream());
-                PrintWriter printWriter = new PrintWriter("UserInfo.dat");
+                Properties properties = new Properties();
 
                 scanner.nextLine();
                 scanner.nextLine();
-                String authString = scanner.nextLine();
+                String authString = scanner.nextLine().substring(5);
+                properties.setProperty("Auth", authString);
 
-                printWriter.println(authString);
-                UserInfo.setAuthString(authString.substring(5));
+                properties.store(new FileOutputStream(new File("UserInfo.dat")), null);
+                UserInfo.setAuthString(authString);
 
                 scanner.close();
-                printWriter.close();
+
                 //close the login panel
                 Controller.getLoginStage().close();
+                System.out.println("login "+Controller.getLoginStage());
                 FXMain.getPrimaryStage().show();
             } else if (header.get(null).get(0).equals(ConnectServer.code401)) {
                 warnLabel.setText("Wrong ID or Password");
@@ -87,12 +90,18 @@ public class LoginController {
         BufferedReader reader = ConnectServer.connectServer(ConnectServer.userinfoURL);
         Gson gson = new Gson();
         UserInformation userInformation = gson.fromJson(reader, UserInformation.class);
-        try (PrintWriter printWriter = new PrintWriter(new FileOutputStream("UserInfo.dat", true))) {
-            printWriter.println("userId=" + userInformation.getUserId());
-            UserInfo.setUserId(userInformation.getUserId());
-        } catch (FileNotFoundException e) {
+        Properties properties = new Properties();
+        properties.setProperty("userId", userInformation.getUserId());
+        UserInfo.setUserId(userInformation.getUserId());
+        try {
+            properties.store(new FileOutputStream("UserInfo.dat", true), null);
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public void setWarnLabelText(String s) {
+        warnLabel.setText(s);
     }
 }

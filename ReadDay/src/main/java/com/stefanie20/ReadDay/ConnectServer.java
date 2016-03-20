@@ -54,11 +54,17 @@ public class ConnectServer {
 
             //check http header
             Map<String, List<String>> header = connection.getHeaderFields();
+
             if (header.get(null).get(0).equals(code200)) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
                 return reader;
             } else {
-                new Alert(Alert.AlertType.ERROR, header.get(null).get(0)).show();
+                Platform.runLater(()->{
+                    FXMain.getPrimaryStage().close();
+                    Controller.getLoginStage().show();
+                    Controller.getLoginController().setWarnLabelText(header.get(null).get(0));
+
+                });
             }
 
         } catch (UnknownHostException uhe) {
