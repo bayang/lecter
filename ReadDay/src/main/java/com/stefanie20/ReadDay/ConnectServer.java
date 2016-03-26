@@ -1,24 +1,20 @@
 package com.stefanie20.ReadDay;
 
-import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by F317 on 16/2/22.
+ * This class provide functions to connect the server and get the related Reader.
  */
 public class ConnectServer {
     public static String AppId = "1000001097";
@@ -42,7 +38,11 @@ public class ConnectServer {
     public static String code401 = "HTTP/1.1 401 Authorization Required";
     public static String code200 = "HTTP/1.1 200 OK";
 
-    //connect InoReader server
+    /**
+     * Connect the server and get the Reader.
+     * @param url the related URL in the field.
+     * @return the BufferedReader which can be used by Gson to get information.
+     */
     public static BufferedReader connectServer(String url) {
         try {
             URLConnection connection = new URL(url).openConnection();

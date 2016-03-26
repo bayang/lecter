@@ -1,5 +1,9 @@
 package com.stefanie20.ReadDay;
 
+/**
+ *  A UserInformation represents a object get from Inoreader's <a href="https://www.inoreader.com/developers/user-info">User information</a>
+ */
+
 public class UserInformation {
 
     private String userId;

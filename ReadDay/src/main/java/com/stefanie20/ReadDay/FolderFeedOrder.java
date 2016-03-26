@@ -8,11 +8,15 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by F317 on 16/2/22.
+ * This class is used to get the order of the folder and the feed inside.
  */
 public class FolderFeedOrder {
     public static Map<String,Image> iconMap;
 
+    /**
+     * Connect server and get the information about the order, then return a map.
+     * @return A map containing order.
+     */
     public static Map<Feed, List<Subscription>> getOrder() {
         String userId = UserInfo.getUserId();
         //get the streamprefs
@@ -76,7 +80,7 @@ public class FolderFeedOrder {
 
     }
 
-    public static List<String> sortOrder(String s) { //maybe using stream
+    private static List<String> sortOrder(String s) { //maybe using stream
         List<String> list = new ArrayList<>();
         for (int i = 0; i < s.length(); i+=8) {
             list.add(s.substring(i, i + 8));
@@ -84,7 +88,7 @@ public class FolderFeedOrder {
         return list;
     }
 
-    public static List<Subscription> getFeedOrder(JsonObject streamprefs, String folderId, SubscriptionsList subscriptionsList) {
+    private static List<Subscription> getFeedOrder(JsonObject streamprefs, String folderId, SubscriptionsList subscriptionsList) {
         String feedOrderString = streamprefs.getAsJsonObject("streamprefs").getAsJsonArray(folderId).get(1).getAsJsonObject().get("value").getAsString();
         List<String> feedOrderList = sortOrder(feedOrderString);
         List<Subscription> list = new ArrayList<>();             //the list to return, contains the feed order
@@ -97,11 +101,6 @@ public class FolderFeedOrder {
             }
         }
         return list;
-    }
-
-
-    public static void main(String[] args) {
-        getOrder();
     }
 
 }

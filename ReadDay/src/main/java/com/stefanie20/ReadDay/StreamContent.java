@@ -2,13 +2,13 @@ package com.stefanie20.ReadDay;
 
 import com.google.gson.Gson;
 
-import java.io.*;
-import java.time.Instant;
+import java.io.BufferedReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by F317 on 16/2/21.
+ * A StreamContent represents a object get from Inoreader's <a href="https://www.inoreader.com/developers/stream-contents">Stream Contents</a>
  */
 public class StreamContent {
     private String direction;

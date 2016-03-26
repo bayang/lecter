@@ -3,7 +3,7 @@ package com.stefanie20.ReadDay;
 import java.util.ArrayList;
 
 /**
- * Created by F317 on 16/2/21.
+ * A FolderTagsList represents a object get from Inoreader's <a href="https://www.inoreader.com/developers/tag-list">Folders and tags list</a>
  */
 public class FoldersTagsList {
     private ArrayList<Tag> tags;

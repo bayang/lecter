@@ -8,16 +8,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,7 +23,7 @@ import java.time.ZoneId;
 import java.util.*;
 
 /**
- * Created by F317 on 16/2/22.
+ * The Controller class for JavaFX application.
  */
 public class Controller {
     @FXML
@@ -83,9 +80,9 @@ public class Controller {
     private void loginPaneInitialize() {
         loginStage = new Stage();
         loginStage.setTitle("Login");
+        loginStage.getIcons().add(new Image("icon.png"));
 //        loginStage.setScene(new Scene(loginPane));
         loginStage.setResizable(false);
-
         FXMLLoader loginLoader = new FXMLLoader();
 
         try {
@@ -458,6 +455,10 @@ public class Controller {
 
     }
 
+    /**
+     *
+     * @return the loginStage
+     */
     public static Stage getLoginStage() {
         return loginStage;
     }
@@ -474,10 +475,10 @@ public class Controller {
         return null;
     }
 
-    public Label getStatusLabel() {
-        return statusLabel;
-    }
-
+    /**
+     *
+     * @return the loginController
+     */
     public static LoginController getLoginController() {
         return loginController;
     }

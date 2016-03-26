@@ -10,7 +10,8 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
- * Created by Zhang on 3/14.
+ * This class is used to get information about Readability view.
+ * A Readability object also represent a object containing Readability web content.
  */
 public class Readability {
     private String domain;
@@ -50,6 +51,11 @@ public class Readability {
         this.rendered_pages = rendered_pages;
     }
 
+    /**
+     * get the Readability content
+     * @param s the url of the website
+     * @return  the content of the web
+     */
     public static String getReadabilityContent(String s) {
         String url = "https://www.readability.com/api/content/v1/parser?url=" + s + "&token=" + readabilityToken;
         try {

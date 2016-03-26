@@ -1,7 +1,7 @@
 package com.stefanie20.ReadDay;
 
 /**
- * Created by F317 on 16/2/23.
+ * An interface created to combine Tag and Subscription, used in the TreeView.
  */
 public interface Feed {
     String getId();

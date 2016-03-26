@@ -3,7 +3,7 @@ package com.stefanie20.ReadDay;
 import java.util.ArrayList;
 
 /**
- * Created by F317 on 16/2/21.
+ * A SubscriptionsList represents a object get from Inoreader's <a href="https://www.inoreader.com/developers/subscription-list">Subscriptions List</a>
  */
 public class SubscriptionsList {
     private ArrayList<Subscription> subscriptions;

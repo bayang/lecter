@@ -17,7 +17,7 @@ import java.util.Properties;
 import java.util.Scanner;
 
 /**
- * Created by F317 on 16/2/28.
+ * The Controller used in the login panel.
  */
 public class LoginController {
 
@@ -101,6 +101,10 @@ public class LoginController {
 
     }
 
+    /**
+     * A method to edit the warn label by other class.
+     * @param s the text to show in the warn label.
+     */
     public void setWarnLabelText(String s) {
         warnLabel.setText(s);
     }

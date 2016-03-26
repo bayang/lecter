@@ -1,14 +1,13 @@
 package com.stefanie20.ReadDay;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by F317 on 16/2/21.
+ * This class is used to get the counts of the unread items.
  */
 public class UnreadCounter {
     private String max;

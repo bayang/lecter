@@ -3,13 +3,11 @@ package com.stefanie20.ReadDay;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.Scanner;
 
 /**
- * Created by F317 on 16/2/22.
+ * This class is used to store userId and authString, which is used in connecting server and sort data.
  */
 public class UserInfo {
 

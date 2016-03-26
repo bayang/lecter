@@ -4,12 +4,14 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 
 /**
- * Created by F317 on 16/2/22.
+ * Main function for JavaFX
+ *
  */
 public class FXMain extends Application {
     private static Stage primaryStage;
@@ -24,6 +26,9 @@ public class FXMain extends Application {
             Parent root = loader.load(getClass().getClassLoader().getResource("UI.fxml").openStream());
             stage.setScene(new Scene(root));
             stage.setTitle("ReadDay");
+            stage.getIcons().add(new Image("icon.png"));
+
+
 //            stage.show();
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -37,6 +42,10 @@ public class FXMain extends Application {
         launch(args);
     }
 
+    /**
+     *
+     * @return the primaryStage
+     */
     public static Stage getPrimaryStage() {
         return primaryStage;
     }
