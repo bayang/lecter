@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ReadDay.iml" filepath="$PROJECT_DIR$/.idea/modules/ReadDay.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ReadDay_main.iml" filepath="$PROJECT_DIR$/.idea/modules/ReadDay_main.iml" group="ReadDay" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ReadDay_test.iml" filepath="$PROJECT_DIR$/.idea/modules/ReadDay_test.iml" group="ReadDay" />
+      <module fileurl="file://$PROJECT_DIR$/ReadDay.iml" filepath="$PROJECT_DIR$/ReadDay.iml" />
     </modules>
   </component>
 </project>

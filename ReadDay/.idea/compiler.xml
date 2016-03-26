@@ -18,9 +18,5 @@
         <processorPath useClasspath="true" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="ReadDay_main" target="1.8" />
-      <module name="ReadDay_test" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
