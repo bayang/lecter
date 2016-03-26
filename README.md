@@ -1,3 +1,9 @@
 # ReadDay
 An Inoreader Desktop App  
-Still in very early stage.
+Still in early stage.
+
+Using JavaFX and Gradle.
+
+Support RSS & Web & Readability article view.
+
+
