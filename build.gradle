@@ -1,0 +1,29 @@
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: "application"
+
+mainClassName = "com.stefanie20.ReadDay.FXMain"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile('com.google.code.gson:gson:2.6.2')
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.11'
+}
+
+tasks.withType(JavaCompile){
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'GBK'
+}
