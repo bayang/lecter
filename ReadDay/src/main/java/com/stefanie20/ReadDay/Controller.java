@@ -114,13 +114,13 @@ public class Controller {
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getSummary().getContent() != null) {
                 if (rssRadioButton.isSelected()) {
-                    webView.getEngine().loadContent(newValue.getSummary().getContent());
+                    webView.getEngine().loadContent(Item.processContent(newValue.getTitle(), newValue.getSummary().getContent()));
                 } else if (webRadioButton.isSelected()) {
                     webView.getEngine().load(newValue.getCanonical().get(0).getHref());
                 } else if (readabilityRadioButton.isSelected()) {
                     new Thread(()->{
                         String content = Readability.getReadabilityContent(newValue.getCanonical().get(0).getHref());
-                        Platform.runLater(()->webView.getEngine().loadContent(content));
+                        Platform.runLater(() -> webView.getEngine().loadContent(Item.processContent(newValue.getTitle(), content)));
                     }).start();
                 }
                 //send mark feed read to server if not in the starred list
@@ -255,13 +255,14 @@ public class Controller {
             if (toggleGroup.getSelectedToggle() != null) {
                 if (listView.getSelectionModel().getSelectedItem() != null) {
                     if (rssRadioButton.isSelected()) {
-                        webView.getEngine().loadContent(listView.getSelectionModel().getSelectedItem().getSummary().getContent());
+                        Item item = listView.getSelectionModel().getSelectedItem();
+                        webView.getEngine().loadContent(Item.processContent(item.getTitle(), item.getSummary().getContent()));
                     } else if (webRadioButton.isSelected()) {
                         webView.getEngine().load(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
                     } else if (readabilityRadioButton.isSelected()) {
                         new Thread(()->{
                             String content = Readability.getReadabilityContent(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
-                            Platform.runLater(()->webView.getEngine().loadContent(content));
+                            Platform.runLater(() -> webView.getEngine().loadContent(Item.processContent(listView.getSelectionModel().getSelectedItem().getTitle(), content)));
                         }).start();
 
                     }

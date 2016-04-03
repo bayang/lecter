@@ -227,6 +227,23 @@ class Item{
     public String getDecimalId() {
         return String.valueOf(Long.parseLong(id.substring(id.lastIndexOf("/") + 1), 16));
     }
+
+    /**
+     * Process the content to show in the RSS and Readability view, such as combine title and content, add background color
+     * @param title
+     * @param content
+     * @return
+     */
+    public static String processContent(String title, String content) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<body bgcolor=\"#d0d0d0\">");
+        sb.append("<h1>");
+        sb.append(title);
+        sb.append("</h1>");
+        sb.append(content);
+        sb.append("</body>");
+        return sb.toString();
+    }
 }
 
 class Canonical{
