@@ -33,7 +33,7 @@ public class ConnectServer {
     public static String itemIDsURL = "https://www.inoreader.com/reader/api/0/stream/items/ids?xt=user/-/state/com.google/read";
     public static String markAllReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?ts=";
     public static String markFeedReadURL = "https://www.inoreader.com/reader/api/0/edit-tag?a=user/-/state/com.google/read&i=";
-
+    public static String editSubscriptionURL = "https://www.inoreader.com/reader/api/0/subscription/edit?";
 
     public static String code401 = "HTTP/1.1 401 Authorization Required";
     public static String code200 = "HTTP/1.1 200 OK";
@@ -77,10 +77,10 @@ public class ConnectServer {
         return null;
     }
 
-
+//feed/http://www.engadget.com/rss.xml
+//    feed/http://feeds.arstechnica.com/arstechnica/index
     public static void main(String[] args) throws Exception{
-        BufferedReader reader = connectServer(subscriptionListURL);
-        System.out.println(reader.readLine());
+        connectServer(editSubscriptionURL + "ac=unsubscribe&s=" + "feed/http://www.engadget.com/rss.xml");
     }
 
 }

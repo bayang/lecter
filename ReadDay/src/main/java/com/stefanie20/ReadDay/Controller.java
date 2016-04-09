@@ -20,7 +20,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * The Controller class for JavaFX application.
@@ -127,15 +130,25 @@ public class Controller {
                 if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
                     if (!newValue.isRead()) {
                         new Thread(() -> ConnectServer.connectServer(ConnectServer.markFeedReadURL + newValue.getDecimalId())).start();
+
+
                         String streamId = newValue.getOrigin().getStreamId();
                         Integer count = unreadCountsMap.get(streamId);
                         unreadCountsMap.put(streamId, --count);
+
+
                         Integer allCount = unreadCountsMap.get("All Items");
                         unreadCountsMap.put("All Items", --allCount);
+
+
                         //set parent count
-                        String parent = getParentItem(streamId).getValue().getId();
-                        Integer parentCount = unreadCountsMap.get(parent);
-                        unreadCountsMap.put(parent, --parentCount);
+                        if (getParentItem(streamId) != null) {
+                            String parent = getParentItem(streamId).getValue().getId();
+                            Integer parentCount = unreadCountsMap.get(parent);
+                            unreadCountsMap.put(parent, --parentCount);
+                        }
+
+
                         treeView.refresh();
                     }
                     newValue.setRead(true);//change state to read and change color in listView
@@ -299,7 +312,23 @@ public class Controller {
         }
     }
 
-    static class treeCell extends TreeCell<Feed> {
+    private class treeCell extends TreeCell<Feed> {
+        private ContextMenu menu = new ContextMenu();
+        public treeCell() {
+            MenuItem item = new MenuItem("unsubscribe");
+            menu.getItems().add(item);
+            item.setOnAction(event -> {
+                TreeItem<Feed> sub = treeView.getSelectionModel().getSelectedItem();
+                new Thread(()->{
+                    ConnectServer.connectServer(ConnectServer.editSubscriptionURL + "ac=unsubscribe&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
+                }).start();
+                //To clear the count, use markRead
+                markReadButtonFired();
+                sub.getParent().getChildren().remove(sub);
+            });
+        }
+
+
         @Override
         protected void updateItem(Feed item, boolean empty) {//set the treeView style show title and icons
             super.updateItem(item, empty);
@@ -327,6 +356,7 @@ public class Controller {
                         hBox.getChildren().addAll(titleLabel, countLabel);
                     }
 
+                    setContextMenu(menu);
                 } else {
                     String s = item.getId();
                     Integer countInteger = unreadCountsMap.get(s);
@@ -376,8 +406,14 @@ public class Controller {
                 if (feed instanceof Subscription) {
                     Integer count = unreadCountsMap.get(feed.getId());
                     unreadCountsMap.put(feed.getId(), 0);
+
+
                     Feed parent = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
-                    unreadCountsMap.put(parent.getId(), unreadCountsMap.get(parent.getId()) - count);
+                    if (unreadCountsMap.get(parent.getId()) != null) {
+                        unreadCountsMap.put(parent.getId(), unreadCountsMap.get(parent.getId()) - count);
+                    }
+
+
                     unreadCountsMap.put("All Items", unreadCountsMap.get("All Items") - count);
                 } else if (!feed.getId().equals("All Items")) {//parent treeItems, except All Items
                     Integer count = unreadCountsMap.get(feed.getId());
