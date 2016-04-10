@@ -34,6 +34,7 @@ public class ConnectServer {
     public static String markAllReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?ts=";
     public static String markFeedReadURL = "https://www.inoreader.com/reader/api/0/edit-tag?a=user/-/state/com.google/read&i=";
     public static String editSubscriptionURL = "https://www.inoreader.com/reader/api/0/subscription/edit?";
+    public static String addSubscriptionURL = "https://www.inoreader.com/reader/api/0/subscription/quickadd?quickadd=";
 
     public static String code401 = "HTTP/1.1 401 Authorization Required";
     public static String code200 = "HTTP/1.1 200 OK";

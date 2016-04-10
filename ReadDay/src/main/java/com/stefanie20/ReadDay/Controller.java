@@ -55,6 +55,7 @@ public class Controller {
     private List<Item> starredList;
     private Instant lastUpdateTime;
     private static Stage loginStage;
+    private static Stage addSubscriptionStage;
     private Task<TreeItem<Feed>> treeTask;
     private Task<List<Item>> itemListTask;
     private Task<List<Item>> starredListTask;
@@ -62,7 +63,7 @@ public class Controller {
     private static Map<String,Integer> unreadCountsMap;
     private static TreeItem<Feed> root;
     private static LoginController loginController;
-
+    private static AddSubscriptionController addSubscriptionController;
     @FXML
     private void initialize() {
 //        taskInitialize();
@@ -98,15 +99,43 @@ public class Controller {
         }
 
     }
+
+    private void addSubscriptionPanelInitialize() {//lazy initialization
+        addSubscriptionStage = new Stage();
+        addSubscriptionStage.setTitle("Add Subscription");
+        addSubscriptionStage.getIcons().add(new Image("icon.png"));
+        addSubscriptionStage.setResizable(false);
+        FXMLLoader loader = new FXMLLoader();
+
+        try {
+            loader.setLocation(getClass().getClassLoader().getResource("AddSubscriptionPanel.fxml"));
+            Parent node = loader.load(getClass().getClassLoader().getResource("AddSubscriptionPanel.fxml").openStream());
+            addSubscriptionController = loader.getController();
+            addSubscriptionStage.setScene(new Scene(node));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
+
+
+
+
     @FXML
     private void loginMenuFired() {
-            loginStage.show();
+        loginStage.show();
     }
     @FXML
     private void exitMenuFired() {
         System.exit(0);
     }
-
+    @FXML
+    private void addSubscriptionFired() {
+        if (addSubscriptionStage == null) {
+            addSubscriptionPanelInitialize();
+        }
+        addSubscriptionStage.show();
+    }
 
     private void eventHandleInitialize() {
         listView.setCellFactory(l->new listCell());

@@ -26,6 +26,11 @@
               <MenuItem mnemonicParsing="false" onAction="#exitMenuFired" text="Close" />
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="Edit">
+              <items>
+                <MenuItem mnemonicParsing="false" onAction="#addSubscriptionFired" text="Add subscription" />
+              </items>
+            </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
               <MenuItem mnemonicParsing="false" text="About" />
