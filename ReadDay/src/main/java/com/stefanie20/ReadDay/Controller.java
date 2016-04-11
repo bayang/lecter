@@ -138,8 +138,8 @@ public class Controller {
     }
 
     private void eventHandleInitialize() {
-        listView.setCellFactory(l->new listCell());
-        treeView.setCellFactory(t->new treeCell());
+        listView.setCellFactory(l->new MyListCell());
+        treeView.setCellFactory(t->new MyTreeCell());
 
 
         //handle event between listView and webView
@@ -314,8 +314,27 @@ public class Controller {
 
     }
 
-    static class listCell extends ListCell<Item> {//set the listView show content and icon
-        private static ZoneId defaultZoneId = ZoneId.systemDefault();
+    private class MyListCell extends ListCell<Item> {//set the listView show content and icon
+        private ZoneId defaultZoneId = ZoneId.systemDefault();
+        private ContextMenu menu = new ContextMenu();
+
+        public MyListCell(){
+            MenuItem starItem = new MenuItem("Mark Starred");
+            MenuItem unStarItem = new MenuItem("Mark Unstarred");
+            menu.getItems().addAll(starItem, unStarItem);
+
+            starItem.setOnAction(event -> {
+                System.out.println("mark star " + listView.getSelectionModel().getSelectedItem().getDecimalId());
+                new Thread(() -> ConnectServer.connectServer(ConnectServer.markStarredURL + listView.getSelectionModel().getSelectedItem().getDecimalId())).start();
+
+            });
+            unStarItem.setOnAction(event -> {
+                System.out.println("unstar " + listView.getSelectionModel().getSelectedItem().getDecimalId());
+                new Thread(() -> ConnectServer.connectServer(ConnectServer.markUnstarredURL + listView.getSelectionModel().getSelectedItem().getDecimalId())).start();
+            });
+        }
+
+
         @Override
         protected void updateItem(Item item, boolean empty) {
             super.updateItem(item, empty);
@@ -337,13 +356,14 @@ public class Controller {
                     imageView.setFitHeight(16);
                     setGraphic(imageView);
                 }
+                setContextMenu(menu);
             }
         }
     }
 
-    private class treeCell extends TreeCell<Feed> {
+    private class MyTreeCell extends TreeCell<Feed> {
         private ContextMenu menu = new ContextMenu();
-        public treeCell() {
+        public MyTreeCell() {
             MenuItem item = new MenuItem("unsubscribe");
             menu.getItems().add(item);
             item.setOnAction(event -> {

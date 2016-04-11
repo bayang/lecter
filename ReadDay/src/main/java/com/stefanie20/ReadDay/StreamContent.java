@@ -236,12 +236,12 @@ class Item{
      */
     public static String processContent(String title, String content) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<body bgcolor=\"#d0d0d0\">");
+        sb.append("<style> p.one { padding: 5px 50px 5px 50px; } .yue { font: 400 18px/1.62 \"Georgia\", \"Xin Gothic\", \"Hiragino Sans GB\", \"Droid Sans Fallback\", \"Microsoft YaHei\", sans-serif; }</style> <body><font class=\"yue\">");
         sb.append("<h1>");
         sb.append(title);
         sb.append("</h1>");
-        sb.append(content);
-        sb.append("</body>");
+        sb.append(content.replaceAll("<p>","<p class=\"one\">"));
+        sb.append("</font></body>");
         return sb.toString();
     }
 }

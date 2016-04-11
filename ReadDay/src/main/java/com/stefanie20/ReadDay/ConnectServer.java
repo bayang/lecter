@@ -33,6 +33,8 @@ public class ConnectServer {
     public static String itemIDsURL = "https://www.inoreader.com/reader/api/0/stream/items/ids?xt=user/-/state/com.google/read";
     public static String markAllReadURL = "https://www.inoreader.com/reader/api/0/mark-all-as-read?ts=";
     public static String markFeedReadURL = "https://www.inoreader.com/reader/api/0/edit-tag?a=user/-/state/com.google/read&i=";
+    public static String markStarredURL = "https://www.inoreader.com/reader/api/0/edit-tag?a=user/-/state/com.google/starred&i=";
+    public static String markUnstarredURL ="https://www.inoreader.com/reader/api/0/edit-tag?r=user/-/state/com.google/starred&i=";
     public static String editSubscriptionURL = "https://www.inoreader.com/reader/api/0/subscription/edit?";
     public static String addSubscriptionURL = "https://www.inoreader.com/reader/api/0/subscription/quickadd?quickadd=";
 
@@ -78,10 +80,8 @@ public class ConnectServer {
         return null;
     }
 
-//feed/http://www.engadget.com/rss.xml
-//    feed/http://feeds.arstechnica.com/arstechnica/index
     public static void main(String[] args) throws Exception{
-        connectServer(editSubscriptionURL + "ac=unsubscribe&s=" + "feed/http://www.engadget.com/rss.xml");
+        connectServer(markUnstarredURL+"7982887380");
     }
 
 }
