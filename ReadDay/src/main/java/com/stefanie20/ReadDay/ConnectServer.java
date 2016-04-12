@@ -6,6 +6,7 @@ import javafx.scene.control.Alert;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -81,7 +82,14 @@ public class ConnectServer {
     }
 
     public static void main(String[] args) throws Exception{
-        connectServer(markUnstarredURL+"7982887380");
+        BufferedReader reader = connectServer(ConnectServer.streamContentURL);
+        PrintWriter pw = new PrintWriter("streamContent.txt");
+        String s;
+        while ((s = reader.readLine()) != null) {
+            pw.println(s);
+        }
+        pw.close();
+        reader.close();
     }
 
 }

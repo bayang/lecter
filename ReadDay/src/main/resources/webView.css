@@ -1,0 +1,12 @@
+p {
+    padding: 5px 50px 5px 50px;
+}
+.yue {
+    font: 400 18px/1.62 "Georgia", "Xin Gothic", "Hiragino Sans GB", "Droid Sans Fallback", "Microsoft YaHei", sans-serif;
+}
+img {
+    border-radius: 10px;
+    max-width: 100%;
+    height: auto;
+}
+
