@@ -1,5 +1,6 @@
 package com.stefanie20.ReadDay;
 
+import com.google.common.base.Ascii;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -20,6 +21,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -344,9 +346,9 @@ public class Controller {
             } else {
                 //get the time style
                 LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(item.getCrawlTimeMsec())), defaultZoneId);
-                String timeString = localDateTime.toLocalTime().toString();
+                String timeString = localDateTime.toLocalTime().format(DateTimeFormatter.ofPattern("hh:mm:ss"));
                 if (!localDateTime.toLocalDate().equals(LocalDate.now())) {
-                    timeString = localDateTime.toString();
+                    timeString = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
                 }
                 setText(item.getOrigin().getTitle() + "    " + timeString + "\n" + item.getTitle());
                 setTextFill(item.isRead()? Color.GRAY:Color.BLACK);
