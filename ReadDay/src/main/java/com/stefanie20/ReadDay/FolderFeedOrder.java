@@ -11,10 +11,11 @@ import java.util.*;
  * This class is used to get the order of the folder and the feed inside.
  */
 public class FolderFeedOrder {
-    public static Map<String,Image> iconMap;
+    public static Map<String, Image> iconMap;
 
     /**
      * Connect server and get the information about the order, then return a map.
+     *
      * @return A map containing order.
      */
     public static Map<Feed, List<Subscription>> getOrder() {
@@ -33,7 +34,6 @@ public class FolderFeedOrder {
         JsonObject object = element.getAsJsonObject();
         JsonArray root = object.getAsJsonObject("streamprefs").getAsJsonArray("user/" + userId + "/state/com.google/root");
         String folderOrderString = root.get(0).getAsJsonObject().get("value").getAsString();
-//        System.out.println(folderOrderString);
         List<String> folderOrderList = sortOrder(folderOrderString);
 
         //get the folderTagList and the subscriptionList
@@ -52,12 +52,11 @@ public class FolderFeedOrder {
         //sort the folder order
         Map<Feed, List<Subscription>> orderMap = new LinkedHashMap<>();
         orderMap.put(new Tag("All Items", null), null);
-        orderMap.put(foldersTagsList.getTags().get(0),null);
+        orderMap.put(foldersTagsList.getTags().get(0), null);
         for (String s : folderOrderList) {
             boolean isFolder = false;
             for (Tag tag : foldersTagsList.getTags()) {
                 if (s.equals(tag.getSortid())) {
-//                    System.out.println("sortid = " + s + " id = " + tag.getId());
                     isFolder = true;
 
                     //get the feed order in the folder
@@ -69,7 +68,6 @@ public class FolderFeedOrder {
             if (!isFolder) {
                 for (Subscription subscription : subscriptionsList.getSubscriptions()) {
                     if (s.equals(subscription.getSortid())) {
-//                        System.out.println("sortid = " + s + " id = " + subscription.getTitle());
                         orderMap.put(subscription, null);
                         break;
                     }
@@ -82,7 +80,7 @@ public class FolderFeedOrder {
 
     private static List<String> sortOrder(String s) { //maybe using stream
         List<String> list = new ArrayList<>();
-        for (int i = 0; i < s.length(); i+=8) {
+        for (int i = 0; i < s.length(); i += 8) {
             list.add(s.substring(i, i + 8));
         }
         return list;
@@ -96,7 +94,6 @@ public class FolderFeedOrder {
             for (Subscription subscription : subscriptionsList.getSubscriptions()) {
                 if (s.equals(subscription.getSortid())) {
                     list.add(subscription);
-//                    System.out.println("        "+subscription.getTitle());
                 }
             }
         }

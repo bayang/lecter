@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -73,8 +72,6 @@ public class ConnectServer {
 
         } catch (UnknownHostException uhe) {
             new Alert(Alert.AlertType.ERROR,uhe.getMessage()).show();
-        } catch (MalformedURLException murle) {
-            murle.printStackTrace();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
@@ -82,7 +79,7 @@ public class ConnectServer {
     }
 
     public static void main(String[] args) throws Exception{
-        BufferedReader reader = connectServer(ConnectServer.streamContentURL);
+        BufferedReader reader = connectServer(ConnectServer.unreadCountURL);
         PrintWriter pw = new PrintWriter("streamContent.txt");
         String s;
         while ((s = reader.readLine()) != null) {

@@ -35,7 +35,6 @@ public class StreamContent {
 
     public static List<Item> getStreamContent(String URLString) {
         BufferedReader reader = ConnectServer.connectServer(URLString);
-//        try (BufferedReader reader = new BufferedReader(new FileReader("streamContent.txt"))) {
         Gson gson = new Gson();
         StreamContent content = gson.fromJson(reader, StreamContent.class);
         List<Item> itemList = new ArrayList<>(content.getItems());
@@ -46,10 +45,6 @@ public class StreamContent {
             itemList.addAll(content.getItems());
         }
         return itemList;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
     }
 
 

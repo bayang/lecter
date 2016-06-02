@@ -1,6 +1,5 @@
 package com.stefanie20.ReadDay;
 
-import com.google.common.base.Ascii;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -61,87 +60,23 @@ public class Controller {
     private Task<TreeItem<Feed>> treeTask;
     private Task<List<Item>> itemListTask;
     private Task<List<Item>> starredListTask;
-    private Task<Map<String,Integer>> unreadCountsTask;
-    private static Map<String,Integer> unreadCountsMap;
+    private Task<Map<String, Integer>> unreadCountsTask;
+    private static Map<String, Integer> unreadCountsMap;
     private static TreeItem<Feed> root;
     private static LoginController loginController;
     private static AddSubscriptionController addSubscriptionController;
+
     @FXML
     private void initialize() {
-//        taskInitialize();
         eventHandleInitialize();
         loginPaneInitialize();
         userInfoInitialize();
         radioButtonInitialize();
     }
 
-    private void userInfoInitialize() {
-        if (UserInfo.getAuthString() == null) {
-            loginStage.show();
-        } else {
-            FXMain.getPrimaryStage().show();
-        }
-    }
-
-    private void loginPaneInitialize() {
-        loginStage = new Stage();
-        loginStage.setTitle("Login");
-        loginStage.getIcons().add(new Image("icon.png"));
-//        loginStage.setScene(new Scene(loginPane));
-        loginStage.setResizable(false);
-        FXMLLoader loginLoader = new FXMLLoader();
-
-        try {
-            loginLoader.setLocation(getClass().getClassLoader().getResource("LoginPanel.fxml"));
-            Parent loginNode = loginLoader.load(getClass().getClassLoader().getResource("LoginPanel.fxml").openStream());
-            loginController = loginLoader.getController();
-            loginStage.setScene(new Scene(loginNode));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void addSubscriptionPanelInitialize() {//lazy initialization
-        addSubscriptionStage = new Stage();
-        addSubscriptionStage.setTitle("Add Subscription");
-        addSubscriptionStage.getIcons().add(new Image("icon.png"));
-        addSubscriptionStage.setResizable(false);
-        FXMLLoader loader = new FXMLLoader();
-
-        try {
-            loader.setLocation(getClass().getClassLoader().getResource("AddSubscriptionPanel.fxml"));
-            Parent node = loader.load(getClass().getClassLoader().getResource("AddSubscriptionPanel.fxml").openStream());
-            addSubscriptionController = loader.getController();
-            addSubscriptionStage.setScene(new Scene(node));
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
-
-
-
-
-    @FXML
-    private void loginMenuFired() {
-        loginStage.show();
-    }
-    @FXML
-    private void exitMenuFired() {
-        System.exit(0);
-    }
-    @FXML
-    private void addSubscriptionFired() {
-        if (addSubscriptionStage == null) {
-            addSubscriptionPanelInitialize();
-        }
-        addSubscriptionStage.show();
-    }
-
     private void eventHandleInitialize() {
-        listView.setCellFactory(l->new MyListCell());
-        treeView.setCellFactory(t->new MyTreeCell());
+        listView.setCellFactory(l -> new MyListCell());
+        treeView.setCellFactory(t -> new MyTreeCell());
 
 
         //handle event between listView and webView
@@ -152,7 +87,7 @@ public class Controller {
                 } else if (webRadioButton.isSelected()) {
                     webView.getEngine().load(newValue.getCanonical().get(0).getHref());
                 } else if (readabilityRadioButton.isSelected()) {
-                    new Thread(()->{
+                    new Thread(() -> {
                         String content = Readability.getReadabilityContent(newValue.getCanonical().get(0).getHref());
                         Platform.runLater(() -> webView.getEngine().loadContent(Item.processContent(newValue.getTitle(), content)));
                     }).start();
@@ -222,6 +157,80 @@ public class Controller {
 
 
     }
+    private void loginPaneInitialize() {
+        loginStage = new Stage();
+        loginStage.setTitle("Login");
+        loginStage.getIcons().add(new Image("icon.png"));
+        loginStage.setResizable(false);
+        FXMLLoader loginLoader = new FXMLLoader();
+
+        try {
+            loginLoader.setLocation(getClass().getClassLoader().getResource("LoginPanel.fxml"));
+            Parent loginNode = loginLoader.load(getClass().getClassLoader().getResource("LoginPanel.fxml").openStream());
+            loginController = loginLoader.getController();
+            loginStage.setScene(new Scene(loginNode));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+    private void userInfoInitialize() {
+        if (UserInfo.getAuthString() == null) {
+            loginStage.show();
+        } else {
+            FXMain.getPrimaryStage().show();
+        }
+    }
+    private void radioButtonInitialize() {
+        //set webView User Agent
+        webView.getEngine().setUserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36");
+
+        //initialize the radio button
+        ToggleGroup toggleGroup = new ToggleGroup();
+        rssRadioButton.setToggleGroup(toggleGroup);
+        webRadioButton.setToggleGroup(toggleGroup);
+        readabilityRadioButton.setToggleGroup(toggleGroup);
+
+        rssRadioButton.setSelected(true);
+        toggleGroup.selectedToggleProperty().addListener(((observable, oldValue, newValue) -> {
+            if (toggleGroup.getSelectedToggle() != null) {
+                if (listView.getSelectionModel().getSelectedItem() != null) {
+                    if (rssRadioButton.isSelected()) {
+                        Item item = listView.getSelectionModel().getSelectedItem();
+                        webView.getEngine().loadContent(Item.processContent(item.getTitle(), item.getSummary().getContent()));
+                    } else if (webRadioButton.isSelected()) {
+                        webView.getEngine().load(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
+                    } else if (readabilityRadioButton.isSelected()) {
+                        new Thread(() -> {
+                            String content = Readability.getReadabilityContent(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
+                            Platform.runLater(() -> webView.getEngine().loadContent(Item.processContent(listView.getSelectionModel().getSelectedItem().getTitle(), content)));
+                        }).start();
+
+                    }
+                }
+            }
+        }));
+
+    }
+
+
+
+    private void addSubscriptionPanelInitialize() {//lazy initialization
+        addSubscriptionStage = new Stage();
+        addSubscriptionStage.setTitle("Add Subscription");
+        addSubscriptionStage.getIcons().add(new Image("icon.png"));
+        addSubscriptionStage.setResizable(false);
+        FXMLLoader loader = new FXMLLoader();
+
+        try {
+            loader.setLocation(getClass().getClassLoader().getResource("AddSubscriptionPanel.fxml"));
+            Parent node = loader.load(getClass().getClassLoader().getResource("AddSubscriptionPanel.fxml").openStream());
+            addSubscriptionController = loader.getController();
+            addSubscriptionStage.setScene(new Scene(node));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
 
     private void taskInitialize() {
         //when get the treeItem from the URL, change the view
@@ -284,43 +293,12 @@ public class Controller {
         });
     }
 
-    private void radioButtonInitialize() {
-        //set webView User Agent
-        webView.getEngine().setUserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36");
-
-        //initialize the radio button
-        ToggleGroup toggleGroup = new ToggleGroup();
-        rssRadioButton.setToggleGroup(toggleGroup);
-        webRadioButton.setToggleGroup(toggleGroup);
-        readabilityRadioButton.setToggleGroup(toggleGroup);
-
-        rssRadioButton.setSelected(true);
-        toggleGroup.selectedToggleProperty().addListener(((observable, oldValue, newValue) -> {
-            if (toggleGroup.getSelectedToggle() != null) {
-                if (listView.getSelectionModel().getSelectedItem() != null) {
-                    if (rssRadioButton.isSelected()) {
-                        Item item = listView.getSelectionModel().getSelectedItem();
-                        webView.getEngine().loadContent(Item.processContent(item.getTitle(), item.getSummary().getContent()));
-                    } else if (webRadioButton.isSelected()) {
-                        webView.getEngine().load(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
-                    } else if (readabilityRadioButton.isSelected()) {
-                        new Thread(()->{
-                            String content = Readability.getReadabilityContent(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
-                            Platform.runLater(() -> webView.getEngine().loadContent(Item.processContent(listView.getSelectionModel().getSelectedItem().getTitle(), content)));
-                        }).start();
-
-                    }
-                }
-            }
-        }));
-
-    }
 
     private class MyListCell extends ListCell<Item> {//set the listView show content and icon
         private ZoneId defaultZoneId = ZoneId.systemDefault();
         private ContextMenu menu = new ContextMenu();
 
-        public MyListCell(){
+        public MyListCell() {
             MenuItem starItem = new MenuItem("Mark Starred");
             MenuItem unStarItem = new MenuItem("Mark Unstarred");
             menu.getItems().addAll(starItem, unStarItem);
@@ -345,13 +323,13 @@ public class Controller {
                 setGraphic(null);
             } else {
                 //get the time style
-                LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(item.getCrawlTimeMsec())), defaultZoneId);
-                String timeString = localDateTime.toLocalTime().format(DateTimeFormatter.ofPattern("hh:mm:ss"));
+                LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(item.getCrawlTimeMsec())), ZoneId.systemDefault());
+                String timeString = localDateTime.toLocalTime().format(DateTimeFormatter.ofPattern("kk:mm:ss"));
                 if (!localDateTime.toLocalDate().equals(LocalDate.now())) {
                     timeString = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
                 }
                 setText(item.getOrigin().getTitle() + "    " + timeString + "\n" + item.getTitle());
-                setTextFill(item.isRead()? Color.GRAY:Color.BLACK);
+                setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
                 if (FolderFeedOrder.iconMap != null) {
                     ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));
                     imageView.setFitWidth(16);
@@ -365,12 +343,13 @@ public class Controller {
 
     private class MyTreeCell extends TreeCell<Feed> {
         private ContextMenu menu = new ContextMenu();
+
         public MyTreeCell() {
             MenuItem item = new MenuItem("unsubscribe");
             menu.getItems().add(item);
             item.setOnAction(event -> {
                 TreeItem<Feed> sub = treeView.getSelectionModel().getSelectedItem();
-                new Thread(()->{
+                new Thread(() -> {
                     ConnectServer.connectServer(ConnectServer.editSubscriptionURL + "ac=unsubscribe&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
                 }).start();
                 //To clear the count, use markRead
@@ -386,7 +365,7 @@ public class Controller {
             if (empty || item == null) {
                 setText(null);
                 setGraphic(null);
-            }else{
+            } else {
                 HBox hBox = new HBox();
                 hBox.setSpacing(10);
                 hBox.setMaxWidth(250);
@@ -424,7 +403,6 @@ public class Controller {
     }
 
 
-
     @FXML
     private void refreshFired() {
         if (UserInfo.getAuthString() == null) {
@@ -437,11 +415,10 @@ public class Controller {
             new Thread(itemListTask).start();
             new Thread(unreadCountsTask).start();
             new Thread(starredListTask).start();
-//            handleFolderFeedOrder();
-//            handleListView();
             lastUpdateTime = Instant.now();
         }
     }
+
     @FXML
     private void markReadButtonFired() {
         if (UserInfo.getAuthString() == null) {
@@ -475,21 +452,17 @@ public class Controller {
                     unreadCountsMap.put("All Items", unreadCountsMap.get("All Items") - count);
                 } else {//All Items
                     unreadCountsMap.put("All Items", 0);
-                    for (TreeItem<Feed> parent : root.getChildren()) {
-                        if (!parent.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
-                            if (parent.getValue() instanceof Tag) {
-                                for (TreeItem<Feed> son : parent.getChildren()) {
-                                    unreadCountsMap.put(son.getValue().getId(), 0);
-                                }
+                    root.getChildren().stream().filter(parent -> !parent.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")).forEach(parent -> {
+                        if (parent.getValue() instanceof Tag) {
+                            for (TreeItem<Feed> son : parent.getChildren()) {
+                                unreadCountsMap.put(son.getValue().getId(), 0);
                             }
-                            unreadCountsMap.put(parent.getValue().getId(), 0);
                         }
-                    }
+                        unreadCountsMap.put(parent.getValue().getId(), 0);
+                    });
                 }
             }
             treeView.refresh();
-
-
 
 
             new Thread(() -> {
@@ -498,15 +471,32 @@ public class Controller {
         }
     }
 
+    @FXML
+    private void loginMenuFired() {
+        loginStage.show();
+    }
+
+    @FXML
+    private void exitMenuFired() {
+        System.exit(0);
+    }
+
+    @FXML
+    private void addSubscriptionFired() {
+        if (addSubscriptionStage == null) {
+            addSubscriptionPanelInitialize();
+        }
+        addSubscriptionStage.show();
+    }
+
     private TreeItem<Feed> handleFolderFeedOrder() {
-        root = new TreeItem<>(new Tag("root","root")); //the root node doesn't show;
+        root = new TreeItem<>(new Tag("root", "root")); //the root node doesn't show;
         root.setExpanded(true);
 
         Map<Feed, List<Subscription>> map = FolderFeedOrder.getOrder();
         for (Feed feed : map.keySet()) {
-//            root.getChildren().add(new TreeItem(feed));
             TreeItem<Feed> tag = new TreeItem<>(feed);
-            if (map.get(feed)!=null) {
+            if (map.get(feed) != null) {
                 for (Subscription sub : map.get(feed)) {
                     TreeItem<Feed> subscription = new TreeItem<>(sub);
                     tag.getChildren().add(subscription);
@@ -516,35 +506,10 @@ public class Controller {
         }
         return root;
 
-//        treeView.setRoot(root);
-//        treeView.setShowRoot(false);
     }
 
-    private void handleListView() {
-//        try (BufferedReader reader = new BufferedReader(new FileReader("streamContent.txt"))) {
-//            Gson gson = new Gson();
-//            StreamContent content = gson.fromJson(reader, StreamContent.class);
-//            itemList = content.getItems();
-//        } catch (IOException e) {
-//        }
-
-
-
-
-
-
-
-        itemList = StreamContent.getStreamContent(ConnectServer.streamContentURL);
-//        ObservableList<Item> observableList = FXCollections.observableArrayList(itemList);
-//        listView.setItems(observableList);
-        //get star list
-        starredList = StreamContent.getStreamContent(ConnectServer.starredContentURL);
-//        ObservableList<Item> observableStarredList = FXCollections.observableArrayList(starredList);
-
-    }
 
     /**
-     *
      * @return the loginStage
      */
     public static Stage getLoginStage() {
@@ -564,7 +529,6 @@ public class Controller {
     }
 
     /**
-     *
      * @return the loginController
      */
     public static LoginController getLoginController() {

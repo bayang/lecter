@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -65,8 +64,6 @@ public class Readability {
             Gson gson = new Gson();
             Readability readability = gson.fromJson(reader, Readability.class);
             return readability.getContent();
-        } catch (MalformedURLException mue) {
-            mue.printStackTrace();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }

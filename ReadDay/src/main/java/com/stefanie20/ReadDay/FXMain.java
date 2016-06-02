@@ -27,9 +27,6 @@ public class FXMain extends Application {
             stage.setScene(new Scene(root));
             stage.setTitle("ReadDay");
             stage.getIcons().add(new Image("icon.png"));
-
-
-//            stage.show();
         } catch (IOException ioe) {
             ioe.printStackTrace();
             System.exit(11);
