@@ -1,4 +1,4 @@
-package com.stefanie20.ReadDay;
+package com.stefanie20.ReadDay.RSSModels;
 
 import com.google.gson.Gson;
 

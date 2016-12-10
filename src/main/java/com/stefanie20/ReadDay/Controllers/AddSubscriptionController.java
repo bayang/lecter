@@ -1,4 +1,4 @@
-package com.stefanie20.ReadDay;
+package com.stefanie20.ReadDay.Controllers;
 
 import com.google.gson.Gson;
 import javafx.application.Platform;
