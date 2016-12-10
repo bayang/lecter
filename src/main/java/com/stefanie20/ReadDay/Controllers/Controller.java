@@ -1,23 +1,17 @@
 package com.stefanie20.ReadDay.Controllers;
 
-import com.stefanie20.ReadDay.*;
+import com.stefanie20.ReadDay.FXMain;
 import com.stefanie20.ReadDay.RSSModels.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
-import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -57,22 +51,16 @@ public class Controller {
     private List<Item> itemList;
     private List<Item> starredList;
     private Instant lastUpdateTime;
-    private static Stage loginStage;
-    private static Stage addSubscriptionStage;
     private Task<TreeItem<Feed>> treeTask;
     private Task<List<Item>> itemListTask;
     private Task<List<Item>> starredListTask;
     private Task<Map<String, Integer>> unreadCountsTask;
     private static Map<String, Integer> unreadCountsMap;
     private static TreeItem<Feed> root;
-    private static LoginController loginController;
-    private static AddSubscriptionController addSubscriptionController;
 
     @FXML
     private void initialize() {
         eventHandleInitialize();
-        loginPaneInitialize();
-        userInfoInitialize();
         radioButtonInitialize();
     }
 
@@ -159,30 +147,7 @@ public class Controller {
 
 
     }
-    private void loginPaneInitialize() {
-        loginStage = new Stage();
-        loginStage.setTitle("Login");
-        loginStage.getIcons().add(new Image("icon.png"));
-        loginStage.setResizable(false);
-        FXMLLoader loginLoader = new FXMLLoader();
 
-        try {
-            loginLoader.setLocation(getClass().getClassLoader().getResource("LoginPanel.fxml"));
-            Parent loginNode = loginLoader.load(getClass().getClassLoader().getResource("LoginPanel.fxml").openStream());
-            loginController = loginLoader.getController();
-            loginStage.setScene(new Scene(loginNode));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-    private void userInfoInitialize() {
-        if (UserInfo.getAuthString() == null) {
-            loginStage.show();
-        } else {
-            FXMain.getPrimaryStage().show();
-        }
-    }
     private void radioButtonInitialize() {
         //set webView User Agent
         webView.getEngine().setUserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36");
@@ -212,27 +177,8 @@ public class Controller {
                 }
             }
         }));
-
     }
 
-
-
-    private void addSubscriptionPanelInitialize() {//lazy initialization
-        addSubscriptionStage = new Stage();
-        addSubscriptionStage.setTitle("Add Subscription");
-        addSubscriptionStage.getIcons().add(new Image("icon.png"));
-        addSubscriptionStage.setResizable(false);
-        FXMLLoader loader = new FXMLLoader();
-
-        try {
-            loader.setLocation(getClass().getClassLoader().getResource("AddSubscriptionPanel.fxml"));
-            Parent node = loader.load(getClass().getClassLoader().getResource("AddSubscriptionPanel.fxml").openStream());
-            addSubscriptionController = loader.getController();
-            addSubscriptionStage.setScene(new Scene(node));
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
 
     private void taskInitialize() {
         //when get the treeItem from the URL, change the view
@@ -263,7 +209,7 @@ public class Controller {
             itemList = itemListTask.getValue();
             progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
             statusLabel.setText("Get New Items Complete.");
-            System.out.println("finish itemListTask");
+            System.out.println("finish itemListTask " + itemList.size());
         });
         //initialize starredList
         starredListTask = new Task<List<Item>>() {
@@ -277,7 +223,7 @@ public class Controller {
             starredList = starredListTask.getValue();
             progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
             statusLabel.setText("Get Starred Items Complete.");
-            System.out.println("finish starredListTask");
+            System.out.println("finish starredListTask " + starredList.size());
         });
         //initialize unreadCountsMap
         unreadCountsTask = new Task<Map<String, Integer>>() {
@@ -475,7 +421,7 @@ public class Controller {
 
     @FXML
     private void loginMenuFired() {
-        loginStage.show();
+        FXMain.getLoginStage().show();
     }
 
     @FXML
@@ -485,10 +431,7 @@ public class Controller {
 
     @FXML
     private void addSubscriptionFired() {
-        if (addSubscriptionStage == null) {
-            addSubscriptionPanelInitialize();
-        }
-        addSubscriptionStage.show();
+        FXMain.getAddSubscriptionStage().show();
     }
 
     private TreeItem<Feed> handleFolderFeedOrder() {
@@ -511,14 +454,6 @@ public class Controller {
     }
 
 
-    /**
-     * @return the loginStage
-     */
-    public static Stage getLoginStage() {
-        return loginStage;
-    }
-
-
     private TreeItem<Feed> getParentItem(String streamId) {
         for (TreeItem<Feed> parent : root.getChildren()) {
             for (TreeItem<Feed> item : parent.getChildren()) {
@@ -528,13 +463,6 @@ public class Controller {
             }
         }
         return null;
-    }
-
-    /**
-     * @return the loginController
-     */
-    public static LoginController getLoginController() {
-        return loginController;
     }
 }
 

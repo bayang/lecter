@@ -66,9 +66,8 @@ public class ConnectServer {
             } else {
                 Platform.runLater(()->{
                     FXMain.getPrimaryStage().close();
-                    Controller.getLoginStage().show();
-                    Controller.getLoginController().setWarnLabelText(header.get(null).get(0));
-
+                    FXMain.getLoginStage().show();
+                    FXMain.getLoginController().setWarnLabelText(header.get(null).get(0));
                 });
             }
 

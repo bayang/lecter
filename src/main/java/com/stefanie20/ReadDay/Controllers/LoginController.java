@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,6 +58,7 @@ public class LoginController {
 
             //check http header
             Map<String, List<String>> header = connection.getHeaderFields();
+            System.out.println("Login connection information:");
             header.forEach((a, b) -> System.out.println(a + "   " + b));
             if (header.get(null).get(0).equals(ConnectServer.code200)) {
                 Scanner scanner = new Scanner(connection.getInputStream());
@@ -73,8 +75,8 @@ public class LoginController {
                 scanner.close();
 
                 //close the login panel
-                Controller.getLoginStage().close();
-                System.out.println("login "+Controller.getLoginStage());
+                Stage loginStage = FXMain.getLoginStage();
+                loginStage.close();
                 FXMain.getPrimaryStage().show();
             } else if (header.get(null).get(0).equals(ConnectServer.code401)) {
                 warnLabel.setText("Wrong ID or Password");
@@ -83,8 +85,6 @@ public class LoginController {
                 warnLabel.setText(header.get(null).get(0));
                 return;
             }
-
-
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
