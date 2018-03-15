@@ -1,0 +1,11 @@
+.split-pane *.split-pane-divider {
+    -fx-padding: 0.0 0.1 0.0 0.1;
+}
+
+.badge-label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-color: #aaaaaa;
+    -fx-background-radius: 2.0em ;
+    
+}

@@ -1,56 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXListView?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TreeView?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="727.0" prefWidth="1071.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.stefanie20.ReadDay.Controllers.Controller">
-   <children>
-       <!--<fx:define>-->
-           <!--<fx:include fx:id="loginPane" source="LoginPanel.fxml" />-->
-       <!--</fx:define>-->
-      <MenuBar prefHeight="32.0" prefWidth="1071.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <menus>
-          <Menu mnemonicParsing="false" text="Account">
-            <items>
-                  <MenuItem mnemonicParsing="false" onAction="#loginMenuFired" text="Login" />
-              <MenuItem mnemonicParsing="false" onAction="#exitMenuFired" text="Close" />
-            </items>
-          </Menu>
-            <Menu mnemonicParsing="false" text="Edit">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="650.0" minWidth="700.0" prefHeight="727.0" prefWidth="1071.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.RssController">
+         <top>
+             <!--<fx:define>-->
+                 <!--<fx:include fx:id="loginPane" source="LoginPanel.fxml" />-->
+             <!--</fx:define>-->
+            <MenuBar prefHeight="32.0" prefWidth="1071.0" BorderPane.alignment="CENTER">
+              <menus>
+                <Menu mnemonicParsing="false" text="Account">
+                  <items>
+                        <MenuItem mnemonicParsing="false" onAction="#loginMenuFired" text="Login" />
+                    <MenuItem mnemonicParsing="false" onAction="#exitMenuFired" text="Close" />
+                  </items>
+                </Menu>
+                  <Menu mnemonicParsing="false" text="Edit">
+                    <items>
+                      <MenuItem mnemonicParsing="false" onAction="#addSubscriptionFired" text="Add subscription" />
+                    </items>
+                  </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="About" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+         </top>
+         <center>
+            <SplitPane dividerPositions="0.25, 0.6" BorderPane.alignment="CENTER">
               <items>
-                <MenuItem mnemonicParsing="false" onAction="#addSubscriptionFired" text="Add subscription" />
+            <VBox>
+               <children>
+                        <TreeView fx:id="treeView" minHeight="600.0" minWidth="100.0" prefHeight="600.0" prefWidth="110.0" VBox.vgrow="ALWAYS" />
+                  <HBox alignment="BOTTOM_CENTER" VBox.vgrow="NEVER">
+                     <children>
+                              <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#refreshFired" text="Refresh" />
+                              <Button fx:id="markReadButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#markReadButtonFired" text="MarkRead" />
+                        <Button fx:id="popUpButton" mnemonicParsing="false" onAction="#displayPopUp" text="popup" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            <VBox>
+               <children>
+                        <JFXListView fx:id="listView" minWidth="230.0" VBox.vgrow="ALWAYS" />
+                  <HBox VBox.vgrow="NEVER">
+                     <children>
+                              <Label fx:id="statusLabel" prefHeight="20.0" prefWidth="196.0" />
+                              <ProgressIndicator fx:id="progressIndicator" prefWidth="24.0" progress="0.0" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            <VBox>
+               <children>
+                        <WebView fx:id="webView" minHeight="600.0" minWidth="240.0" prefWidth="240.0" VBox.vgrow="ALWAYS" />
+                        <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="NEVER">
+                           <children>
+                              <RadioButton fx:id="rssRadioButton" mnemonicParsing="false" text="RSS" />
+                              <RadioButton fx:id="webRadioButton" mnemonicParsing="false" text="Web" />
+                              <RadioButton fx:id="readabilityRadioButton" mnemonicParsing="false" text="Readability" />
+                           </children>
+                        </HBox>
+               </children>
+            </VBox>
               </items>
-            </Menu>
-          <Menu mnemonicParsing="false" text="Help">
-            <items>
-              <MenuItem mnemonicParsing="false" text="About" />
-            </items>
-          </Menu>
-        </menus>
-      </MenuBar>
-      <TreeView fx:id="treeView" layoutY="30.0" prefHeight="647.0" prefWidth="260.0" AnchorPane.bottomAnchor="50.0" AnchorPane.topAnchor="30.0" />
-      <Button fx:id="refreshButton" layoutX="97.0" layoutY="680.0" mnemonicParsing="false" onAction="#refreshFired" text="Refresh" AnchorPane.bottomAnchor="20.0" />
-      <ListView fx:id="listView" layoutX="260.0" layoutY="30.0" prefHeight="647.0" prefWidth="260.0" AnchorPane.bottomAnchor="50.0" AnchorPane.topAnchor="30.0" />
-      <WebView fx:id="webView" layoutX="520.0" layoutY="30.0" prefHeight="647.0" prefWidth="551.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="520.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
-      <Button fx:id="markReadButton" layoutX="350.0" layoutY="680.0" mnemonicParsing="false" onAction="#markReadButtonFired" text="MarkRead" AnchorPane.bottomAnchor="20.0" />
-      <Label fx:id="statusLabel" layoutX="554.0" layoutY="686.0" prefHeight="20.0" prefWidth="196.0" AnchorPane.bottomAnchor="23.0" />
-      <HBox layoutX="774.0" layoutY="686.0" spacing="10.0" AnchorPane.bottomAnchor="25.0" AnchorPane.rightAnchor="80.0">
-         <children>
-            <RadioButton fx:id="rssRadioButton" mnemonicParsing="false" text="RSS" />
-            <RadioButton fx:id="webRadioButton" mnemonicParsing="false" text="Web" />
-            <RadioButton fx:id="readabilityRadioButton" mnemonicParsing="false" text="Readability" />
-         </children>
-      </HBox>
-      <ProgressIndicator fx:id="progressIndicator" layoutX="520.0" layoutY="684.0" prefWidth="24.0" progress="0.0" AnchorPane.bottomAnchor="0.0" />
-   </children>
-</AnchorPane>
+            </SplitPane>
+         </center>
+</BorderPane>

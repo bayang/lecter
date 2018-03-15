@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="cellWrapper" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox fx:id="firstLine" alignment="BASELINE_LEFT">
+         <children>
+            <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="fromLabel" text="Label">
+               <font>
+                  <Font size="14.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin></Label>
+            <Pane HBox.hgrow="ALWAYS" />
+            <Label fx:id="dateLabel" alignment="BOTTOM_RIGHT" text="Label">
+               <font>
+                  <Font size="9.0" />
+               </font>
+               <HBox.margin>
+                  <Insets right="15.0" />
+               </HBox.margin></Label>
+         </children>
+      </HBox>
+      <Label fx:id="subjectLabel" text="Label" wrapText="true" />
+      <Label fx:id="contentLabel" text="Label">
+         <font>
+            <Font size="11.0" />
+         </font></Label>
+   </children>
+</VBox>
