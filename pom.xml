@@ -38,6 +38,26 @@
             <version>8.0.1</version>
         </dependency>
         <dependency>
+         <groupId>de.jensd</groupId>
+          <artifactId>fontawesomefx-commons</artifactId>
+           <version>8.15</version>
+            </dependency>
+            <dependency>
+            <groupId>de.jensd</groupId>
+            <artifactId>fontawesomefx-controls</artifactId>
+            <version>8.15</version>
+        </dependency>
+        <dependency>
+            <groupId>de.jensd</groupId>
+            <artifactId>fontawesomefx-fontawesome</artifactId>
+            <version>4.7.0-5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>8.40.14</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.6.2</version>
@@ -69,6 +89,11 @@
             <artifactId>http-executor-commons</artifactId>
             <version>1.16.2</version>
         </dependency>
+        <dependency>
+   <groupId>org.apache.commons</groupId>
+   <artifactId>commons-text</artifactId>
+   <version>1.2</version>
+</dependency>
 
     </dependencies>
     <dependencyManagement>

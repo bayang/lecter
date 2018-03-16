@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="container" minHeight="100.0" minWidth="300.0" prefHeight="200.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.EditSubscriptionController">
+   <children>
+      <HBox alignment="CENTER">
+         <children>
+            <ImageView fx:id="subscriptionIcon" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="subscriptionTitle" styleClass="edit-subscription-title" text="Label">
+               <HBox.margin>
+                  <Insets left="20.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+         <VBox.margin>
+            <Insets bottom="15.0" />
+         </VBox.margin>
+      </HBox>
+      <Hyperlink fx:id="subscriptionHtmlUrl" onAction="#onUrlClicked" text="Hyperlink" wrapText="true" />
+      <Hyperlink fx:id="subscriptionUrl" onAction="#onFeedUrlClicked" text="Hyperlink" wrapText="true" />
+      <Separator />
+      <Label text="%categories" />
+      <VBox fx:id="categoriesContainer" />
+   </children>
+   <padding>
+      <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+   </padding>
+</VBox>

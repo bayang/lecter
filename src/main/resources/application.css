@@ -9,3 +9,24 @@
     -fx-background-radius: 2.0em ;
     
 }
+
+.edit-subscription-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.jfx-snackbar-content {
+    -fx-background-color: #323232;
+    -fx-opacity : 0.7;
+    -fx-padding : 10;
+    -fx-font-size: 14px;
+}
+
+.jfx-snackbar-toast {
+    -fx-text-fill: WHITE;   
+}
+
+.jfx-snackbar-action {
+    -fx-text-fill: #ff4081;
+    -fx-margin : 0 10 0 0;
+}

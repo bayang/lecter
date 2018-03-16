@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,18 +108,18 @@ public class ItemListCell extends JFXListCell<Item> {
                 timeString = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
             }
             fromLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
-            fromLabel.setText(item.getOrigin().getTitle());
+            fromLabel.setText(StringEscapeUtils.unescapeHtml4(item.getOrigin().getTitle()));
             dateLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             dateLabel.setText(timeString);
             subjectLabel.setStyle("-fx-font-weight: bold;");
             subjectLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             subjectLabel.setWrapText(true);
-            subjectLabel.setText(item.getTitle());
+            subjectLabel.setText(StringEscapeUtils.unescapeHtml4(item.getTitle()));
             if (item.getSummary().getContent().length() > 20) {
-                contentLabel.setText(item.getSummary().getContent().substring(0, 20));
+                contentLabel.setText(StringEscapeUtils.unescapeHtml4(item.getSummary().getContent().substring(0, 20)));
             }
             else {
-                contentLabel.setText(item.getSummary().getContent());
+                contentLabel.setText(StringEscapeUtils.unescapeHtml4(item.getSummary().getContent()));
             }
             
             
@@ -127,8 +128,8 @@ public class ItemListCell extends JFXListCell<Item> {
             if (FolderFeedOrder.iconMap != null) {
                 icon.setImage(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));
 //                ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));
-                icon.setFitWidth(16);
-                icon.setFitHeight(16);
+                icon.setFitWidth(20);
+                icon.setFitHeight(20);
             }
             setGraphic(cellWrapper);
             setContextMenu(menu);

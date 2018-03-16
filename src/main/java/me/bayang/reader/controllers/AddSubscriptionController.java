@@ -1,6 +1,14 @@
 package me.bayang.reader.controllers;
 
-import com.google.gson.Gson;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.felixroske.jfxsupport.FXMLController;
 import javafx.application.Platform;
@@ -8,12 +16,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import me.bayang.reader.backend.inoreader.ConnectServer;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import me.bayang.reader.rssmodels.AddResult;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * Created by zz on 16/4/10.
@@ -29,75 +37,46 @@ public class AddSubscriptionController {
 
     @Autowired
     ConnectServer connectServer;
+    
+    @Autowired
+    private ObjectMapper mapper;
+    
+    private ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
+    
+    private Stage stage;
 
     @FXML
     private void addButtonFired() {
         String address = addressField.getText();
-        statusLabel.setText("Trying to add...");
-        new Thread(()-> {
-            BufferedReader reader = connectServer.connectServer(ConnectServer.addSubscriptionURL + address);
-            Gson gson = new Gson();
-            if (reader != null) {
-                AddResult result = gson.fromJson(reader, AddResult.class);
+        statusLabel.setText(bundle.getString("addSubscriptionOngoing"));
+        connectServer.getOkClient().newCall(connectServer.getRequest(ConnectServer.addSubscriptionURL + address)).enqueue(new Callback() {
+            
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(response.body().source().inputStream(), "utf-8"));
+                AddResult result = mapper.readValue(reader, AddResult.class);
                 if (result.getNumResults() == 1) {
-                    Platform.runLater(() -> statusLabel.setText("Added " + result.getStreamName()));
+                    Platform.runLater(() -> statusLabel.setText(MessageFormat.format(bundle.getString("successAddSubscription"), result.getStreamName())));
                 } else {
-                    Platform.runLater(() -> statusLabel.setText("Failed, is the address correct?"));
+                    Platform.runLater(() -> statusLabel.setText(bundle.getString("failedAddSubscription")));
                 }
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    /* noop */
-                }
+                ConnectServer.closeReader(reader);
             }
-        }).start();
-
+            
+            @Override
+            public void onFailure(Call arg0, IOException arg1) {
+                Platform.runLater(() -> statusLabel.setText(bundle.getString("failedAddSubscriptionNetwork")));
+            }
+        });
     }
 
-}
-
-class AddResult {
-    private String query;
-    private int numResults;
-    private String streamId;
-    private String streamName;
-
-    public AddResult(String query, int numResults, String streamId, String streamName) {
-        this.query = query;
-        this.numResults = numResults;
-        this.streamId = streamId;
-        this.streamName = streamName;
+    public Stage getStage() {
+        return stage;
     }
 
-    public String getQuery() {
-        return query;
+    public void setStage(Stage stage) {
+        this.stage = stage;
     }
+    
 
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    public int getNumResults() {
-        return numResults;
-    }
-
-    public void setNumResults(int numResults) {
-        this.numResults = numResults;
-    }
-
-    public String getStreamId() {
-        return streamId;
-    }
-
-    public void setStreamId(String streamId) {
-        this.streamId = streamId;
-    }
-
-    public String getStreamName() {
-        return streamName;
-    }
-
-    public void setStreamName(String streamName) {
-        this.streamName = streamName;
-    }
 }

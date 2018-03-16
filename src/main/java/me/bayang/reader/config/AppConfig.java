@@ -1,6 +1,7 @@
 package me.bayang.reader.config;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionHandler;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +25,9 @@ public class AppConfig {
     
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
-        return new ThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor t = new ThreadPoolTaskExecutor();
+        t.setMaxPoolSize(200);
+        return t;
     }
     
     @Bean

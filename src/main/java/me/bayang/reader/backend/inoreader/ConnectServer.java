@@ -10,9 +10,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 import org.dmfs.httpessentials.client.HttpRequestExecutor;
 import org.dmfs.httpessentials.exceptions.ProtocolError;
@@ -39,12 +41,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.scene.control.Alert;
+import me.bayang.reader.controllers.RssController;
 import me.bayang.reader.rssmodels.Item;
 import me.bayang.reader.rssmodels.StreamContent;
 import me.bayang.reader.rssmodels.UnreadCounter;
@@ -85,6 +90,11 @@ public class ConnectServer {
     
     @Autowired
     private ObjectMapper mapper;
+    
+    @Resource(name = "threadPoolTaskExecutor")
+    ThreadPoolTaskExecutor taskExecutor;
+    
+    private ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     
     public static final String API_BASE_URL = "https://www.inoreader.com/reader/api/0";
     
@@ -173,17 +183,38 @@ public class ConnectServer {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(response.body().source().inputStream(), "utf-8"));
                 return reader;
             } else {
-                LOGGER.debug("error code {}",response.code());
-                // FIXME renvoyer un message a ucontroller pour affichage
+                RssController.snackbarNotify(bundle.getString("connectionFailure"));
+                LOGGER.debug("connectServer error code {}",response.code());
             }
 
         } catch (UnknownHostException uhe) {
-            new Alert(Alert.AlertType.ERROR,uhe.getMessage()).show();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("connectServer error", uhe);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("connectServer error", ioe);
         } catch (ProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("connectServer error", e);
+        }
+        return null;
+    }
+    
+    public Request getRequest(String url) {
+        try {
+            if (! tokenIsStillValid()) {
+                refreshToken();
+            }
+            String authorization;
+                authorization = String.format("Bearer %s", token.accessToken());
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("Authorization", authorization)
+                    .build();
+            return request;
+        } catch (ProtocolException e) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("getRequest error", e);
         }
         return null;
     }
@@ -209,6 +240,12 @@ public class ConnectServer {
         closeReader(reader);
     }
     
+    @Async("threadPoolTaskExecutor")
+    public void removeFromFolder(String feedId, String folder) {
+        BufferedReader reader = connectServer(ConnectServer.editSubscriptionURL + "ac=edit&s=" + feedId+ "&r=" + folder);
+        closeReader(reader);
+    }
+    
     public Map<String,Integer> getUnreadCountsMap() {
         try {
         HashMap<String, Integer> map = new HashMap<>();
@@ -223,31 +260,31 @@ public class ConnectServer {
         closeReader(counterReader);
         return map;
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("getUnreadCountMap error", e);
         }
         return Collections.emptyMap();
     }
     
     public List<Item> getStreamContent(String URLString) {
         try {
-        BufferedReader reader = connectServer(URLString);
-//        StreamContent content = gson.fromJson(reader, StreamContent.class);
-        StreamContent content;
-        content = mapper.readValue(reader, StreamContent.class);
-        List<Item> itemList = new ArrayList<>(content.getItems());
-
-        while (content.getContinuation() != null) {
-            reader = connectServer(URLString + "&c=" + content.getContinuation());
-//            content = gson.fromJson(reader, StreamContent.class);
+            BufferedReader reader = connectServer(URLString);
+    //        StreamContent content = gson.fromJson(reader, StreamContent.class);
+            StreamContent content;
             content = mapper.readValue(reader, StreamContent.class);
-            itemList.addAll(content.getItems());
-        }
-        closeReader(reader);
-        return itemList;
+            List<Item> itemList = new ArrayList<>(content.getItems());
+    
+            while (content.getContinuation() != null) {
+                reader = connectServer(URLString + "&c=" + content.getContinuation());
+    //            content = gson.fromJson(reader, StreamContent.class);
+                content = mapper.readValue(reader, StreamContent.class);
+                itemList.addAll(content.getItems());
+            }
+            closeReader(reader);
+            return itemList;
         } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("getStreamContent error", e1);
         }
         return Collections.emptyList();
     }
@@ -258,8 +295,8 @@ public class ConnectServer {
             newToken = new TokenRefreshGrant(client, token).accessToken(executor);
             setToken(newToken);
         } catch (IOException | ProtocolError | ProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("refreshToken error", e);
         }
     }
     
@@ -269,8 +306,8 @@ public class ConnectServer {
                 return true;
             }
         } catch (ProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("tokenIsStillValid error", e);
             return false;
         }
         return false;
@@ -284,8 +321,8 @@ public class ConnectServer {
             closeReader(reader);
             return userInformation;
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("getUserInformation error", e);
         }
         return null;
     }
@@ -349,8 +386,7 @@ public class ConnectServer {
         try {
             storage.saveToken(token);
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
             LOGGER.error("failed to save token {}", token, e);
         }
     }
@@ -369,6 +405,14 @@ public class ConnectServer {
 
     public void setShouldAskPermissionOrLogin(boolean shouldAskPermissionOrLogin) {
         this.shouldAskPermissionOrLogin = shouldAskPermissionOrLogin;
+    }
+
+    public ThreadPoolTaskExecutor getTaskExecutor() {
+        return taskExecutor;
+    }
+
+    public void setTaskExecutor(ThreadPoolTaskExecutor taskExecutor) {
+        this.taskExecutor = taskExecutor;
     }
 
 }

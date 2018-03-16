@@ -2,20 +2,33 @@ package me.bayang.reader.controllers;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ResourceBundle;
 
+import org.apache.commons.text.StringEscapeUtils;
+import org.controlsfx.control.Notifications;
+import org.controlsfx.control.textfield.CustomTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXSnackbar;
+import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
 import de.felixroske.jfxsupport.FXMLController;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -34,10 +47,12 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import me.bayang.reader.FXMain;
 import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.rssmodels.Categories;
@@ -58,6 +73,9 @@ public class RssController {
     private static Logger LOGGER = LoggerFactory.getLogger(RssController.class);
     
     @FXML
+    private BorderPane rssViewContainer;
+    
+    @FXML
     private TreeView<Feed> treeView;
     @FXML
     private Button refreshButton;
@@ -67,10 +85,8 @@ public class RssController {
     private WebView webView;
     @FXML
     private Button markReadButton;
-    @FXML
-    private Button popUpButton;
-    @FXML
-    private Label statusLabel;
+//    @FXML
+//    private Label statusLabel;
     @FXML
     private RadioButton rssRadioButton;
     @FXML
@@ -79,6 +95,9 @@ public class RssController {
     private RadioButton readabilityRadioButton;
     @FXML
     private ProgressIndicator progressIndicator;
+    @FXML
+    private CustomTextField searchBar;
+    private ChangeListener<? super String> rssSearchListener;
     
     @Autowired
     private ConnectServer connectServer;
@@ -91,29 +110,55 @@ public class RssController {
     private OauthController oauthController;
     
     private Stage oauthDialogStage = null;
+    private Stage addSubscriptionStage = null;
+    private Stage editSubscriptionStage = null;
+    
+    @Autowired
+    private AddSubscriptionView addSubscriptionView;
+    private AddSubscriptionController addSubscriptionController;
+    
+    @Autowired
+    private EditSubscriptionView editSubscriptionView;
+    private EditSubscriptionController editSubscriptionController;
 
     private List<Item> itemList;
+    private FilteredList<Item> filteredData;
+    private SortedList<Item> sortedData;
     private List<Item> starredList;
     private Instant lastUpdateTime;
     private Task<TreeItem<Feed>> treeTask;
     private Task<List<Item>> itemListTask;
     private Task<List<Item>> starredListTask;
     private Task<Map<String, Integer>> unreadCountsTask;
-    private static Map<String, Integer> unreadCountsMap;
+    private static Map<String, Integer> unreadCountsMap = new HashMap<>();
     private static TreeItem<Feed> root;
+    
+    private static JFXSnackbar snackbar;
+    
+    private ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
 
     @FXML
     private void initialize() {
-//        FXMain.getStage().getIcons().add(new Image("icon.png"));
+        FXMain.getStage().setMinWidth(600);
+        FXMain.getStage().setMinHeight(600);
         eventHandleInitialize();
         radioButtonInitialize();
+        initializeSearchBar();
+        progressIndicator.setVisible(false);
+        progressIndicator.progressProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                if (newValue.doubleValue() == 1.0) {
+                    progressIndicator.setVisible(false);
+                }
+            }
+        }));
+       snackbar = new JFXSnackbar(rssViewContainer);
     }
 
     private void eventHandleInitialize() {
-//        listView.setCellFactory(l -> new MyListCell());
         listView.setCellFactory(l -> new ItemListCell(connectServer));
         treeView.setCellFactory(t -> new MyTreeCell());
-
+        
         //handle event between listView and webView
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getSummary().getContent() != null) {
@@ -183,8 +228,12 @@ public class RssController {
                     }
                 }
             }
-            chosenItemList.sort((o1, o2) -> (int) (Long.parseLong(o1.getCrawlTimeMsec()) - Long.parseLong(o2.getCrawlTimeMsec())));
-            listView.setItems(FXCollections.observableArrayList(chosenItemList));
+            
+            filteredData = new FilteredList<>(FXCollections.observableArrayList(chosenItemList), p -> true);
+            sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
+//            chosenItemList.sort((o1, o2) -> (int) (Long.parseLong(o1.getCrawlTimeMsec()) - Long.parseLong(o2.getCrawlTimeMsec())));
+//            listView.setItems(FXCollections.observableArrayList(chosenItemList));
+            listView.setItems(sortedData);
         }));
     }
 
@@ -197,7 +246,6 @@ public class RssController {
         rssRadioButton.setToggleGroup(toggleGroup);
         webRadioButton.setToggleGroup(toggleGroup);
         readabilityRadioButton.setToggleGroup(toggleGroup);
-
         rssRadioButton.setSelected(true);
         toggleGroup.selectedToggleProperty().addListener(((observable, oldValue, newValue) -> {
             if (toggleGroup.getSelectedToggle() != null) {
@@ -218,13 +266,37 @@ public class RssController {
             }
         }));
     }
+    
+    private void initializeSearchBar() {
+        FontAwesomeIconView searchIcon = new FontAwesomeIconView(FontAwesomeIcon.SEARCH, "15");
+        searchBar.setLeft(searchIcon);
+        rssSearchListener  = (obs, oldV, newV) -> {
+            filteredData.setPredicate(item -> {
+                // If filter text is empty, display all persons.
+                if (filteredData.isEmpty()) {
+                    return true;
+                }
+                if (newV == null || newV.isEmpty() || item == null) {
+                    return true;
+                }
+
+                String lowerCaseFilter = newV.toLowerCase();
+
+                if (item.toString().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches first name.
+                }
+                return false; // Does not match.
+            });
+        };
+        searchBar.textProperty().addListener(rssSearchListener);
+    }
 
     private void taskInitialize() {
         //when get the treeItem from the URL, change the view
         treeTask = new Task<TreeItem<Feed>>() {
             @Override
             protected TreeItem<Feed> call() throws Exception {
-                System.out.println("start treeTask");
+                LOGGER.debug("start treeTask");
                 return handleFolderFeedOrder();
             }
         };
@@ -232,51 +304,51 @@ public class RssController {
             treeView.setRoot(treeTask.getValue());
             treeView.setShowRoot(false);
             progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
-            statusLabel.setText("Get Feeds Complete.");
-            System.out.println("finish treeTask");
+//            statusLabel.setText("Get Feeds Complete.");
+            LOGGER.debug("finish treeTask");
         });
 
         //initialize itemList
         itemListTask = new Task<List<Item>>() {
             @Override
             protected List<Item> call() throws Exception {
-                System.out.println("start itemListTask");
+                LOGGER.debug("start itemListTask");
                 return connectServer.getStreamContent(ConnectServer.streamContentURL);
             }
         };
         itemListTask.setOnSucceeded(event -> {
             itemList = itemListTask.getValue();
             progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
-            statusLabel.setText("Get New Items Complete.");
-            System.out.println("finish itemListTask " + itemList.size());
+//            statusLabel.setText("Get New Items Complete.");
+            LOGGER.debug("finish itemListTask " + itemList.size());
         });
         //initialize starredList
         starredListTask = new Task<List<Item>>() {
             @Override
             protected List<Item> call() throws Exception {
-                System.out.println("start starredListTask");
+                LOGGER.debug("start starredListTask");
                 return connectServer.getStreamContent(ConnectServer.starredContentURL);
             }
         };
         starredListTask.setOnSucceeded(event -> {
             starredList = starredListTask.getValue();
             progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
-            statusLabel.setText("Get Starred Items Complete.");
-            System.out.println("finish starredListTask " + starredList.size());
+//            statusLabel.setText("Get Starred Items Complete.");
+            LOGGER.debug("finish starredListTask " + starredList.size());
         });
         //initialize unreadCountsMap
         unreadCountsTask = new Task<Map<String, Integer>>() {
             @Override
             protected Map<String, Integer> call() throws Exception {
-                System.out.println("start unreadCountsTask");
+                LOGGER.debug("start unreadCountsTask");
                 return connectServer.getUnreadCountsMap();
             }
         };
         unreadCountsTask.setOnSucceeded(event -> {
             unreadCountsMap = unreadCountsTask.getValue();
             progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
-            statusLabel.setText("Get UnreadCounts Complete");
-            System.out.println("finish unreadCountsTask");
+//            statusLabel.setText("Get UnreadCounts Complete");
+            LOGGER.debug("finish unreadCountsTask");
         });
     }
 
@@ -284,18 +356,22 @@ public class RssController {
         private ContextMenu menu = new ContextMenu();
 
         public MyTreeCell() {
-            MenuItem item = new MenuItem("unsubscribe");
+            MenuItem item = new MenuItem(bundle.getString("unsubscribe"));
             menu.getItems().add(item);
             item.setOnAction(event -> {
                 TreeItem<Feed> sub = treeView.getSelectionModel().getSelectedItem();
-//                new Thread(() -> {
-//                    connectServer.connectServer(ConnectServer.editSubscriptionURL + "ac=unsubscribe&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
-//                }).start();
                 connectServer.unsubscribe(treeView.getSelectionModel().getSelectedItem().getValue().getId());
                 //To clear the count, use markRead
                 markReadButtonFired();
                 sub.getParent().getChildren().remove(sub);
             });
+            if (getItem() instanceof Subscription) {
+                MenuItem editItem = new MenuItem(bundle.getString("editSubscription"));
+                menu.getItems().add(editItem);
+                editItem.setOnAction(event -> {
+                    showEditSubscription((Subscription) getItem());
+                });
+            }
         }
 
         @Override
@@ -309,7 +385,8 @@ public class RssController {
                 hBox.setSpacing(10);
                 hBox.setMaxWidth(250);
                 if (item instanceof Subscription) {
-                    String title = ((Subscription) item).getTitle();
+                    String title = StringEscapeUtils.unescapeHtml4(((Subscription) item).getTitle());
+//                    LOGGER.debug("mytreecell instance {} {}", title, ((Subscription) item).getCategories());
                     Integer countInteger = unreadCountsMap.get(item.getId());
                     //create spaces to make counts in a row
                     Label countLabel = new Label(Objects.toString(countInteger, ""));
@@ -329,7 +406,14 @@ public class RssController {
                     } else {
                         hBox.getChildren().addAll(titleLabel, countLabel);
                     }
-
+                    MenuItem editItem = new MenuItem(bundle.getString("editSubscription"));
+                    if (menu.getItems().size() > 1) {
+                        menu.getItems().remove(1, menu.getItems().size());
+                    }
+                    menu.getItems().add(editItem);
+                    editItem.setOnAction(event -> {
+                        showEditSubscription((Subscription) item);
+                    });
                     setContextMenu(menu);
                 }
                 else if (item instanceof Categories) {
@@ -340,9 +424,10 @@ public class RssController {
                     countLabel.getStyleClass().add("badge-label");
                     countLabel.setAlignment(Pos.CENTER);
                     countLabel.setPadding(new Insets(1.0));
-                    Label titleLabel = new Label(item.getLabel());
+                    String label= StringEscapeUtils.unescapeHtml4(item.getLabel());
+                    Label titleLabel = new Label(label);
                     titleLabel.setPrefWidth(120);
-                    Tooltip tooltip = new Tooltip(item.getLabel());
+                    Tooltip tooltip = new Tooltip(label);
                     this.setTooltip(tooltip);
 
                     hBox.getChildren().addAll(titleLabel, countLabel);
@@ -364,19 +449,20 @@ public class RssController {
 
 
     @FXML
-    private void refreshFired() {
+    public void refreshFired() {
         // FIXME afficher popup correcte
         if (connectServer.isShouldAskPermissionOrLogin()) {
             new Alert(Alert.AlertType.ERROR, "Please Login.");
         }
         else {
+            progressIndicator.setVisible(true);
             progressIndicator.setProgress(0);
-            statusLabel.setText("Refreshing...");
+//            statusLabel.setText("Refreshing...");
             taskInitialize();
-            new Thread(treeTask).start();
-            new Thread(itemListTask).start();
-            new Thread(unreadCountsTask).start();
-            new Thread(starredListTask).start();
+            connectServer.getTaskExecutor().submit(unreadCountsTask);
+            connectServer.getTaskExecutor().submit(treeTask);
+            connectServer.getTaskExecutor().submit(itemListTask);
+            connectServer.getTaskExecutor().submit(starredListTask);
             lastUpdateTime = Instant.now();
         }
     }
@@ -434,6 +520,7 @@ public class RssController {
 
     @FXML
     private void loginMenuFired() {
+        snackbarNotify("alert toto");
         // Create the dialog Stage.
         if (oauthDialogStage == null) {
             Stage dialogStage = new Stage();
@@ -456,18 +543,49 @@ public class RssController {
     }
     
     @FXML
-    private void displayPopUp() {
-        FXMain.showView(OauthView.class, Modality.NONE);
-    }
-
-    @FXML
-    private void exitMenuFired() {
-        System.exit(0);
-    }
-
-    @FXML
     private void addSubscriptionFired() {
-        FXMain.getAddSubscriptionStage().show();
+        if (addSubscriptionStage == null) {
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle(bundle.getString("addSubscription"));
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(FXMain.getStage());
+            dialogStage.getIcons().add(new Image("icon.png"));
+            dialogStage.setResizable(false);
+            Scene scene = new Scene(addSubscriptionView.getView());
+            dialogStage.setScene(scene);
+            this.addSubscriptionStage = dialogStage;
+            addSubscriptionController = (AddSubscriptionController) addSubscriptionView.getPresenter();
+            addSubscriptionController.setStage(dialogStage);
+            // Show the dialog and wait until the user closes it
+            dialogStage.showAndWait();
+        }
+        else {
+            addSubscriptionStage.showAndWait();
+        }
+//        FXMain.getAddSubscriptionStage().show();
+    }
+    
+    private void showEditSubscription(Subscription subscription) {
+        if (editSubscriptionStage == null) {
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle(bundle.getString("editSubscription"));
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(FXMain.getStage());
+            dialogStage.getIcons().add(new Image("icon.png"));
+            dialogStage.setResizable(true);
+            Scene scene = new Scene(editSubscriptionView.getView());
+            dialogStage.setScene(scene);
+            this.editSubscriptionStage = dialogStage;
+            editSubscriptionController = (EditSubscriptionController) editSubscriptionView.getPresenter();
+            editSubscriptionController.setStage(dialogStage);
+            editSubscriptionController.setSubscription(subscription);
+            // Show the dialog and wait until the user closes it
+            dialogStage.showAndWait();
+        }
+        else {
+            editSubscriptionController.setSubscription(subscription);
+            editSubscriptionStage.showAndWait();
+        }
     }
 
     private TreeItem<Feed> handleFolderFeedOrder() {
@@ -498,6 +616,25 @@ public class RssController {
             }
         }
         return null;
+    }
+    
+    public static void notification() {
+        Notifications notificationBuilder = Notifications.create()
+                .title("Title Text")
+                .text("alert §")
+                .hideAfter(Duration.seconds(6))
+                .position(Pos.TOP_RIGHT)
+                .onAction(new javafx.event.EventHandler<ActionEvent>() {
+                    
+                    @Override public void handle(ActionEvent arg0) {
+                        LOGGER.debug("Notification clicked on!");
+                    }
+                });
+        notificationBuilder.show();
+    }
+    
+    public static void snackbarNotify(String msg) {
+        snackbar.enqueue(new SnackbarEvent(msg, null, 2500, false, null));
     }
 }
 
