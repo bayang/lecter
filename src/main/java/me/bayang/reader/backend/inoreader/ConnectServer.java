@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import me.bayang.reader.controllers.RssController;
 import me.bayang.reader.rssmodels.Item;
@@ -57,6 +58,7 @@ import me.bayang.reader.rssmodels.UnreadCounts;
 import me.bayang.reader.rssmodels.UserInfo;
 import me.bayang.reader.rssmodels.UserInformation;
 import me.bayang.reader.storage.IStorageService;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -96,11 +98,13 @@ public class ConnectServer {
     
     private ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     
+    private Map<String, String> continuationsMap = new HashMap<>();
+    
     public static final String API_BASE_URL = "https://www.inoreader.com/reader/api/0";
     
     //URLs for InoReader
     public static String userinfoURL = API_BASE_URL + "/user-info";
-    public static String loginURL = "https://www.inoreader.com/accounts/ClientLogin?";
+//    public static String loginURL = "https://www.inoreader.com/accounts/ClientLogin?";
     public static String unreadCountURL = API_BASE_URL + "/unread-count";
     public static String subscriptionListURL = API_BASE_URL + "/subscription/list";
     public static String folderTagListURL = API_BASE_URL + "/tag/list";
@@ -108,12 +112,30 @@ public class ConnectServer {
     public static String starredContentURL = API_BASE_URL + "/stream/contents/user/-/state/com.google/starred?n=100";
     public static String streamPreferenceListURL = API_BASE_URL + "/preference/stream/list";
     public static String itemIDsURL = API_BASE_URL + "/stream/items/ids?xt=user/-/state/com.google/read";
-    public static String markAllReadURL = API_BASE_URL + "/mark-all-as-read?ts=";
-    public static String markFeedReadURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/read&i=";
-    public static String markStarredURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/starred&i=";
-    public static String markUnstarredURL = API_BASE_URL + "/edit-tag?r=user/-/state/com.google/starred&i=";
-    public static String editSubscriptionURL = API_BASE_URL + "/subscription/edit?";
-    public static String addSubscriptionURL = API_BASE_URL + "/subscription/quickadd?quickadd=";
+    
+//    public static String markAllReadURL = API_BASE_URL + "/mark-all-as-read?ts=";
+    public static String markAllReadURL = API_BASE_URL + "/mark-all-as-read";
+    
+//    public static String markFeedReadURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/read&i=";
+    public static String markFeedReadURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/read";
+    
+//    public static String markStarredURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/starred&i=";
+    public static String markStarredURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/starred";
+    
+//    public static String markUnstarredURL = API_BASE_URL + "/edit-tag?r=user/-/state/com.google/starred&i=";
+    public static String markUnstarredURL = API_BASE_URL + "/edit-tag?r=user/-/state/com.google/starred";
+    
+//    public static String editSubscriptionURL = API_BASE_URL + "/subscription/edit?";
+    public static String editSubscriptionURL = API_BASE_URL + "/subscription/edit";
+    
+//    public static String addSubscriptionURL = API_BASE_URL + "/subscription/quickadd?quickadd=";
+    public static String addSubscriptionURL = API_BASE_URL + "/subscription/quickadd";
+    
+    public static final String baseStreamContentURL = API_BASE_URL + "/stream/contents";
+    
+    public static final HttpUrl baseStreamContentHTTPUrl = HttpUrl.parse(baseStreamContentURL);
+    
+    public static final String readTag = "user/%s/state/com.google/read";
     
     @PostConstruct
     public void initHttpClient() throws IOException, ProtocolError, ProtocolException {
@@ -153,8 +175,10 @@ public class ConnectServer {
         String userId = storage.loadUser();
         if (userId == null || userId.isEmpty()) {
             UserInformation userInfo = getUserInformation();
-            UserInfo.setUserId(userInfo.getUserId());
-            storage.saveUser(userInfo);
+            if (userInfo != null) {
+                UserInfo.setUserId(userInfo.getUserId());
+                storage.saveUser(userInfo);
+            }
         }
         else {
             UserInfo.setUserId(userId);
@@ -167,6 +191,7 @@ public class ConnectServer {
      * @return the BufferedReader which can be used by Gson to get information.
      */
     public BufferedReader connectServer(String url) {
+        Response response = null;
         try {
             if (! tokenIsStillValid()) {
                 refreshToken();
@@ -177,14 +202,15 @@ public class ConnectServer {
                     .addHeader("Authorization", authorization)
                     .build();
             // FIXME passer en asynchrone
-            Response response = getOkClient().newCall(request).execute();
+            response = getOkClient().newCall(request).execute();
             
             if (response.isSuccessful()) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(response.body().source().inputStream(), "utf-8"));
                 return reader;
             } else {
                 RssController.snackbarNotify(bundle.getString("connectionFailure"));
-                LOGGER.debug("connectServer error code {}",response.code());
+                response.close();
+                LOGGER.debug("connectServer error code {} for {}",response.code(), request.url());
             }
 
         } catch (UnknownHostException uhe) {
@@ -193,6 +219,9 @@ public class ConnectServer {
         } catch (IOException ioe) {
             RssController.snackbarNotify(bundle.getString("connectionFailure"));
             LOGGER.error("connectServer error", ioe);
+            if (response != null) {
+                response.close();
+            }
         } catch (ProtocolException e) {
             RssController.snackbarNotify(bundle.getString("connectionFailure"));
             LOGGER.error("connectServer error", e);
@@ -200,7 +229,51 @@ public class ConnectServer {
         return null;
     }
     
-    public Request getRequest(String url) {
+    /**
+     * Connect the server and get the Reader.
+     * @param url the related URL in the field.
+     * @return the BufferedReader which can be used by Gson to get information.
+     */
+    public BufferedReader connectServer(HttpUrl url) {
+        Response response = null;
+        try {
+            if (! tokenIsStillValid()) {
+                refreshToken();
+            }
+            String authorization = String.format("Bearer %s", token.accessToken());
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("Authorization", authorization)
+                    .build();
+            // FIXME passer en asynchrone
+            response = getOkClient().newCall(request).execute();
+            
+            if (response.isSuccessful()) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(response.body().source().inputStream(), "utf-8"));
+                return reader;
+            } else {
+                RssController.snackbarNotify(bundle.getString("connectionFailure"));
+                response.close();
+                LOGGER.debug("connectServer error code {} for {}",response.code(), request.url());
+            }
+
+        } catch (UnknownHostException uhe) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("connectServer error", uhe);
+        } catch (IOException ioe) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("connectServer error", ioe);
+            if (response != null) {
+                response.close();
+            }
+        } catch (ProtocolException e) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("connectServer error", e);
+        }
+        return null;
+    }
+    
+    public Request getRequest(HttpUrl url) {
         try {
             if (! tokenIsStillValid()) {
                 refreshToken();
@@ -222,43 +295,82 @@ public class ConnectServer {
     //connectServer.connectServer(ConnectServer.markFeedReadURL + newValue.getDecimalId())
     @Async("threadPoolTaskExecutor")
     public void markAsRead(String decimalId) {
-        BufferedReader reader = connectServer(markFeedReadURL + decimalId);
+        HttpUrl URL = HttpUrl.parse(markFeedReadURL);
+        BufferedReader reader = connectServer(URL.newBuilder()
+                .setQueryParameter("i", decimalId)
+                .build());
         closeReader(reader);
     }
     
     //connectServer.connectServer(ConnectServer.markAllReadURL + lastUpdateTime.getEpochSecond() + "&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
     @Async("threadPoolTaskExecutor")
     public void markAllAsRead(long timestamp, String streamId) {
-        BufferedReader reader = connectServer(markAllReadURL + timestamp + "&s=" + streamId);
+        HttpUrl URL = HttpUrl.parse(markAllReadURL);
+        BufferedReader reader = connectServer(URL.newBuilder()
+                .setQueryParameter("ts", String.valueOf(timestamp))
+                .setQueryParameter("s", streamId)
+                .build());
         closeReader(reader);
     }
     
     //connectServer.connectServer(ConnectServer.editSubscriptionURL + "ac=unsubscribe&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
     @Async("threadPoolTaskExecutor")
     public void unsubscribe(String feedId) {
-        BufferedReader reader = connectServer(ConnectServer.editSubscriptionURL + "ac=unsubscribe&s=" + feedId);
+        HttpUrl URL = HttpUrl.parse(editSubscriptionURL);
+        BufferedReader reader = connectServer(URL.newBuilder()
+                .setQueryParameter("ac", "unsubscribe")
+                .setQueryParameter("s", feedId)
+                .build());
+//        BufferedReader reader = connectServer(ConnectServer.editSubscriptionURL + "ac=unsubscribe&s=" + feedId);
         closeReader(reader);
     }
     
     @Async("threadPoolTaskExecutor")
     public void removeFromFolder(String feedId, String folder) {
-        BufferedReader reader = connectServer(ConnectServer.editSubscriptionURL + "ac=edit&s=" + feedId+ "&r=" + folder);
+        HttpUrl URL = HttpUrl.parse(editSubscriptionURL);
+        BufferedReader reader = connectServer(URL.newBuilder()
+                .setQueryParameter("ac", "edit")
+                .setQueryParameter("s", feedId)
+                .setQueryParameter("r", folder)
+                .build());
+//        BufferedReader reader = connectServer(ConnectServer.editSubscriptionURL + "ac=edit&s=" + feedId+ "&r=" + folder);
+        closeReader(reader);
+    }
+    
+    // this.connectServer.connectServer(ConnectServer.markStarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())
+    @Async("threadPoolTaskExecutor")
+    public void star(String decimalId) {
+        HttpUrl URL = HttpUrl.parse(markStarredURL);
+        BufferedReader reader = connectServer(URL.newBuilder()
+                .setQueryParameter("i", decimalId)
+                .build());
+        closeReader(reader);
+    }
+    
+ // this.connectServer.connectServer(ConnectServer.markUnstarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())
+    @Async("threadPoolTaskExecutor")
+    public void unStar(String decimalId) {
+        HttpUrl URL = HttpUrl.parse(markUnstarredURL);
+        BufferedReader reader = connectServer(URL.newBuilder()
+                .setQueryParameter("i", decimalId)
+                .build());
         closeReader(reader);
     }
     
     public Map<String,Integer> getUnreadCountsMap() {
+        BufferedReader counterReader = null;
         try {
-        HashMap<String, Integer> map = new HashMap<>();
-        BufferedReader counterReader = connectServer(ConnectServer.unreadCountURL);
-        UnreadCounter counter = mapper.readValue(counterReader, UnreadCounter.class);
-//        UnreadCounter counter = gson.fromJson(counterReader, UnreadCounter.class);
-        List<UnreadCounts> counts = counter.getUnreadcounts();
-        for (UnreadCounts count : counts) {
-            map.put(count.getId(), count.getCount());
-        }
-        map.put("All Items", counts.get(0).getCount());
-        closeReader(counterReader);
-        return map;
+            HashMap<String, Integer> map = new HashMap<>();
+            counterReader = connectServer(ConnectServer.unreadCountURL);
+            UnreadCounter counter = mapper.readValue(counterReader, UnreadCounter.class);
+    //        UnreadCounter counter = gson.fromJson(counterReader, UnreadCounter.class);
+            List<UnreadCounts> counts = counter.getUnreadcounts();
+            for (UnreadCounts count : counts) {
+                map.put(count.getId(), count.getCount());
+            }
+            map.put("All Items", counts.get(0).getCount());
+            closeReader(counterReader);
+            return map;
         } catch (IOException e) {
             RssController.snackbarNotify(bundle.getString("connectionFailure"));
             LOGGER.error("getUnreadCountMap error", e);
@@ -267,8 +379,9 @@ public class ConnectServer {
     }
     
     public List<Item> getStreamContent(String URLString) {
+        BufferedReader reader = null;
         try {
-            BufferedReader reader = connectServer(URLString);
+            reader = connectServer(URLString);
     //        StreamContent content = gson.fromJson(reader, StreamContent.class);
             StreamContent content;
             content = mapper.readValue(reader, StreamContent.class);
@@ -287,6 +400,71 @@ public class ConnectServer {
             LOGGER.error("getStreamContent error", e1);
         }
         return Collections.emptyList();
+    }
+    
+    public List<Item> getOlderStreamContent(String streamId) {
+        BufferedReader reader = null;
+        try {
+            HttpUrl urlWithParams;
+            // we already started to fetch old content, so start from where we stopped
+            if (continuationsMap.containsKey(streamId)) {
+                urlWithParams = baseStreamContentHTTPUrl.newBuilder()
+                        .addPathSegment(streamId)
+                        .setQueryParameter("n", "50")
+                        .setQueryParameter("c", continuationsMap.get(streamId))
+                        .build();
+            }
+            // first request to fetch
+            else {
+                urlWithParams = baseStreamContentHTTPUrl.newBuilder()
+                        .addPathSegment(streamId)
+                        .setQueryParameter("n", "50")
+                        .build();
+            }
+            reader = connectServer(urlWithParams);
+            StreamContent content;
+            content = mapper.readValue(reader, StreamContent.class);
+            LOGGER.debug("{}",content.getItems().size());
+            List<Item> itemList = new ArrayList<>();
+            for (Item item : content.getItems()) {
+                if (UserInfo.getUserId() != null && ! UserInfo.getUserId().isEmpty()) {
+                    if (item.getCategories().contains("user/-/state/com.google/read") 
+                            || item.getCategories().contains(String.format(readTag, UserInfo.getUserId()))) {
+                        item.setRead(true);
+                        itemList.add(item);
+                    }
+                }
+                else {
+                    if (item.getCategories().contains("user/-/state/com.google/read")) {
+                        item.setRead(true);
+                        itemList.add(item);
+                    }
+                }
+            }
+            LOGGER.debug("{}",itemList.size());
+            if (content.getContinuation() != null && ! content.getContinuation().isEmpty()) {
+                LOGGER.debug("caching stream {} : continuation {}", streamId, content.getContinuation());
+                continuationsMap.put(streamId, content.getContinuation());
+            }
+            closeReader(reader);
+            LOGGER.debug("{}",itemList);
+            return itemList;
+        } catch (IOException e1) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("getStreamContent error", e1);
+        }
+        return Collections.emptyList();
+    }
+    
+    public Task<List<Item>> getOlderreadItemsTask(String streamId) {
+        Task<List<Item>> t = new Task<List<Item>>() {
+            @Override
+            protected List<Item> call() throws Exception {
+                LOGGER.debug("start getOlderreadItemsTask");
+                return getOlderStreamContent(streamId);
+            }
+        };
+        return t;
     }
     
     private void refreshToken() {
@@ -313,9 +491,17 @@ public class ConnectServer {
         return false;
     }
     
+    @Async("threadPoolTaskExecutor")
+    public void fetchAndSaveUSer() {
+        UserInformation userInfo = getUserInformation();
+        UserInfo.setUserId(userInfo.getUserId());
+        storage.saveUser(userInfo);
+    }
+    
     public UserInformation getUserInformation() {
+        BufferedReader reader = null;
         try {
-            BufferedReader reader = connectServer(ConnectServer.userinfoURL);
+            reader = connectServer(ConnectServer.userinfoURL);
             UserInformation userInformation;
             userInformation = mapper.readValue(reader, UserInformation.class);
             closeReader(reader);
@@ -414,5 +600,15 @@ public class ConnectServer {
     public void setTaskExecutor(ThreadPoolTaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;
     }
+
+    public Map<String, String> getContinuationsMap() {
+        return continuationsMap;
+    }
+
+    public void setContinuationsMap(Map<String, String> continuationsMap) {
+        this.continuationsMap = continuationsMap;
+    }
+    
+    
 
 }

@@ -67,13 +67,14 @@ public class ItemListCell extends JFXListCell<Item> {
         menu.getItems().addAll(starItem, unStarItem);
 
         starItem.setOnAction(event -> {
-            System.out.println("mark star " + getListView().getSelectionModel().getSelectedItem().getDecimalId());
-            new Thread(() -> this.connectServer.connectServer(ConnectServer.markStarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())).start();
-
+            LOGGER.debug("mark star " + getListView().getSelectionModel().getSelectedItem().getDecimalId());
+//            new Thread(() -> this.connectServer.connectServer(ConnectServer.markStarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())).start();
+            this.connectServer.star(this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
         });
         unStarItem.setOnAction(event -> {
-            System.out.println("unstar " + this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
-            new Thread(() -> this.connectServer.connectServer(ConnectServer.markUnstarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())).start();
+            LOGGER.debug("unstar " + this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
+//            new Thread(() -> this.connectServer.connectServer(ConnectServer.markUnstarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())).start();
+            this.connectServer.unStar(this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
         });
         this.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
@@ -122,12 +123,10 @@ public class ItemListCell extends JFXListCell<Item> {
                 contentLabel.setText(StringEscapeUtils.unescapeHtml4(item.getSummary().getContent()));
             }
             
-            
             setText(null);
             setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             if (FolderFeedOrder.iconMap != null) {
                 icon.setImage(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));
-//                ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));
                 icon.setFitWidth(20);
                 icon.setFitHeight(20);
             }

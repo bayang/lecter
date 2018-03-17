@@ -21,6 +21,7 @@ import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.rssmodels.AddResult;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.HttpUrl;
 import okhttp3.Response;
 
 /**
@@ -49,7 +50,11 @@ public class AddSubscriptionController {
     private void addButtonFired() {
         String address = addressField.getText();
         statusLabel.setText(bundle.getString("addSubscriptionOngoing"));
-        connectServer.getOkClient().newCall(connectServer.getRequest(ConnectServer.addSubscriptionURL + address)).enqueue(new Callback() {
+        HttpUrl URL = HttpUrl.parse(ConnectServer.addSubscriptionURL);
+        connectServer.getOkClient().newCall(connectServer.getRequest(URL.newBuilder()
+                                                        .setQueryParameter("quickadd", address)
+                                                        .build()))
+                                    .enqueue(new Callback() {
             
             @Override
             public void onResponse(Call call, Response response) throws IOException {

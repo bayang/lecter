@@ -2,6 +2,7 @@ package me.bayang.reader.controllers;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -85,6 +87,9 @@ public class RssController {
     private WebView webView;
     @FXML
     private Button markReadButton;
+    
+    @FXML
+    private FontAwesomeIconView plusIcon;
 //    @FXML
 //    private Label statusLabel;
     @FXML
@@ -122,6 +127,7 @@ public class RssController {
     private EditSubscriptionController editSubscriptionController;
 
     private List<Item> itemList;
+    private List<Item> readItemList = new ArrayList<>();
     private FilteredList<Item> filteredData;
     private SortedList<Item> sortedData;
     private List<Item> starredList;
@@ -129,6 +135,7 @@ public class RssController {
     private Task<TreeItem<Feed>> treeTask;
     private Task<List<Item>> itemListTask;
     private Task<List<Item>> starredListTask;
+    private Task<List<Item>> olderItemsListTask;
     private Task<Map<String, Integer>> unreadCountsTask;
     private static Map<String, Integer> unreadCountsMap = new HashMap<>();
     private static TreeItem<Feed> root;
@@ -153,6 +160,11 @@ public class RssController {
             }
         }));
        snackbar = new JFXSnackbar(rssViewContainer);
+       plusIcon.setOnMouseEntered(event -> plusIcon.setFill(Color.CORNFLOWERBLUE));
+       plusIcon.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
+       Tooltip t = new Tooltip(bundle.getString("loadRead"));
+       Tooltip.install(plusIcon, t);
+       plusIcon.setOnMouseClicked(e -> loadOlderReadArticles());
     }
 
     private void eventHandleInitialize() {
@@ -192,6 +204,8 @@ public class RssController {
                             unreadCountsMap.put(parent, --parentCount);
                         }
 
+                        LOGGER.debug("remove = {}", itemList.remove(newValue));
+                        LOGGER.debug("add = {}", readItemList.add(newValue));
                         treeView.refresh();
                     }
                     newValue.setRead(true);//change state to read and change color in listView
@@ -202,7 +216,7 @@ public class RssController {
         //handle event between treeView and listView
         treeView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             List<Item> chosenItemList = new ArrayList<>();
-
+            LOGGER.debug("itemList size {}, readItemList size {}", itemList.size(), readItemList.size());
             if (starredList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
                     chosenItemList = starredList;
@@ -211,6 +225,7 @@ public class RssController {
             if (itemList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("All Items")) {//handle the special all items tag
                     chosenItemList = itemList;
+                    chosenItemList.addAll(readItemList);
                 }
                 if (newValue.isLeaf()) {//leaf chosen list
                     for (Item item : itemList) {
@@ -218,11 +233,23 @@ public class RssController {
                             chosenItemList.add(item);
                         }
                     }
+                    for (Item readItem : readItemList) {
+                        if (newValue.getValue().getId().equals(readItem.getOrigin().getStreamId())) {
+                            chosenItemList.add(readItem);
+                        }
+                    }
                 } else {//handle the folder chosen list
                     for (Item item : itemList) {
                         for (String s : item.getCategories()) {
                             if (newValue.getValue().getId().equals(s)) {
                                 chosenItemList.add(item);
+                            }
+                        }
+                    }
+                    for (Item readItem : readItemList) {
+                        for (String s : readItem.getCategories()) {
+                            if (newValue.getValue().getId().equals(s)) {
+                                chosenItemList.add(readItem);
                             }
                         }
                     }
@@ -474,7 +501,13 @@ public class RssController {
             new Alert(Alert.AlertType.ERROR, "Please Login.");
         } else {
             for (Item item : listView.getItems()) {
-                item.setRead(true);
+                LOGGER.debug("itemList size {}, readItemList size {}", itemList.size(), readItemList.size());
+                if (! item.isRead()) {
+                    item.setRead(true);
+                    LOGGER.debug("remove = {}", itemList.remove(item));
+                    LOGGER.debug("add = {}", readItemList.add(item));
+                }
+                LOGGER.debug("itemList size {}, readItemList size {}", itemList.size(), readItemList.size());
             }
             listView.refresh();
             //inform treeView to refresh the unread count
@@ -520,7 +553,7 @@ public class RssController {
 
     @FXML
     private void loginMenuFired() {
-        snackbarNotify("alert toto");
+//        snackbarNotify("alert toto");
         // Create the dialog Stage.
         if (oauthDialogStage == null) {
             Stage dialogStage = new Stage();
@@ -563,6 +596,21 @@ public class RssController {
             addSubscriptionStage.showAndWait();
         }
 //        FXMain.getAddSubscriptionStage().show();
+    }
+    
+    private void loadOlderReadArticles() {
+        Item oldestItem = listView.getItems().get(listView.getItems().size() - 1);
+        LOGGER.debug("{}",oldestItem.getOrigin().getStreamId());
+//        connectServer.getOlderStreamContent(oldestItem.getOrigin().getStreamId());
+        olderItemsListTask = connectServer.getOlderreadItemsTask(oldestItem.getOrigin().getStreamId());
+//        List<Item> readItems = connectServer.getOlderStreamContent(oldestItem.getOrigin().getStreamId());
+        olderItemsListTask.setOnSucceeded(event -> {
+            readItemList.addAll(olderItemsListTask.getValue());
+            listView.refresh();
+            LOGGER.debug("finish loadOlderReadArticles " + olderItemsListTask.getValue().size());
+        });
+//        readItemList.addAll(readItems);
+        connectServer.getTaskExecutor().submit(olderItemsListTask);
     }
     
     private void showEditSubscription(Subscription subscription) {

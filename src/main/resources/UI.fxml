@@ -30,7 +30,10 @@
             <VBox>
                <children>
                         <JFXListView fx:id="listView" minWidth="230.0" VBox.vgrow="ALWAYS" />
-                  <HBox VBox.vgrow="NEVER" />
+                  <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                     <children>
+                        <FontAwesomeIconView fx:id="plusIcon" glyphName="PLUS" size="14" />
+                     </children></HBox>
                </children>
             </VBox>
             <VBox>
