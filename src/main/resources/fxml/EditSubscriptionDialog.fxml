@@ -13,7 +13,7 @@
       <HBox alignment="CENTER">
          <children>
             <ImageView fx:id="subscriptionIcon" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true" />
-            <Label fx:id="subscriptionTitle" styleClass="edit-subscription-title" text="Label">
+            <Label fx:id="subscriptionTitle" styleClass="edit-subscription-title" text="Label" wrapText="true">
                <HBox.margin>
                   <Insets left="20.0" />
                </HBox.margin>

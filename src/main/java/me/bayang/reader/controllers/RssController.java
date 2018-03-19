@@ -2,12 +2,12 @@ package me.bayang.reader.controllers;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.controlsfx.control.Notifications;
@@ -17,15 +17,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXProgressBar;
 import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
 import de.felixroske.jfxsupport.FXMLController;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import eu.lestard.advanced_bindings.api.CollectionBindings;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
@@ -34,12 +37,10 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
@@ -50,6 +51,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
@@ -66,9 +68,6 @@ import me.bayang.reader.rssmodels.Subscription;
 import me.bayang.reader.rssmodels.Tag;
 import me.bayang.reader.rssmodels.UserInfo;
 
-/**
- * The RssController class for JavaFX application.
- */
 @FXMLController
 public class RssController {
     
@@ -90,8 +89,6 @@ public class RssController {
     
     @FXML
     private FontAwesomeIconView plusIcon;
-//    @FXML
-//    private Label statusLabel;
     @FXML
     private RadioButton rssRadioButton;
     @FXML
@@ -99,7 +96,10 @@ public class RssController {
     @FXML
     private RadioButton readabilityRadioButton;
     @FXML
-    private ProgressIndicator progressIndicator;
+    private JFXProgressBar progressBar;
+    @FXML
+    private VBox toolBarContainer;
+    
     @FXML
     private CustomTextField searchBar;
     private ChangeListener<? super String> rssSearchListener;
@@ -126,9 +126,15 @@ public class RssController {
     private EditSubscriptionView editSubscriptionView;
     private EditSubscriptionController editSubscriptionController;
 
-    private List<Item> itemList;
+    private List<Item> itemList = new ArrayList<>();
     private List<Item> readItemList = new ArrayList<>();
+    private ObservableList<Item> observableItemList = FXCollections.observableArrayList(itemList);
+    private ObservableList<Item> observableReadList = FXCollections.observableArrayList(readItemList);
+    // FIXME find a less greedy data structure
+    private ObservableList<Item> observableAllList = CollectionBindings.concat(observableItemList, observableReadList);
+    
     private FilteredList<Item> filteredData;
+    private Predicate <? super Item> currentPredicate;
     private SortedList<Item> sortedData;
     private List<Item> starredList;
     private Instant lastUpdateTime;
@@ -142,29 +148,26 @@ public class RssController {
     
     private static JFXSnackbar snackbar;
     
-    private ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
+    private static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
 
     @FXML
     private void initialize() {
         FXMain.getStage().setMinWidth(600);
         FXMain.getStage().setMinHeight(600);
+        treeView.setDisable(true);
         eventHandleInitialize();
         radioButtonInitialize();
         initializeSearchBar();
-        progressIndicator.setVisible(false);
-        progressIndicator.progressProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                if (newValue.doubleValue() == 1.0) {
-                    progressIndicator.setVisible(false);
-                }
-            }
-        }));
-       snackbar = new JFXSnackbar(rssViewContainer);
-       plusIcon.setOnMouseEntered(event -> plusIcon.setFill(Color.CORNFLOWERBLUE));
-       plusIcon.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
-       Tooltip t = new Tooltip(bundle.getString("loadRead"));
-       Tooltip.install(plusIcon, t);
-       plusIcon.setOnMouseClicked(e -> loadOlderReadArticles());
+        initializeProgressBar();
+        
+        plusIcon.setVisible(false);
+        snackbar = new JFXSnackbar(rssViewContainer);
+        plusIcon.setOnMouseEntered(event -> plusIcon.setFill(Color.CORNFLOWERBLUE));
+        plusIcon.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
+        Tooltip t = new Tooltip(bundle.getString("loadRead"));
+        Tooltip.install(plusIcon, t);
+        plusIcon.setOnMouseClicked(e -> loadOlderReadArticles());
+       
     }
 
     private void eventHandleInitialize() {
@@ -188,7 +191,6 @@ public class RssController {
                 if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
                     if (!newValue.isRead()) {
                         connectServer.markAsRead(newValue.getDecimalId());
-//                        new Thread(() -> connectServer.connectServer(ConnectServer.markFeedReadURL + newValue.getDecimalId())).start();
 
                         String streamId = newValue.getOrigin().getStreamId();
                         Integer count = unreadCountsMap.get(streamId);
@@ -203,9 +205,10 @@ public class RssController {
                             Integer parentCount = unreadCountsMap.get(parent);
                             unreadCountsMap.put(parent, --parentCount);
                         }
-
-                        LOGGER.debug("remove = {}", itemList.remove(newValue));
-                        LOGGER.debug("add = {}", readItemList.add(newValue));
+                        boolean removed = observableItemList.remove(newValue);
+                        LOGGER.debug("remove = {}", removed);
+                        boolean added = observableReadList.add(newValue);
+                        LOGGER.debug("add = {}", added);
                         treeView.refresh();
                     }
                     newValue.setRead(true);//change state to read and change color in listView
@@ -215,57 +218,65 @@ public class RssController {
         }));
         //handle event between treeView and listView
         treeView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
-            List<Item> chosenItemList = new ArrayList<>();
-            LOGGER.debug("itemList size {}, readItemList size {}", itemList.size(), readItemList.size());
+            
+            LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
             if (starredList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
-                    chosenItemList = starredList;
+                    plusIcon.setVisible(false);
+                    currentPredicate = p -> true;
+                    filteredData = new FilteredList<>(FXCollections.observableArrayList(starredList), currentPredicate);
+                    sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
+                    listView.setItems(sortedData);
+                    return;
                 }
             }
             if (itemList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("All Items")) {//handle the special all items tag
-                    chosenItemList = itemList;
-                    chosenItemList.addAll(readItemList);
+                    plusIcon.setVisible(false);
+                    currentPredicate = p -> true;
+                    filteredData = new FilteredList<>(observableAllList, currentPredicate);
+                    sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
+                    listView.setItems(sortedData);
+                    return;
                 }
                 if (newValue.isLeaf()) {//leaf chosen list
-                    for (Item item : itemList) {
+                    plusIcon.setVisible(true);
+                    currentPredicate = (item) -> {
                         if (newValue.getValue().getId().equals(item.getOrigin().getStreamId())) {
-                            chosenItemList.add(item);
+                            return true;
                         }
-                    }
-                    for (Item readItem : readItemList) {
-                        if (newValue.getValue().getId().equals(readItem.getOrigin().getStreamId())) {
-                            chosenItemList.add(readItem);
-                        }
-                    }
+                        return false;
+                    };
+                    filteredData = new FilteredList<>(observableAllList, currentPredicate);
+                    sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
+                    listView.setItems(sortedData);
+                    return;
+                    
                 } else {//handle the folder chosen list
-                    for (Item item : itemList) {
+                    plusIcon.setVisible(false);
+                    currentPredicate = (item) -> {
                         for (String s : item.getCategories()) {
                             if (newValue.getValue().getId().equals(s)) {
-                                chosenItemList.add(item);
+                                return true;
                             }
                         }
-                    }
-                    for (Item readItem : readItemList) {
-                        for (String s : readItem.getCategories()) {
-                            if (newValue.getValue().getId().equals(s)) {
-                                chosenItemList.add(readItem);
-                            }
-                        }
-                    }
+                        return false;
+                    };
+                    filteredData = new FilteredList<>(observableAllList, currentPredicate);
+                    sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
+                    listView.setItems(sortedData);
+                    return;
                 }
             }
             
-            filteredData = new FilteredList<>(FXCollections.observableArrayList(chosenItemList), p -> true);
             sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
-//            chosenItemList.sort((o1, o2) -> (int) (Long.parseLong(o1.getCrawlTimeMsec()) - Long.parseLong(o2.getCrawlTimeMsec())));
-//            listView.setItems(FXCollections.observableArrayList(chosenItemList));
             listView.setItems(sortedData);
         }));
     }
 
     private void radioButtonInitialize() {
         //set webView User Agent
+        // FIXME investigate this
         webView.getEngine().setUserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36");
 
         //initialize the radio button
@@ -298,24 +309,45 @@ public class RssController {
         FontAwesomeIconView searchIcon = new FontAwesomeIconView(FontAwesomeIcon.SEARCH, "15");
         searchBar.setLeft(searchIcon);
         rssSearchListener  = (obs, oldV, newV) -> {
-            filteredData.setPredicate(item -> {
+            if (newV==null || newV.isEmpty()) {
+                LOGGER.debug("null empty");
+                filteredData.setPredicate(null);
+                filteredData.setPredicate(currentPredicate);
+                return;
+            }
+            LOGGER.debug("value {} - {}",oldV, newV);
+            Predicate<Item> predicate  = item -> {
                 // If filter text is empty, display all persons.
                 if (filteredData.isEmpty()) {
                     return true;
                 }
-                if (newV == null || newV.isEmpty() || item == null) {
+                if (item == null) {
                     return true;
                 }
-
                 String lowerCaseFilter = newV.toLowerCase();
-
                 if (item.toString().toLowerCase().contains(lowerCaseFilter)) {
                     return true; // Filter matches first name.
                 }
                 return false; // Does not match.
-            });
+            };
+                Predicate<Item> pred = predicate.and(currentPredicate);
+                filteredData.setPredicate(pred);
+                listView.refresh();
         };
         searchBar.textProperty().addListener(rssSearchListener);
+    }
+    
+    private void initializeProgressBar() {
+        progressBar.setVisible(false);
+        progressBar.prefWidthProperty().bind(toolBarContainer.widthProperty());
+        progressBar.progressProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                if (newValue.doubleValue() == 1.0) {
+                    progressBar.setVisible(false);
+                    treeView.setDisable(false);
+                }
+            }
+        }));
     }
 
     private void taskInitialize() {
@@ -330,8 +362,7 @@ public class RssController {
         treeTask.setOnSucceeded(event -> {
             treeView.setRoot(treeTask.getValue());
             treeView.setShowRoot(false);
-            progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
-//            statusLabel.setText("Get Feeds Complete.");
+            progressBar.setProgress(progressBar.getProgress() + 0.25);
             LOGGER.debug("finish treeTask");
         });
 
@@ -344,10 +375,10 @@ public class RssController {
             }
         };
         itemListTask.setOnSucceeded(event -> {
-            itemList = itemListTask.getValue();
-            progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
-//            statusLabel.setText("Get New Items Complete.");
-            LOGGER.debug("finish itemListTask " + itemList.size());
+            observableItemList.clear();
+            observableItemList.addAll(itemListTask.getValue());
+            progressBar.setProgress(progressBar.getProgress() + 0.25);
+            LOGGER.debug("finish itemListTask " + observableItemList.size());
         });
         //initialize starredList
         starredListTask = new Task<List<Item>>() {
@@ -359,8 +390,7 @@ public class RssController {
         };
         starredListTask.setOnSucceeded(event -> {
             starredList = starredListTask.getValue();
-            progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
-//            statusLabel.setText("Get Starred Items Complete.");
+            progressBar.setProgress(progressBar.getProgress() + 0.25);
             LOGGER.debug("finish starredListTask " + starredList.size());
         });
         //initialize unreadCountsMap
@@ -373,8 +403,7 @@ public class RssController {
         };
         unreadCountsTask.setOnSucceeded(event -> {
             unreadCountsMap = unreadCountsTask.getValue();
-            progressIndicator.setProgress(progressIndicator.getProgress() + 0.25);
-//            statusLabel.setText("Get UnreadCounts Complete");
+            progressBar.setProgress(progressBar.getProgress() + 0.25);
             LOGGER.debug("finish unreadCountsTask");
         });
     }
@@ -413,7 +442,6 @@ public class RssController {
                 hBox.setMaxWidth(250);
                 if (item instanceof Subscription) {
                     String title = StringEscapeUtils.unescapeHtml4(((Subscription) item).getTitle());
-//                    LOGGER.debug("mytreecell instance {} {}", title, ((Subscription) item).getCategories());
                     Integer countInteger = unreadCountsMap.get(item.getId());
                     //create spaces to make counts in a row
                     Label countLabel = new Label(Objects.toString(countInteger, ""));
@@ -477,14 +505,12 @@ public class RssController {
 
     @FXML
     public void refreshFired() {
-        // FIXME afficher popup correcte
         if (connectServer.isShouldAskPermissionOrLogin()) {
-            new Alert(Alert.AlertType.ERROR, "Please Login.");
+            snackbarNotifyBlocking(bundle.getString("pleaseLogin"));
         }
         else {
-            progressIndicator.setVisible(true);
-            progressIndicator.setProgress(0);
-//            statusLabel.setText("Refreshing...");
+            progressBar.setVisible(true);
+            progressBar.setProgress(0);
             taskInitialize();
             connectServer.getTaskExecutor().submit(unreadCountsTask);
             connectServer.getTaskExecutor().submit(treeTask);
@@ -496,18 +522,20 @@ public class RssController {
 
     @FXML
     private void markReadButtonFired() {
-     // FIXME afficher popup correcte
         if (connectServer.isShouldAskPermissionOrLogin()) {
-            new Alert(Alert.AlertType.ERROR, "Please Login.");
+            snackbarNotifyBlocking(bundle.getString("pleaseLogin"));
         } else {
             for (Item item : listView.getItems()) {
-                LOGGER.debug("itemList size {}, readItemList size {}", itemList.size(), readItemList.size());
+                LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
                 if (! item.isRead()) {
                     item.setRead(true);
-                    LOGGER.debug("remove = {}", itemList.remove(item));
-                    LOGGER.debug("add = {}", readItemList.add(item));
+                    boolean removed = observableItemList.remove(item);
+                    LOGGER.debug("remove = {}", removed);
+                    boolean added = observableReadList.add(item);
+                    LOGGER.debug("add = {}", added);
                 }
-                LOGGER.debug("itemList size {}, readItemList size {}", itemList.size(), readItemList.size());
+                LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
+                
             }
             listView.refresh();
             //inform treeView to refresh the unread count
@@ -545,15 +573,12 @@ public class RssController {
             treeView.refresh();
 
             connectServer.markAllAsRead(lastUpdateTime.getEpochSecond(), treeView.getSelectionModel().getSelectedItem().getValue().getId());
-//            new Thread(() -> {
-//                connectServer.connectServer(ConnectServer.markAllReadURL + lastUpdateTime.getEpochSecond() + "&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
-//            }).start();
         }
     }
 
     @FXML
     private void loginMenuFired() {
-//        snackbarNotify("alert toto");
+        snackbarNotifyBlocking("toto");
         // Create the dialog Stage.
         if (oauthDialogStage == null) {
             Stage dialogStage = new Stage();
@@ -595,21 +620,34 @@ public class RssController {
         else {
             addSubscriptionStage.showAndWait();
         }
-//        FXMain.getAddSubscriptionStage().show();
     }
     
     private void loadOlderReadArticles() {
-        Item oldestItem = listView.getItems().get(listView.getItems().size() - 1);
-        LOGGER.debug("{}",oldestItem.getOrigin().getStreamId());
-//        connectServer.getOlderStreamContent(oldestItem.getOrigin().getStreamId());
-        olderItemsListTask = connectServer.getOlderreadItemsTask(oldestItem.getOrigin().getStreamId());
-//        List<Item> readItems = connectServer.getOlderStreamContent(oldestItem.getOrigin().getStreamId());
+        Feed f = treeView.getSelectionModel().getSelectedItem().getValue();
+        if (f == null) {
+            return;
+        }
+        if (! (f instanceof Subscription)) {
+            return;
+        }
+        olderItemsListTask = connectServer.getOlderreadItemsTask(f.getId());
         olderItemsListTask.setOnSucceeded(event -> {
-            readItemList.addAll(olderItemsListTask.getValue());
-            listView.refresh();
+            for (Item i : olderItemsListTask.getValue()) {
+                if (observableReadList.stream().noneMatch(item -> item.getId().equals(i.getId()))) {
+                    observableReadList.add(i);
+                }
+                else{
+                    LOGGER.debug("not adding {}", i);
+                }
+            }
             LOGGER.debug("finish loadOlderReadArticles " + olderItemsListTask.getValue().size());
-        });
-//        readItemList.addAll(readItems);
+            int idx = treeView.getSelectionModel().getSelectedIndex();
+            LOGGER.debug("clear ");
+            // hack to force content to be sorted after inserting older read items
+            // in some cases the selection was not refreshed
+            treeView.getSelectionModel().clearSelection();
+            treeView.getSelectionModel().select(idx);
+        });     
         connectServer.getTaskExecutor().submit(olderItemsListTask);
     }
     
@@ -679,6 +717,10 @@ public class RssController {
                     }
                 });
         notificationBuilder.show();
+    }
+    
+    public static void snackbarNotifyBlocking(String msg) {
+        snackbar.enqueue(new SnackbarEvent(msg, bundle.getString("snackbarClose") , 2500, true, e -> snackbar.close()));
     }
     
     public static void snackbarNotify(String msg) {
