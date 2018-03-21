@@ -8,19 +8,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.controlsfx.control.GridCell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.jfoenix.controls.JFXListCell;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -28,9 +24,9 @@ import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.rssmodels.FolderFeedOrder;
 import me.bayang.reader.rssmodels.Item;
 
-public class ItemListCell extends JFXListCell<Item> {
+public class ItemGridCell extends GridCell<Item> {
     
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
+private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
     
     @FXML
     private VBox cellWrapper;
@@ -59,41 +55,29 @@ public class ItemListCell extends JFXListCell<Item> {
     
     // FIXME remove this from here
     private ConnectServer connectServer;
+    
+    private Item currentItem;
 
-    public ItemListCell(ConnectServer connectServer) {
+    public ItemGridCell(ConnectServer connectServer) {
+        super();
         this.connectServer = connectServer;
-        MenuItem starItem = new MenuItem("Mark Starred");
-        MenuItem unStarItem = new MenuItem("Mark Unstarred");
-        menu.getItems().addAll(starItem, unStarItem);
-
-        starItem.setOnAction(event -> {
-            LOGGER.debug("mark star " + getListView().getSelectionModel().getSelectedItem().getDecimalId());
-//            new Thread(() -> this.connectServer.connectServer(ConnectServer.markStarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())).start();
-            this.connectServer.star(this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
-        });
-        unStarItem.setOnAction(event -> {
-            LOGGER.debug("unstar " + this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
-//            new Thread(() -> this.connectServer.connectServer(ConnectServer.markUnstarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())).start();
-            this.connectServer.unStar(this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
-        });
-        this.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            if (e.getButton() == MouseButton.SECONDARY) {
-                e.consume();
-            }
+        setOnMouseClicked(event -> {
+            LOGGER.debug("grid {}",this.currentItem);
         });
     }
 
     @Override
     protected void updateItem(Item item, boolean empty) {
         super.updateItem(item, empty);
-        this.prefWidthProperty().bind( this.getListView().widthProperty().subtract( 20 ) );
+        this.currentItem = item;
+//        this.prefWidthProperty().bind( this.getListView().widthProperty().subtract( 20 ) );
         if (empty || item == null) {
             setText(null);
             setGraphic(null);
         } else {
             if (mLLoader == null) {
                 mLLoader = new FXMLLoader(
-                        getClass().getResource("/fxml/ItemListCell.fxml"));
+                        getClass().getResource("/fxml/ItemGridCell.fxml"));
                 mLLoader.setController(this);
                 try {
                     mLLoader.load();
@@ -134,5 +118,5 @@ public class ItemListCell extends JFXListCell<Item> {
             setContextMenu(menu);
         }
     }
-
+    
 }

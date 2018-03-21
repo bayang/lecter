@@ -9,7 +9,12 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 
+import javax.swing.event.HyperlinkEvent;
+
 import org.apache.commons.text.StringEscapeUtils;
+import org.codefx.libfx.control.webview.WebViewHyperlinkListener;
+import org.codefx.libfx.control.webview.WebViews;
+import org.controlsfx.control.GridView;
 import org.controlsfx.control.Notifications;
 import org.controlsfx.control.textfield.CustomTextField;
 import org.slf4j.Logger;
@@ -42,6 +47,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
@@ -86,9 +92,14 @@ public class RssController {
     private WebView webView;
     @FXML
     private Button markReadButton;
-    
+    @FXML
+    private Button switchViewButton;
+    @FXML
+    private FontAwesomeIconView switchViewIcon;
     @FXML
     private FontAwesomeIconView plusIcon;
+    @FXML
+    private FontAwesomeIconView plusIconGrid;
     @FXML
     private RadioButton rssRadioButton;
     @FXML
@@ -99,6 +110,16 @@ public class RssController {
     private JFXProgressBar progressBar;
     @FXML
     private VBox toolBarContainer;
+    @FXML
+    private VBox listViewContainer;
+    @FXML
+    private VBox webViewContainer;
+    @FXML
+    private GridView<Item> gridView;
+    @FXML
+    private VBox gridContainer;
+    @FXML
+    private SplitPane splitPane;
     
     @FXML
     private CustomTextField searchBar;
@@ -149,30 +170,42 @@ public class RssController {
     private static JFXSnackbar snackbar;
     
     private static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
+    
+    private boolean gridMode = false;
+    
+    private final FontAwesomeIconView listIcon = new FontAwesomeIconView(FontAwesomeIcon.BARS);
+    private final FontAwesomeIconView gridIcon = new FontAwesomeIconView(FontAwesomeIcon.TH);
 
     @FXML
     private void initialize() {
-        FXMain.getStage().setMinWidth(600);
-        FXMain.getStage().setMinHeight(600);
+        FXMain.getStage().setMinWidth(700);
+        FXMain.getStage().setMinHeight(650);
         treeView.setDisable(true);
+        splitPane.getItems().remove(gridContainer);
         eventHandleInitialize();
         radioButtonInitialize();
         initializeSearchBar();
         initializeProgressBar();
-        
-        plusIcon.setVisible(false);
+        listIcon.setFill(Color.valueOf("#a5a3a3"));
+        listIcon.setSize("24");
+        gridIcon.setFill(Color.valueOf("#a5a3a3"));
+        gridIcon.setSize("24");
+        webView.setContextMenuEnabled(false);
+        // FIXME attendre chargement page pour attacher listener
+        WebViewHyperlinkListener eventPrintingListener = event -> {
+            LOGGER.debug("{}-{}",event.getURL(), event.getSource().getClass().getName());
+            FXMain.getAppHostServices().showDocument(event.getURL().toString());
+            return true;
+        };
+        WebViews.addHyperlinkListener(webView, eventPrintingListener, HyperlinkEvent.EventType.ACTIVATED);
         snackbar = new JFXSnackbar(rssViewContainer);
-        plusIcon.setOnMouseEntered(event -> plusIcon.setFill(Color.CORNFLOWERBLUE));
-        plusIcon.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
-        Tooltip t = new Tooltip(bundle.getString("loadRead"));
-        Tooltip.install(plusIcon, t);
-        plusIcon.setOnMouseClicked(e -> loadOlderReadArticles());
-       
+       initializePlusIcons();
     }
 
     private void eventHandleInitialize() {
         listView.setCellFactory(l -> new ItemListCell(connectServer));
         treeView.setCellFactory(t -> new MyTreeCell());
+        gridView.setCellFactory(g -> new ItemGridCell(connectServer));
         
         //handle event between listView and webView
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
@@ -216,6 +249,7 @@ public class RssController {
                 }
             }
         }));
+        
         //handle event between treeView and listView
         treeView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             
@@ -223,24 +257,29 @@ public class RssController {
             if (starredList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
                     plusIcon.setVisible(false);
+                    plusIconGrid.setVisible(false);
                     currentPredicate = p -> true;
                     filteredData = new FilteredList<>(FXCollections.observableArrayList(starredList), currentPredicate);
                     sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
                     listView.setItems(sortedData);
+                    gridView.setItems(sortedData);
                     return;
                 }
             }
             if (itemList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("All Items")) {//handle the special all items tag
                     plusIcon.setVisible(false);
+                    plusIconGrid.setVisible(false);
                     currentPredicate = p -> true;
                     filteredData = new FilteredList<>(observableAllList, currentPredicate);
                     sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
                     listView.setItems(sortedData);
+                    gridView.setItems(sortedData);
                     return;
                 }
                 if (newValue.isLeaf()) {//leaf chosen list
                     plusIcon.setVisible(true);
+                    plusIconGrid.setVisible(true);
                     currentPredicate = (item) -> {
                         if (newValue.getValue().getId().equals(item.getOrigin().getStreamId())) {
                             return true;
@@ -250,10 +289,12 @@ public class RssController {
                     filteredData = new FilteredList<>(observableAllList, currentPredicate);
                     sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
                     listView.setItems(sortedData);
+                    gridView.setItems(sortedData);
                     return;
                     
                 } else {//handle the folder chosen list
                     plusIcon.setVisible(false);
+                    plusIconGrid.setVisible(false);
                     currentPredicate = (item) -> {
                         for (String s : item.getCategories()) {
                             if (newValue.getValue().getId().equals(s)) {
@@ -265,12 +306,14 @@ public class RssController {
                     filteredData = new FilteredList<>(observableAllList, currentPredicate);
                     sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
                     listView.setItems(sortedData);
+                    gridView.setItems(sortedData);
                     return;
                 }
             }
             
             sortedData = new SortedList<>(filteredData, (o1, o2) -> (int) (Long.parseLong(o2.getCrawlTimeMsec()) - Long.parseLong(o1.getCrawlTimeMsec())));
             listView.setItems(sortedData);
+            gridView.setItems(sortedData);
         }));
     }
 
@@ -348,6 +391,21 @@ public class RssController {
                 }
             }
         }));
+    }
+    
+    private void initializePlusIcons() {
+        plusIcon.setVisible(false);
+        plusIcon.setOnMouseEntered(event -> plusIcon.setFill(Color.CORNFLOWERBLUE));
+        plusIcon.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
+        plusIconGrid.setVisible(false);
+        plusIconGrid.setOnMouseEntered(event -> plusIcon.setFill(Color.CORNFLOWERBLUE));
+        plusIconGrid.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
+        
+        Tooltip t = new Tooltip(bundle.getString("loadRead"));
+        Tooltip.install(plusIcon, t);
+        Tooltip.install(plusIconGrid, t);
+        plusIcon.setOnMouseClicked(e -> loadOlderReadArticles());
+        plusIconGrid.setOnMouseClicked(e -> loadOlderReadArticles());
     }
 
     private void taskInitialize() {
@@ -502,6 +560,27 @@ public class RssController {
         }
     }
 
+    @FXML
+    public void switchView() {
+        if (! gridMode) {
+            gridMode = true;
+            splitPane.getItems().remove(listViewContainer);
+            splitPane.getItems().remove(webViewContainer);
+            splitPane.getItems().add(gridContainer);
+            splitPane.setDividerPosition(0, 0.24);
+            splitPane.setDividerPosition(1, 0.6);
+            switchViewButton.setGraphic(listIcon);
+        }
+        else {
+            gridMode = false;
+            splitPane.getItems().add(listViewContainer);
+            splitPane.getItems().add(webViewContainer);
+            splitPane.getItems().remove(gridContainer);
+            splitPane.setDividerPosition(0, 0.24);
+            splitPane.setDividerPosition(1, 0.6);
+            switchViewButton.setGraphic(gridIcon);
+        }
+    }
 
     @FXML
     public void refreshFired() {

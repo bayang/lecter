@@ -35,3 +35,21 @@
 #progressBar > .bar {
     -fx-background-color : #dda0dd;
 }
+
+#grid {
+    -fx-background-color: #ffffff;
+}
+
+.gridCell {
+    -fx-background-color: #dcdcdc;
+    
+}
+
+.gridCell:hover {
+    -fx-border-color: #708090;
+    -fx-border-width: 2px;
+}
+
+.plusButton {
+    -fx-background-color: #ffffff;
+}

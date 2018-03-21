@@ -99,7 +99,12 @@
     <artifactId>advanced-bindings</artifactId>
     <version>0.4.0</version>
 </dependency>
-
+<!-- webview hyperlinks -->
+        <dependency>
+            <groupId>org.codefx.libfx</groupId>
+            <artifactId>LibFX</artifactId>
+            <version>0.3.0</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
