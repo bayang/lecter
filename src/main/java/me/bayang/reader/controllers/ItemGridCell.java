@@ -17,6 +17,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -56,13 +58,22 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
     // FIXME remove this from here
     private ConnectServer connectServer;
     
+    private RssController rssController;
+    
     private Item currentItem;
 
-    public ItemGridCell(ConnectServer connectServer) {
+    public ItemGridCell(RssController rssController, ConnectServer connectServer) {
         super();
+        this.rssController = rssController;
         this.connectServer = connectServer;
         setOnMouseClicked(event -> {
-            LOGGER.debug("grid {}",this.currentItem);
+            this.rssController.showWebView(this.currentItem);
+            this.rssController.markItemRead(this.currentItem);
+        });
+        this.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (e.getButton() == MouseButton.SECONDARY) {
+                e.consume();
+            }
         });
     }
 
@@ -70,7 +81,6 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
     protected void updateItem(Item item, boolean empty) {
         super.updateItem(item, empty);
         this.currentItem = item;
-//        this.prefWidthProperty().bind( this.getListView().widthProperty().subtract( 20 ) );
         if (empty || item == null) {
             setText(null);
             setGraphic(null);

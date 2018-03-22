@@ -24,9 +24,6 @@ import okhttp3.Callback;
 import okhttp3.HttpUrl;
 import okhttp3.Response;
 
-/**
- * Created by zz on 16/4/10.
- */
 @FXMLController
 public class AddSubscriptionController {
     @FXML

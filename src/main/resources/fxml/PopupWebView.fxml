@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXProgressBar?>
+<?import com.jfoenix.controls.JFXRadioButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+
+<VBox fx:id="container" alignment="CENTER" prefHeight="600.0" prefWidth="800.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.141" fx:controller="me.bayang.reader.controllers.PopupWebViewController">
+   <children>
+      <JFXProgressBar id="popupProgress" fx:id="progressBar" VBox.vgrow="ALWAYS">
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+      </JFXProgressBar>
+      <WebView fx:id="popupWebView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+      <HBox alignment="CENTER" prefWidth="200.0" styleClass="plusButton">
+         <children>
+            <JFXRadioButton fx:id="popupRssRadioButton" text="%rss" />
+            <JFXRadioButton fx:id="popupWebRadioButton" text="%web" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

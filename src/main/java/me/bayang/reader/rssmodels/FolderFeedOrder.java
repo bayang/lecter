@@ -44,9 +44,11 @@ public class FolderFeedOrder {
 
     /**
      * Connect server and get the information about the order, then return a map.
+     * UNUSED METHOD
      *
      * @return A map containing order (inoreader order).
      */
+    @Deprecated
     public Map<Feed, List<Subscription>> getInoreaderOrder() {
         String userId = UserInfo.getUserId();
         //get the streamprefs
@@ -57,7 +59,7 @@ public class FolderFeedOrder {
                 reader.close();
             }
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.error("error while getting inoreadr order",ioe);
         }
 
         //parse the streamprefs and get the folder order
@@ -109,7 +111,6 @@ public class FolderFeedOrder {
             }
         }
         return orderMap;
-
     }
     
     public Map<Feed, List<Subscription>> getAlphabeticalOrder() {
@@ -121,20 +122,8 @@ public class FolderFeedOrder {
             BufferedReader subscriptionsReader = connectServer.connectServer(ConnectServer.subscriptionListURL);
             SubscriptionsList subscriptionsList = mapper.readValue(subscriptionsReader, SubscriptionsList.class);
 //        LOGGER.debug("subscriptionsList -> {}", subscriptionsList);
-            if (folderReader != null) {
-                try {
-                    folderReader.close();
-                } catch (IOException e) {
-                    /* noop */
-                }
-            }
-            if (subscriptionsReader != null) {
-                try {
-                    subscriptionsReader.close();
-                } catch (IOException e) {
-                    /* noop */
-                }
-            }
+            ConnectServer.closeReader(folderReader);
+            ConnectServer.closeReader(subscriptionsReader);
             
             Comparator<Feed> labelComp = new Comparator<Feed>() {
                 @Override
@@ -197,8 +186,7 @@ public class FolderFeedOrder {
             }
             return orderMap;
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.error("error while loading folder & feed order", e);
         }
         return Collections.emptyMap();
     }

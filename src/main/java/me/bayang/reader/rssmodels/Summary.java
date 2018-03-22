@@ -1,8 +1,5 @@
 package me.bayang.reader.rssmodels;
 
-/**
- * Created by zz on 2016/12/10.
- */
 public class Summary{
     
     private String direction;

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 import javax.swing.event.HyperlinkEvent;
@@ -32,6 +33,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import eu.lestard.advanced_bindings.api.CollectionBindings;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -73,6 +75,8 @@ import me.bayang.reader.rssmodels.Readability;
 import me.bayang.reader.rssmodels.Subscription;
 import me.bayang.reader.rssmodels.Tag;
 import me.bayang.reader.rssmodels.UserInfo;
+
+import static javafx.concurrent.Worker.State;
 
 @FXMLController
 public class RssController {
@@ -138,6 +142,7 @@ public class RssController {
     private Stage oauthDialogStage = null;
     private Stage addSubscriptionStage = null;
     private Stage editSubscriptionStage = null;
+    private Stage popupWebViewStage;
     
     @Autowired
     private AddSubscriptionView addSubscriptionView;
@@ -147,6 +152,10 @@ public class RssController {
     private EditSubscriptionView editSubscriptionView;
     private EditSubscriptionController editSubscriptionController;
 
+    @Autowired
+    private PopupWebView popupWebView;
+    private PopupWebViewController popupWebViewController;
+    
     private List<Item> itemList = new ArrayList<>();
     private List<Item> readItemList = new ArrayList<>();
     private ObservableList<Item> observableItemList = FXCollections.observableArrayList(itemList);
@@ -175,6 +184,10 @@ public class RssController {
     
     private final FontAwesomeIconView listIcon = new FontAwesomeIconView(FontAwesomeIcon.BARS);
     private final FontAwesomeIconView gridIcon = new FontAwesomeIconView(FontAwesomeIcon.TH);
+    
+    private WebViewHyperlinkListener eventPrintingListener;
+    
+    private AtomicBoolean isWebViewListenerAttached = new AtomicBoolean(false);
 
     @FXML
     private void initialize() {
@@ -183,21 +196,14 @@ public class RssController {
         treeView.setDisable(true);
         splitPane.getItems().remove(gridContainer);
         eventHandleInitialize();
-        radioButtonInitialize();
+        initializeRadioButton();
         initializeSearchBar();
         initializeProgressBar();
         listIcon.setFill(Color.valueOf("#a5a3a3"));
         listIcon.setSize("24");
         gridIcon.setFill(Color.valueOf("#a5a3a3"));
         gridIcon.setSize("24");
-        webView.setContextMenuEnabled(false);
-        // FIXME attendre chargement page pour attacher listener
-        WebViewHyperlinkListener eventPrintingListener = event -> {
-            LOGGER.debug("{}-{}",event.getURL(), event.getSource().getClass().getName());
-            FXMain.getAppHostServices().showDocument(event.getURL().toString());
-            return true;
-        };
-        WebViews.addHyperlinkListener(webView, eventPrintingListener, HyperlinkEvent.EventType.ACTIVATED);
+        initializeWebView();
         snackbar = new JFXSnackbar(rssViewContainer);
        initializePlusIcons();
     }
@@ -205,7 +211,7 @@ public class RssController {
     private void eventHandleInitialize() {
         listView.setCellFactory(l -> new ItemListCell(connectServer));
         treeView.setCellFactory(t -> new MyTreeCell());
-        gridView.setCellFactory(g -> new ItemGridCell(connectServer));
+        gridView.setCellFactory(g -> new ItemGridCell(this, connectServer));
         
         //handle event between listView and webView
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
@@ -213,40 +219,14 @@ public class RssController {
                 if (rssRadioButton.isSelected()) {
                     webView.getEngine().loadContent(Item.processContent(newValue.getTitle(), newValue.getSummary().getContent()));
                 } else if (webRadioButton.isSelected()) {
-                    webView.getEngine().load(newValue.getCanonical().get(0).getHref());
+                    loadUrl(newValue.getCanonical().get(0).getHref());
                 } else if (readabilityRadioButton.isSelected()) {
                     new Thread(() -> {
                         String content = Readability.getReadabilityContent(newValue.getCanonical().get(0).getHref());
                         Platform.runLater(() -> webView.getEngine().loadContent(Item.processContent(newValue.getTitle(), content)));
                     }).start();
                 }
-                //send mark feed read to server if not in the starred list
-                if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
-                    if (!newValue.isRead()) {
-                        connectServer.markAsRead(newValue.getDecimalId());
-
-                        String streamId = newValue.getOrigin().getStreamId();
-                        Integer count = unreadCountsMap.get(streamId);
-                        unreadCountsMap.put(streamId, --count);
-
-                        Integer allCount = unreadCountsMap.get("All Items");
-                        unreadCountsMap.put("All Items", --allCount);
-
-                        //set parent count
-                        if (getParentItem(streamId) != null) {
-                            String parent = getParentItem(streamId).getValue().getId();
-                            Integer parentCount = unreadCountsMap.get(parent);
-                            unreadCountsMap.put(parent, --parentCount);
-                        }
-                        boolean removed = observableItemList.remove(newValue);
-                        LOGGER.debug("remove = {}", removed);
-                        boolean added = observableReadList.add(newValue);
-                        LOGGER.debug("add = {}", added);
-                        treeView.refresh();
-                    }
-                    newValue.setRead(true);//change state to read and change color in listView
-                    listView.refresh();//force refresh, or it will take a while to show the difference
-                }
+                markItemRead(newValue);
             }
         }));
         
@@ -316,12 +296,38 @@ public class RssController {
             gridView.setItems(sortedData);
         }));
     }
+    
+    public void markItemRead(Item item) {
+      //send mark feed read to server if not in the starred list
+        if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
+            if (!item.isRead()) {
+                connectServer.markAsRead(item.getDecimalId());
 
-    private void radioButtonInitialize() {
-        //set webView User Agent
-        // FIXME investigate this
-        webView.getEngine().setUserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36");
+                String streamId = item.getOrigin().getStreamId();
+                Integer count = unreadCountsMap.get(streamId);
+                unreadCountsMap.put(streamId, --count);
 
+                Integer allCount = unreadCountsMap.get("All Items");
+                unreadCountsMap.put("All Items", --allCount);
+
+                //set parent count
+                if (getParentItem(streamId) != null) {
+                    String parent = getParentItem(streamId).getValue().getId();
+                    Integer parentCount = unreadCountsMap.get(parent);
+                    unreadCountsMap.put(parent, --parentCount);
+                }
+                boolean removed = observableItemList.remove(item);
+                LOGGER.debug("remove = {}", removed);
+                boolean added = observableReadList.add(item);
+                LOGGER.debug("add = {}", added);
+                treeView.refresh();
+            }
+            item.setRead(true);//change state to read and change color in listView
+            listView.refresh();//force refresh, or it will take a while to show the difference
+        }
+    }
+
+    private void initializeRadioButton() {
         //initialize the radio button
         ToggleGroup toggleGroup = new ToggleGroup();
         rssRadioButton.setToggleGroup(toggleGroup);
@@ -407,8 +413,33 @@ public class RssController {
         plusIcon.setOnMouseClicked(e -> loadOlderReadArticles());
         plusIconGrid.setOnMouseClicked(e -> loadOlderReadArticles());
     }
+    
+    private void initializeWebView() {
+        webView.getEngine().setUserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.113 Safari/537.36 JavaFx8");
+        webView.setContextMenuEnabled(false);
+        eventPrintingListener = event -> {
+            LOGGER.debug("{}-{}",event.getURL(), event.getSource().getClass().getName());
+            FXMain.getAppHostServices().showDocument(event.getURL().toString());
+            return true;
+        };
+        webView.getEngine().getLoadWorker().stateProperty().addListener((ObservableValue<? extends State> p, State oldState, State newState) -> {
+            if (newState == State.SUCCEEDED) {
+                webView.setDisable(false);
+                if (! isWebViewListenerAttached.get()) {
+                    isWebViewListenerAttached.set(true);
+                    WebViews.addHyperlinkListener(webView, eventPrintingListener, HyperlinkEvent.EventType.ACTIVATED);
+                }
+            }
+            else if (newState == State.SCHEDULED || newState == State.RUNNING) {
+                webView.setDisable(true);
+            }
+            else {
+                webView.setDisable(false);
+            }
+        });
+    }
 
-    private void taskInitialize() {
+    private void initializeTasks() {
         //when get the treeItem from the URL, change the view
         treeTask = new Task<TreeItem<Feed>>() {
             @Override
@@ -567,19 +598,22 @@ public class RssController {
             splitPane.getItems().remove(listViewContainer);
             splitPane.getItems().remove(webViewContainer);
             splitPane.getItems().add(gridContainer);
-            splitPane.setDividerPosition(0, 0.24);
-            splitPane.setDividerPosition(1, 0.6);
             switchViewButton.setGraphic(listIcon);
+            adjustSplitPaneDividers();
         }
         else {
             gridMode = false;
             splitPane.getItems().add(listViewContainer);
             splitPane.getItems().add(webViewContainer);
             splitPane.getItems().remove(gridContainer);
-            splitPane.setDividerPosition(0, 0.24);
-            splitPane.setDividerPosition(1, 0.6);
             switchViewButton.setGraphic(gridIcon);
+            adjustSplitPaneDividers();
         }
+    }
+    
+    private void adjustSplitPaneDividers() {
+        splitPane.setDividerPosition(0, 0.24);
+        splitPane.setDividerPosition(1, 0.6);
     }
 
     @FXML
@@ -590,7 +624,7 @@ public class RssController {
         else {
             progressBar.setVisible(true);
             progressBar.setProgress(0);
-            taskInitialize();
+            initializeTasks();
             connectServer.getTaskExecutor().submit(unreadCountsTask);
             connectServer.getTaskExecutor().submit(treeTask);
             connectServer.getTaskExecutor().submit(itemListTask);
@@ -650,9 +684,12 @@ public class RssController {
                 }
             }
             treeView.refresh();
-
             connectServer.markAllAsRead(lastUpdateTime.getEpochSecond(), treeView.getSelectionModel().getSelectedItem().getValue().getId());
         }
+    }
+    
+    private void loadUrl(String url) {
+        webView.getEngine().load(url);
     }
 
     @FXML
@@ -701,6 +738,28 @@ public class RssController {
         }
     }
     
+    public void showWebView(Item item) {
+        if (popupWebViewStage == null) {
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(FXMain.getStage());
+            dialogStage.getIcons().add(new Image("icon.png"));
+            dialogStage.setResizable(true);
+            Scene scene = new Scene(popupWebView.getView());
+            dialogStage.setScene(scene);
+            this.popupWebViewStage = dialogStage;
+            popupWebViewController = (PopupWebViewController) popupWebView.getPresenter();
+            popupWebViewController.setStage(dialogStage);
+            popupWebViewController.setCurrentItem(item);
+            // Show the dialog and wait until the user closes it
+            dialogStage.showAndWait();
+        }
+        else {
+            popupWebViewController.setCurrentItem(item);
+            popupWebViewStage.showAndWait();
+        }
+    }
+    
     private void loadOlderReadArticles() {
         Feed f = treeView.getSelectionModel().getSelectedItem().getValue();
         if (f == null) {
@@ -721,7 +780,6 @@ public class RssController {
             }
             LOGGER.debug("finish loadOlderReadArticles " + olderItemsListTask.getValue().size());
             int idx = treeView.getSelectionModel().getSelectedIndex();
-            LOGGER.debug("clear ");
             // hack to force content to be sorted after inserting older read items
             // in some cases the selection was not refreshed
             treeView.getSelectionModel().clearSelection();
@@ -756,7 +814,6 @@ public class RssController {
     private TreeItem<Feed> handleFolderFeedOrder() {
         root = new TreeItem<>(new Tag("root", "root")); //the root node doesn't show;
         root.setExpanded(true);
-
         Map<Feed, List<Subscription>> map = folderFeedOrder.getAlphabeticalOrder();
         for (Feed feed : map.keySet()) {
             TreeItem<Feed> tag = new TreeItem<>(feed);
@@ -769,7 +826,6 @@ public class RssController {
             root.getChildren().add(tag);
         }
         return root;
-
     }
 
     private TreeItem<Feed> getParentItem(String streamId) {

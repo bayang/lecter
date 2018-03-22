@@ -2,9 +2,6 @@ package me.bayang.reader.rssmodels;
 
 import java.util.ArrayList;
 
-/**
- * Created by zz on 2016/12/10.
- */
 public class Subscription implements Feed {
     
     private String id;

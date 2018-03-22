@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.concurrent.Task;
-import javafx.scene.control.Alert;
 import me.bayang.reader.controllers.RssController;
 import me.bayang.reader.rssmodels.Item;
 import me.bayang.reader.rssmodels.StreamContent;
@@ -104,7 +102,6 @@ public class ConnectServer {
     
     //URLs for InoReader
     public static String userinfoURL = API_BASE_URL + "/user-info";
-//    public static String loginURL = "https://www.inoreader.com/accounts/ClientLogin?";
     public static String unreadCountURL = API_BASE_URL + "/unread-count";
     public static String subscriptionListURL = API_BASE_URL + "/subscription/list";
     public static String folderTagListURL = API_BASE_URL + "/tag/list";
@@ -113,27 +110,26 @@ public class ConnectServer {
     public static String streamPreferenceListURL = API_BASE_URL + "/preference/stream/list";
     public static String itemIDsURL = API_BASE_URL + "/stream/items/ids?xt=user/-/state/com.google/read";
     
-//    public static String markAllReadURL = API_BASE_URL + "/mark-all-as-read?ts=";
     public static String markAllReadURL = API_BASE_URL + "/mark-all-as-read";
     
-//    public static String markFeedReadURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/read&i=";
     public static String markFeedReadURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/read";
     
-//    public static String markStarredURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/starred&i=";
     public static String markStarredURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/starred";
     
-//    public static String markUnstarredURL = API_BASE_URL + "/edit-tag?r=user/-/state/com.google/starred&i=";
     public static String markUnstarredURL = API_BASE_URL + "/edit-tag?r=user/-/state/com.google/starred";
     
-//    public static String editSubscriptionURL = API_BASE_URL + "/subscription/edit?";
     public static String editSubscriptionURL = API_BASE_URL + "/subscription/edit";
     
-//    public static String addSubscriptionURL = API_BASE_URL + "/subscription/quickadd?quickadd=";
     public static String addSubscriptionURL = API_BASE_URL + "/subscription/quickadd";
     
     public static final String baseStreamContentURL = API_BASE_URL + "/stream/contents";
     
     public static final HttpUrl baseStreamContentHTTPUrl = HttpUrl.parse(baseStreamContentURL);
+    
+    public static final String OAUTH_URL = "https://www.inoreader.com/oauth2/auth";
+    public static final String TOKEN_URL = "https://www.inoreader.com/oauth2/token";
+    
+    public static final String OAUTH_REDIRECT_URL = "http://localhost:8080/reader/redirect";
     
     public static final String readTag = "user/%s/state/com.google/read";
     
@@ -156,15 +152,15 @@ public class ConnectServer {
         Single<OkHttpClient> s = new ValueSingle<OkHttpClient>(okClient);
         executor = new OkHttpExecutor(s);
         provider = new BasicOAuth2AuthorizationProvider(
-                URI.create("https://www.inoreader.com/oauth2/auth"), 
-                URI.create("https://www.inoreader.com/oauth2/token"), 
+                URI.create(OAUTH_URL), 
+                URI.create(TOKEN_URL), 
                 new Duration(1, 0, 20, 0, 0));
         credentials = new BasicOAuth2ClientCredentials(
                 getAppId(), getAppKey());
         client = new BasicOAuth2Client(
                 provider,
                 credentials,
-                new LazyUri(new Precoded("http://localhost:8080/reader/redirect")));
+                new LazyUri(new Precoded(OAUTH_REDIRECT_URL)));
         grant = new AuthorizationCodeGrant(
                 client, new BasicScope("read write"));
         authorizationUrl = grant.authorizationUrl();
@@ -292,7 +288,6 @@ public class ConnectServer {
         return null;
     }
     
-    //connectServer.connectServer(ConnectServer.markFeedReadURL + newValue.getDecimalId())
     @Async("threadPoolTaskExecutor")
     public void markAsRead(String decimalId) {
         HttpUrl URL = HttpUrl.parse(markFeedReadURL);
@@ -302,7 +297,6 @@ public class ConnectServer {
         closeReader(reader);
     }
     
-    //connectServer.connectServer(ConnectServer.markAllReadURL + lastUpdateTime.getEpochSecond() + "&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
     @Async("threadPoolTaskExecutor")
     public void markAllAsRead(long timestamp, String streamId) {
         HttpUrl URL = HttpUrl.parse(markAllReadURL);
@@ -313,7 +307,6 @@ public class ConnectServer {
         closeReader(reader);
     }
     
-    //connectServer.connectServer(ConnectServer.editSubscriptionURL + "ac=unsubscribe&s=" + treeView.getSelectionModel().getSelectedItem().getValue().getId());
     @Async("threadPoolTaskExecutor")
     public void unsubscribe(String feedId) {
         HttpUrl URL = HttpUrl.parse(editSubscriptionURL);
@@ -321,7 +314,6 @@ public class ConnectServer {
                 .setQueryParameter("ac", "unsubscribe")
                 .setQueryParameter("s", feedId)
                 .build());
-//        BufferedReader reader = connectServer(ConnectServer.editSubscriptionURL + "ac=unsubscribe&s=" + feedId);
         closeReader(reader);
     }
     
@@ -333,11 +325,9 @@ public class ConnectServer {
                 .setQueryParameter("s", feedId)
                 .setQueryParameter("r", folder)
                 .build());
-//        BufferedReader reader = connectServer(ConnectServer.editSubscriptionURL + "ac=edit&s=" + feedId+ "&r=" + folder);
         closeReader(reader);
     }
     
-    // this.connectServer.connectServer(ConnectServer.markStarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())
     @Async("threadPoolTaskExecutor")
     public void star(String decimalId) {
         HttpUrl URL = HttpUrl.parse(markStarredURL);
@@ -347,7 +337,6 @@ public class ConnectServer {
         closeReader(reader);
     }
     
- // this.connectServer.connectServer(ConnectServer.markUnstarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())
     @Async("threadPoolTaskExecutor")
     public void unStar(String decimalId) {
         HttpUrl URL = HttpUrl.parse(markUnstarredURL);
@@ -363,7 +352,6 @@ public class ConnectServer {
             HashMap<String, Integer> map = new HashMap<>();
             counterReader = connectServer(ConnectServer.unreadCountURL);
             UnreadCounter counter = mapper.readValue(counterReader, UnreadCounter.class);
-    //        UnreadCounter counter = gson.fromJson(counterReader, UnreadCounter.class);
             List<UnreadCounts> counts = counter.getUnreadcounts();
             for (UnreadCounts count : counts) {
                 map.put(count.getId(), count.getCount());
@@ -382,14 +370,12 @@ public class ConnectServer {
         BufferedReader reader = null;
         try {
             reader = connectServer(URLString);
-    //        StreamContent content = gson.fromJson(reader, StreamContent.class);
             StreamContent content;
             content = mapper.readValue(reader, StreamContent.class);
             List<Item> itemList = new ArrayList<>(content.getItems());
     
             while (content.getContinuation() != null) {
                 reader = connectServer(URLString + "&c=" + content.getContinuation());
-    //            content = gson.fromJson(reader, StreamContent.class);
                 content = mapper.readValue(reader, StreamContent.class);
                 itemList.addAll(content.getItems());
             }

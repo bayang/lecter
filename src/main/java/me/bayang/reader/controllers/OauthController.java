@@ -1,29 +1,13 @@
 package me.bayang.reader.controllers;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.concurrent.TimeUnit;
 
-import org.dmfs.httpessentials.client.HttpRequestExecutor;
 import org.dmfs.httpessentials.exceptions.ProtocolError;
 import org.dmfs.httpessentials.exceptions.ProtocolException;
-import org.dmfs.httpessentials.okhttp.OkHttpExecutor;
-import org.dmfs.jems.single.Single;
-import org.dmfs.jems.single.elementary.ValueSingle;
-import org.dmfs.oauth2.client.BasicOAuth2AuthorizationProvider;
-import org.dmfs.oauth2.client.BasicOAuth2Client;
-import org.dmfs.oauth2.client.BasicOAuth2ClientCredentials;
 import org.dmfs.oauth2.client.OAuth2AccessToken;
-import org.dmfs.oauth2.client.OAuth2AuthorizationProvider;
-import org.dmfs.oauth2.client.OAuth2Client;
-import org.dmfs.oauth2.client.OAuth2ClientCredentials;
-import org.dmfs.oauth2.client.OAuth2InteractiveGrant;
-import org.dmfs.oauth2.client.grants.AuthorizationCodeGrant;
-import org.dmfs.oauth2.client.scope.BasicScope;
 import org.dmfs.rfc3986.Uri;
 import org.dmfs.rfc3986.encoding.Precoded;
 import org.dmfs.rfc3986.uris.LazyUri;
-import org.dmfs.rfc5545.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,11 +17,7 @@ import javafx.fxml.FXML;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import me.bayang.reader.FXMain;
 import me.bayang.reader.backend.inoreader.ConnectServer;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 @FXMLController
 public class OauthController {
@@ -60,7 +40,6 @@ public class OauthController {
     @FXML
     private void initialize() {
         oauthView.getEngine().load(connectServer.getAuthorizationUrl().toString());
-//        oauthView.getEngine().loadContent("<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Insert title here</title></head><body>    <p>TEST TESTETS <a href=\"http://localhost:8080/reader/redirect\">LOCALHOST</a></p></body></html>");        
             oauthView.getEngine().locationProperty().addListener((observable, oldValue, newValue) -> {
             if (oldValue != null && newValue != null) {
                 LOGGER.debug("{} -> {}",oldValue, newValue);
@@ -80,16 +59,12 @@ public class OauthController {
 //                        LOGGER.debug(response.body().string());
                         stage.close();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        LOGGER.error("failure during oauth token fetching and processing", e);
                     } catch (ProtocolError e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        LOGGER.error("failure during oauth token fetching and processing", e);
                     } catch (ProtocolException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        LOGGER.error("failure during oauth token fetching and processing", e);
                     }
-
                 }
                 return;
             }
@@ -100,7 +75,6 @@ public class OauthController {
                 LOGGER.debug(newValue);
             }
         });
-            
     }
 
     public ConnectServer getConnectServer() {
@@ -118,7 +92,5 @@ public class OauthController {
     public void setStage(Stage stage) {
         this.stage = stage;
     }
-    
-    
 
 }

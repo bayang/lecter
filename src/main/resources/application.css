@@ -27,13 +27,18 @@
 }
 
 .jfx-snackbar-action {
-    -fx-text-fill: #ff4081;
+    -fx-text-fill: #00ff00;
     -fx-margin : 0 10 0 0;
     -fx-background-color: #323232;
 }
 
 #progressBar > .bar {
     -fx-background-color : #dda0dd;
+}
+
+#popupProgress > .bar {
+    -fx-background-color : #00ff00;
+    -fx-pref-height : 5;
 }
 
 #grid {

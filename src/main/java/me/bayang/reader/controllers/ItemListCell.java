@@ -68,12 +68,10 @@ public class ItemListCell extends JFXListCell<Item> {
 
         starItem.setOnAction(event -> {
             LOGGER.debug("mark star " + getListView().getSelectionModel().getSelectedItem().getDecimalId());
-//            new Thread(() -> this.connectServer.connectServer(ConnectServer.markStarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())).start();
             this.connectServer.star(this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
         });
         unStarItem.setOnAction(event -> {
             LOGGER.debug("unstar " + this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
-//            new Thread(() -> this.connectServer.connectServer(ConnectServer.markUnstarredURL + this.getListView().getSelectionModel().getSelectedItem().getDecimalId())).start();
             this.connectServer.unStar(this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
         });
         this.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
