@@ -38,8 +38,7 @@ public class PropertiesStorageServiceImpl implements IStorageService {
             properties.setProperty("expiration", accessTokenExpiration);
             LOGGER.debug("expiration {}", accessTokenExpiration);
         } catch (ProtocolException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.error("error reading token", e);
         }
         properties.setProperty("refresh", refreshToken);
         properties.setProperty("access", accessToken);
@@ -83,7 +82,7 @@ public class PropertiesStorageServiceImpl implements IStorageService {
             };
             return token;
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.error("error loading token", ioe);
             return null;
         }
     }
@@ -101,7 +100,7 @@ public class PropertiesStorageServiceImpl implements IStorageService {
                 String userId = properties.getProperty("userId");
                 return userId;
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                LOGGER.error("error loading user", ioe);
             }
         }
         return null;
@@ -114,8 +113,7 @@ public class PropertiesStorageServiceImpl implements IStorageService {
         try {
             properties.store(new FileOutputStream(userPropertiesFilename), null);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.error("error saving user", e);
         }
     }
 

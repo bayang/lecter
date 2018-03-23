@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import javax.swing.event.HyperlinkEvent;
 
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
+import com.jfoenix.controls.JFXRadioButton;
 import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
@@ -39,6 +41,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
+import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -67,25 +70,25 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import me.bayang.reader.FXMain;
 import me.bayang.reader.backend.inoreader.ConnectServer;
+import me.bayang.reader.mobilizer.MercuryMobilizer;
+import me.bayang.reader.mobilizer.MercuryResult;
 import me.bayang.reader.rssmodels.Categories;
 import me.bayang.reader.rssmodels.Feed;
 import me.bayang.reader.rssmodels.FolderFeedOrder;
 import me.bayang.reader.rssmodels.Item;
-import me.bayang.reader.rssmodels.Readability;
 import me.bayang.reader.rssmodels.Subscription;
 import me.bayang.reader.rssmodels.Tag;
 import me.bayang.reader.rssmodels.UserInfo;
-
-import static javafx.concurrent.Worker.State;
 
 @FXMLController
 public class RssController {
     
     private static Logger LOGGER = LoggerFactory.getLogger(RssController.class);
     
+    public static final Pattern PATTERN = Pattern.compile("<center>[.*<>\\/\\a-zA-Z0-9]*Ads from Inoreader[.*<>\\/\\a-zA-Z0-9]*<\\/center>");
+    
     @FXML
     private BorderPane rssViewContainer;
-    
     @FXML
     private TreeView<Feed> treeView;
     @FXML
@@ -99,19 +102,23 @@ public class RssController {
     @FXML
     private Button switchViewButton;
     @FXML
+    private Button addSubscriptionButton;
+    @FXML
     private FontAwesomeIconView switchViewIcon;
     @FXML
     private FontAwesomeIconView plusIcon;
     @FXML
     private FontAwesomeIconView plusIconGrid;
     @FXML
-    private RadioButton rssRadioButton;
+    private JFXRadioButton rssRadioButton;
     @FXML
-    private RadioButton webRadioButton;
+    private JFXRadioButton webRadioButton;
     @FXML
-    private RadioButton readabilityRadioButton;
+    private JFXRadioButton mercuryRadioButton;
     @FXML
     private JFXProgressBar progressBar;
+    @FXML
+    private JFXProgressBar webViewProgressBar;
     @FXML
     private VBox toolBarContainer;
     @FXML
@@ -188,6 +195,9 @@ public class RssController {
     private WebViewHyperlinkListener eventPrintingListener;
     
     private AtomicBoolean isWebViewListenerAttached = new AtomicBoolean(false);
+    
+    @Autowired
+    private MercuryMobilizer mercuryMobilizer;
 
     @FXML
     private void initialize() {
@@ -206,6 +216,7 @@ public class RssController {
         initializeWebView();
         snackbar = new JFXSnackbar(rssViewContainer);
        initializePlusIcons();
+       initNetworkTask();
     }
 
     private void eventHandleInitialize() {
@@ -220,11 +231,8 @@ public class RssController {
                     webView.getEngine().loadContent(Item.processContent(newValue.getTitle(), newValue.getSummary().getContent()));
                 } else if (webRadioButton.isSelected()) {
                     loadUrl(newValue.getCanonical().get(0).getHref());
-                } else if (readabilityRadioButton.isSelected()) {
-                    new Thread(() -> {
-                        String content = Readability.getReadabilityContent(newValue.getCanonical().get(0).getHref());
-                        Platform.runLater(() -> webView.getEngine().loadContent(Item.processContent(newValue.getTitle(), content)));
-                    }).start();
+                } else if (mercuryRadioButton.isSelected()) {
+                    launchMercuryTask();
                 }
                 markItemRead(newValue);
             }
@@ -309,17 +317,20 @@ public class RssController {
 
                 Integer allCount = unreadCountsMap.get("All Items");
                 unreadCountsMap.put("All Items", --allCount);
-
                 //set parent count
                 if (getParentItem(streamId) != null) {
                     String parent = getParentItem(streamId).getValue().getId();
                     Integer parentCount = unreadCountsMap.get(parent);
                     unreadCountsMap.put(parent, --parentCount);
                 }
-                boolean removed = observableItemList.remove(item);
-                LOGGER.debug("remove = {}", removed);
-                boolean added = observableReadList.add(item);
-                LOGGER.debug("add = {}", added);
+//                Platform.runLater(() -> {
+                    boolean removed = observableItemList.remove(item);
+                    LOGGER.debug("remove = {}", removed);
+//                });
+//                Platform.runLater(() -> {
+                    boolean added = observableReadList.add(item);
+                    LOGGER.debug("add = {}", added);
+//                });
                 treeView.refresh();
             }
             item.setRead(true);//change state to read and change color in listView
@@ -332,7 +343,7 @@ public class RssController {
         ToggleGroup toggleGroup = new ToggleGroup();
         rssRadioButton.setToggleGroup(toggleGroup);
         webRadioButton.setToggleGroup(toggleGroup);
-        readabilityRadioButton.setToggleGroup(toggleGroup);
+        mercuryRadioButton.setToggleGroup(toggleGroup);
         rssRadioButton.setSelected(true);
         toggleGroup.selectedToggleProperty().addListener(((observable, oldValue, newValue) -> {
             if (toggleGroup.getSelectedToggle() != null) {
@@ -342,16 +353,32 @@ public class RssController {
                         webView.getEngine().loadContent(Item.processContent(item.getTitle(), item.getSummary().getContent()));
                     } else if (webRadioButton.isSelected()) {
                         webView.getEngine().load(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
-                    } else if (readabilityRadioButton.isSelected()) {
-                        new Thread(() -> {
-                            String content = Readability.getReadabilityContent(listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref());
-                            Platform.runLater(() -> webView.getEngine().loadContent(Item.processContent(listView.getSelectionModel().getSelectedItem().getTitle(), content)));
-                        }).start();
-
+                    } else if (mercuryRadioButton.isSelected()) {
+                        launchMercuryTask();
                     }
                 }
             }
         }));
+    }
+    
+    private void launchMercuryTask() {
+        String href = listView.getSelectionModel().getSelectedItem().getCanonical().get(0).getHref();
+        Task<MercuryResult> t = mercuryMobilizer.getMercuryResultTask(href);
+        LOGGER.debug("{}",href);
+        t.setOnSucceeded(e -> {
+            webViewProgressBar.setVisible(false);
+            MercuryResult m = t.getValue();
+            LOGGER.debug("{}",m);
+            if (m != null && ! m.getContent().isEmpty()) {
+                String url = m.getUrl();
+                if (url.startsWith("/")) {
+                    url = href;
+                }
+                webView.getEngine().loadContent(MercuryMobilizer.formatContent(m.getImageUrl(), url, m.getContent()));
+            }
+        });
+        connectServer.getTaskExecutor().submit(t);
+        webViewProgressBar.setVisible(true);
     }
     
     private void initializeSearchBar() {
@@ -387,6 +414,8 @@ public class RssController {
     }
     
     private void initializeProgressBar() {
+        webViewProgressBar.setVisible(false);
+        webViewProgressBar.prefWidthProperty().bind(webViewContainer.widthProperty());
         progressBar.setVisible(false);
         progressBar.prefWidthProperty().bind(toolBarContainer.widthProperty());
         progressBar.progressProperty().addListener(((observable, oldValue, newValue) -> {
@@ -425,6 +454,7 @@ public class RssController {
         webView.getEngine().getLoadWorker().stateProperty().addListener((ObservableValue<? extends State> p, State oldState, State newState) -> {
             if (newState == State.SUCCEEDED) {
                 webView.setDisable(false);
+                webViewProgressBar.setVisible(false);
                 if (! isWebViewListenerAttached.get()) {
                     isWebViewListenerAttached.set(true);
                     WebViews.addHyperlinkListener(webView, eventPrintingListener, HyperlinkEvent.EventType.ACTIVATED);
@@ -432,11 +462,39 @@ public class RssController {
             }
             else if (newState == State.SCHEDULED || newState == State.RUNNING) {
                 webView.setDisable(true);
+                webViewProgressBar.setVisible(true);
             }
             else {
+                webViewProgressBar.setVisible(false);
                 webView.setDisable(false);
             }
         });
+    }
+    
+    public void initNetworkTask() {
+        Task<Void> t = connectServer.initTask();
+        t.setOnSucceeded(e -> {
+            progressBar.setVisible(false);
+            refreshButton.setDisable(false);
+            addSubscriptionButton.setDisable(false);
+            LOGGER.debug("Server successfully reached");
+            snackbarNotify("Server successfully reached");
+        });
+        t.setOnRunning(e -> {
+            progressBar.setVisible(true);
+            LOGGER.debug("Trying to reach server...Please wait...");
+            snackbarNotify("Trying to reach server...\nPlease wait...");
+            refreshButton.setDisable(true);
+            addSubscriptionButton.setDisable(true);
+        });
+        t.setOnFailed(e -> {
+            progressBar.setVisible(false);
+            refreshButton.setDisable(false);
+            addSubscriptionButton.setDisable(false);
+            LOGGER.debug("Failed to contact server");
+            snackbarNotifyBlocking("Failed to contact server.\nCheck connection and retry in a moment");
+        });
+        this.connectServer.getTaskExecutor().submit(t);
     }
 
     private void initializeTasks() {
@@ -464,9 +522,11 @@ public class RssController {
             }
         };
         itemListTask.setOnSucceeded(event -> {
-            observableItemList.clear();
-            observableItemList.addAll(itemListTask.getValue());
-            progressBar.setProgress(progressBar.getProgress() + 0.25);
+            Platform.runLater(() -> {
+                observableItemList.clear();
+                observableItemList.addAll(itemListTask.getValue());
+                progressBar.setProgress(progressBar.getProgress() + 0.25);
+            });
             LOGGER.debug("finish itemListTask " + observableItemList.size());
         });
         //initialize starredList
@@ -637,54 +697,59 @@ public class RssController {
     private void markReadButtonFired() {
         if (connectServer.isShouldAskPermissionOrLogin()) {
             snackbarNotifyBlocking(bundle.getString("pleaseLogin"));
-        } else {
-            for (Item item : listView.getItems()) {
-                LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
-                if (! item.isRead()) {
-                    item.setRead(true);
-                    boolean removed = observableItemList.remove(item);
-                    LOGGER.debug("remove = {}", removed);
-                    boolean added = observableReadList.add(item);
-                    LOGGER.debug("add = {}", added);
+        } 
+        else {
+            Platform.runLater(() -> {
+                for (Item item : listView.getItems()) {
+                    LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
+                    if (! item.isRead()) {
+                        item.setRead(true);
+//                        Platform.runLater(() -> {
+                            boolean removed = observableItemList.remove(item);
+                            LOGGER.debug("remove = {}", removed);
+                            boolean added = observableReadList.add(item);
+                            LOGGER.debug("add = {}", added);
+//                        });
+                    }
+                    LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
+                    
                 }
-                LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
-                
-            }
-            listView.refresh();
-            //inform treeView to refresh the unread count
-            if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
-                Feed feed = treeView.getSelectionModel().getSelectedItem().getValue();
-                if (feed instanceof Subscription) {
-                    Integer count = unreadCountsMap.get(feed.getId());
-                    unreadCountsMap.put(feed.getId(), 0);
-
-                    Feed parent = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
-                    if (unreadCountsMap.get(parent.getId()) != null) {
-                        unreadCountsMap.put(parent.getId(), unreadCountsMap.get(parent.getId()) - count);
-                    }
-
-                    unreadCountsMap.put("All Items", unreadCountsMap.get("All Items") - count);
-                } else if (!feed.getId().equals("All Items")) {//parent treeItems, except All Items
-                    Integer count = unreadCountsMap.get(feed.getId());
-                    unreadCountsMap.put(feed.getId(), 0);
-                    for (TreeItem<Feed> son : treeView.getSelectionModel().getSelectedItem().getChildren()) {
-                        unreadCountsMap.put(son.getValue().getId(), 0);
-                    }
-                    unreadCountsMap.put("All Items", unreadCountsMap.get("All Items") - count);
-                } else {//All Items
-                    unreadCountsMap.put("All Items", 0);
-                    root.getChildren().stream().filter(parent -> !parent.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")).forEach(parent -> {
-                        if (parent.getValue() instanceof Tag) {
-                            for (TreeItem<Feed> son : parent.getChildren()) {
-                                unreadCountsMap.put(son.getValue().getId(), 0);
-                            }
+                listView.refresh();
+                //inform treeView to refresh the unread count
+                if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
+                    Feed feed = treeView.getSelectionModel().getSelectedItem().getValue();
+                    if (feed instanceof Subscription) {
+                        Integer count = unreadCountsMap.get(feed.getId());
+                        unreadCountsMap.put(feed.getId(), 0);
+                        
+                        Feed parent = treeView.getSelectionModel().getSelectedItem().getParent().getValue();
+                        if (unreadCountsMap.get(parent.getId()) != null) {
+                            unreadCountsMap.put(parent.getId(), unreadCountsMap.get(parent.getId()) - count);
                         }
-                        unreadCountsMap.put(parent.getValue().getId(), 0);
-                    });
+                        
+                        unreadCountsMap.put("All Items", unreadCountsMap.get("All Items") - count);
+                    } else if (!feed.getId().equals("All Items")) {//parent treeItems, except All Items
+                        Integer count = unreadCountsMap.get(feed.getId());
+                        unreadCountsMap.put(feed.getId(), 0);
+                        for (TreeItem<Feed> son : treeView.getSelectionModel().getSelectedItem().getChildren()) {
+                            unreadCountsMap.put(son.getValue().getId(), 0);
+                        }
+                        unreadCountsMap.put("All Items", unreadCountsMap.get("All Items") - count);
+                    } else {//All Items
+                        unreadCountsMap.put("All Items", 0);
+                        root.getChildren().stream().filter(parent -> !parent.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")).forEach(parent -> {
+                            if (parent.getValue() instanceof Tag) {
+                                for (TreeItem<Feed> son : parent.getChildren()) {
+                                    unreadCountsMap.put(son.getValue().getId(), 0);
+                                }
+                            }
+                            unreadCountsMap.put(parent.getValue().getId(), 0);
+                        });
+                    }
                 }
-            }
-            treeView.refresh();
-            connectServer.markAllAsRead(lastUpdateTime.getEpochSecond(), treeView.getSelectionModel().getSelectedItem().getValue().getId());
+                treeView.refresh();
+                connectServer.markAllAsRead(lastUpdateTime.getEpochSecond(), treeView.getSelectionModel().getSelectedItem().getValue().getId());
+            });
         }
     }
     
@@ -694,7 +759,7 @@ public class RssController {
 
     @FXML
     private void loginMenuFired() {
-        snackbarNotifyBlocking("toto");
+//        snackbarNotifyBlocking("toto");
         // Create the dialog Stage.
         if (oauthDialogStage == null) {
             Stage dialogStage = new Stage();
@@ -772,7 +837,9 @@ public class RssController {
         olderItemsListTask.setOnSucceeded(event -> {
             for (Item i : olderItemsListTask.getValue()) {
                 if (observableReadList.stream().noneMatch(item -> item.getId().equals(i.getId()))) {
-                    observableReadList.add(i);
+                    Platform.runLater(() -> {
+                        observableReadList.add(i);
+                    });
                 }
                 else{
                     LOGGER.debug("not adding {}", i);
@@ -859,7 +926,9 @@ public class RssController {
     }
     
     public static void snackbarNotify(String msg) {
-        snackbar.enqueue(new SnackbarEvent(msg, null, 2500, false, null));
+        if (msg != null) {
+            snackbar.enqueue(new SnackbarEvent(msg, null, 2500, false, null));
+        }
     }
 }
 

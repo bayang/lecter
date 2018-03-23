@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import me.bayang.reader.controllers.RssController;
 import me.bayang.reader.rssmodels.Item;
@@ -78,6 +79,7 @@ public class ConnectServer {
     private URI authorizationUrl;
     private OAuth2AccessToken token;
     private boolean shouldAskPermissionOrLogin = true;
+    private boolean initDone = false;
     
     @Value("${inoreader.appId}")
     public String AppId;
@@ -88,7 +90,7 @@ public class ConnectServer {
     @Autowired
     private IStorageService storage;
     
-    @Autowired
+    @Resource(name="mapper")
     private ObjectMapper mapper;
     
     @Resource(name = "threadPoolTaskExecutor")
@@ -105,7 +107,7 @@ public class ConnectServer {
     public static String unreadCountURL = API_BASE_URL + "/unread-count";
     public static String subscriptionListURL = API_BASE_URL + "/subscription/list";
     public static String folderTagListURL = API_BASE_URL + "/tag/list";
-    public static String streamContentURL = API_BASE_URL + "/stream/contents/user/-/state/com.google/root?xt=user/-/state/com.google/read&n=100";
+    public static String streamContentURL = API_BASE_URL + "/stream/contents/user/-/state/com.google/root?xt=user/-/state/com.google/read&n=200";
     public static String starredContentURL = API_BASE_URL + "/stream/contents/user/-/state/com.google/starred?n=100";
     public static String streamPreferenceListURL = API_BASE_URL + "/preference/stream/list";
     public static String itemIDsURL = API_BASE_URL + "/stream/items/ids?xt=user/-/state/com.google/read";
@@ -133,8 +135,9 @@ public class ConnectServer {
     
     public static final String readTag = "user/%s/state/com.google/read";
     
+    
     @PostConstruct
-    public void initHttpClient() throws IOException, ProtocolError, ProtocolException {
+    public void initHttpClient() {
         if (!storage.hasToken()) {
             setShouldAskPermissionOrLogin(true);
         } else {
@@ -164,9 +167,36 @@ public class ConnectServer {
         grant = new AuthorizationCodeGrant(
                 client, new BasicScope("read write"));
         authorizationUrl = grant.authorizationUrl();
-        LOGGER.debug("auth url = {}", authorizationUrl.toString());
+//        LOGGER.debug("auth url = {}", authorizationUrl.toString());
+//        if (! isShouldAskPermissionOrLogin()) {
+//            refreshTokenAsync();
+//        }
+//        String userId = storage.loadUser();
+//        if (userId == null || userId.isEmpty()) {
+//            fetchAndSaveUSer();
+////            UserInformation userInfo = getUserInformation();
+////            if (userInfo != null) {
+////                UserInfo.setUserId(userInfo.getUserId());
+////                storage.saveUser(userInfo);
+////            }
+//        }
+//        else {
+//            UserInfo.setUserId(userId);
+//        }
+//        initDone = true;
+//        if (isShouldAskPermissionOrLogin()) {
+//            RssController.snackbarNotifyBlocking(bundle.getString("pleaseLogin"));
+//        }
+    }
+    
+    public void initData() throws IOException, ProtocolError, ProtocolException {
+        LOGGER.debug("initializing data");
         if (! isShouldAskPermissionOrLogin()) {
-            refreshToken();
+            OAuth2AccessToken newToken;
+                newToken = new TokenRefreshGrant(client, token).accessToken(executor);
+                setToken(newToken);
+//                LOGGER.error("refreshToken error", e);
+//            refreshToken();
         }
         String userId = storage.loadUser();
         if (userId == null || userId.isEmpty()) {
@@ -179,6 +209,22 @@ public class ConnectServer {
         else {
             UserInfo.setUserId(userId);
         }
+        setInitDone(true);
+        LOGGER.debug("initializing done");
+        if (isShouldAskPermissionOrLogin()) {
+            Platform.runLater(() -> RssController.snackbarNotifyBlocking(bundle.getString("pleaseLogin")));
+        }
+    }
+    
+    public Task<Void> initTask() {
+        Task<Void> t = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                initData();
+                return null;
+            }
+        };
+        return t;
     }
 
     /**
@@ -189,6 +235,9 @@ public class ConnectServer {
     public BufferedReader connectServer(String url) {
         Response response = null;
         try {
+            if (! initDone) {
+                initData();
+            }
             if (! tokenIsStillValid()) {
                 refreshToken();
             }
@@ -221,6 +270,9 @@ public class ConnectServer {
         } catch (ProtocolException e) {
             RssController.snackbarNotify(bundle.getString("connectionFailure"));
             LOGGER.error("connectServer error", e);
+        } catch (ProtocolError e) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("connectServer error", e);
         }
         return null;
     }
@@ -233,6 +285,9 @@ public class ConnectServer {
     public BufferedReader connectServer(HttpUrl url) {
         Response response = null;
         try {
+            if (! initDone) {
+                initData();
+            }
             if (! tokenIsStillValid()) {
                 refreshToken();
             }
@@ -263,6 +318,9 @@ public class ConnectServer {
                 response.close();
             }
         } catch (ProtocolException e) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("connectServer error", e);
+        } catch (ProtocolError e) {
             RssController.snackbarNotify(bundle.getString("connectionFailure"));
             LOGGER.error("connectServer error", e);
         }
@@ -453,20 +511,27 @@ public class ConnectServer {
         return t;
     }
     
+    @Async("threadPoolTaskExecutor")
+    private void refreshTokenAsync() {
+        refreshToken();
+    }
+    
     private void refreshToken() {
         OAuth2AccessToken newToken;
         try {
             newToken = new TokenRefreshGrant(client, token).accessToken(executor);
             setToken(newToken);
         } catch (IOException | ProtocolError | ProtocolException e) {
-            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            if (bundle != null) {
+                RssController.snackbarNotifyBlocking(bundle.getString("connectionFailure"));
+            }
             LOGGER.error("refreshToken error", e);
         }
     }
     
     public boolean tokenIsStillValid() {
         try {
-            if (! this.token.expirationDate().before(DateTime.nowAndHere())) {
+            if (this.token != null && ! this.token.expirationDate().before(DateTime.nowAndHere())) {
                 return true;
             }
         } catch (ProtocolException e) {
@@ -485,16 +550,20 @@ public class ConnectServer {
     }
     
     public UserInformation getUserInformation() {
-        BufferedReader reader = null;
-        try {
-            reader = connectServer(ConnectServer.userinfoURL);
-            UserInformation userInformation;
-            userInformation = mapper.readValue(reader, UserInformation.class);
-            closeReader(reader);
-            return userInformation;
-        } catch (IOException e) {
-            RssController.snackbarNotify(bundle.getString("connectionFailure"));
-            LOGGER.error("getUserInformation error", e);
+        if (! isShouldAskPermissionOrLogin()) {
+            BufferedReader reader = null;
+            try {
+                reader = connectServer(ConnectServer.userinfoURL);
+                UserInformation userInformation;
+                userInformation = mapper.readValue(reader, UserInformation.class);
+                closeReader(reader);
+                return userInformation;
+            } catch (IOException e) {
+                if (bundle != null) {
+                    RssController.snackbarNotify(bundle.getString("connectionFailure"));
+                }
+                LOGGER.error("getUserInformation error", e);
+            }
         }
         return null;
     }
@@ -594,7 +663,14 @@ public class ConnectServer {
     public void setContinuationsMap(Map<String, String> continuationsMap) {
         this.continuationsMap = continuationsMap;
     }
-    
+
+    public boolean isInitDone() {
+        return initDone;
+    }
+
+    public void setInitDone(boolean initDone) {
+        this.initDone = initDone;
+    }
     
 
 }

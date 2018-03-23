@@ -8,12 +8,15 @@ import org.codefx.libfx.control.webview.WebViewHyperlinkListener;
 import org.codefx.libfx.control.webview.WebViews;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jfoenix.controls.JFXProgressBar;
 import com.jfoenix.controls.JFXRadioButton;
 
 import de.felixroske.jfxsupport.FXMLController;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleGroup;
@@ -21,6 +24,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import me.bayang.reader.FXMain;
+import me.bayang.reader.backend.inoreader.ConnectServer;
+import me.bayang.reader.mobilizer.MercuryMobilizer;
+import me.bayang.reader.mobilizer.MercuryResult;
 import me.bayang.reader.rssmodels.Item;
 
 @FXMLController
@@ -38,6 +44,9 @@ public class PopupWebViewController {
     private JFXRadioButton popupWebRadioButton;
     
     @FXML
+    private JFXRadioButton mercuryRadioButton;
+    
+    @FXML
     private JFXProgressBar progressBar;
     
     @FXML
@@ -51,6 +60,12 @@ public class PopupWebViewController {
     
     private Stage stage;
     
+    @Autowired
+    private MercuryMobilizer mercuryMobilizer;
+    
+    @Autowired
+    private ConnectServer connectServer;
+    
     @FXML
     private void initialize() {
         initWebView();
@@ -59,6 +74,7 @@ public class PopupWebViewController {
         ToggleGroup toggleGroup = new ToggleGroup();
         popupRssRadioButton.setToggleGroup(toggleGroup);
         popupWebRadioButton.setToggleGroup(toggleGroup);
+        mercuryRadioButton.setToggleGroup(toggleGroup);
         popupRssRadioButton.setSelected(true);
         toggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (toggleGroup.getSelectedToggle() != null) {
@@ -67,6 +83,9 @@ public class PopupWebViewController {
                 }
                 else if (popupWebRadioButton.isSelected()) {
                     popupWebView.getEngine().load(currentItem.getCanonical().get(0).getHref());
+                }
+                else if (mercuryRadioButton.isSelected()) {
+                    launchMercuryTask();
                 }
             }
         });
@@ -83,7 +102,11 @@ public class PopupWebViewController {
             if (newState == State.SUCCEEDED) {
                 popupWebView.setDisable(false);
                 progressBar.setVisible(false);
-                stage.setTitle(popupWebView.getEngine().getTitle());
+                if (popupWebView.getEngine().getTitle() != null && ! popupWebView.getEngine().getTitle().isEmpty()) {
+                    Platform.runLater(() -> {
+                        stage.setTitle(popupWebView.getEngine().getTitle());
+                    });
+                }
                 if (! isWebViewListenerAttached.get()) {
                     isWebViewListenerAttached.set(true);
                     WebViews.addHyperlinkListener(popupWebView, eventPrintingListener, HyperlinkEvent.EventType.ACTIVATED);
@@ -98,6 +121,29 @@ public class PopupWebViewController {
                 progressBar.setVisible(false);
             }
         });
+    }
+    
+    private void launchMercuryTask() {
+        String href = this.currentItem.getCanonical().get(0).getHref();
+        Task<MercuryResult> t = mercuryMobilizer.getMercuryResultTask(href);
+        LOGGER.debug("{}", href);
+        t.setOnSucceeded(e -> {
+            progressBar.setVisible(false);
+            MercuryResult m = t.getValue();
+            Platform.runLater(() -> {
+                stage.setTitle(m.getTitle());
+            });
+//            LOGGER.debug("{}",m);
+            if (m != null && ! m.getContent().isEmpty()) {
+                String url = m.getUrl();
+                if (url.startsWith("/")) {
+                    url = href;
+                }
+                popupWebView.getEngine().loadContent(MercuryMobilizer.formatContent(m.getImageUrl(), url, m.getContent()));
+            }
+        });
+        connectServer.getTaskExecutor().submit(t);
+        progressBar.setVisible(true);
     }
 
     public Item getCurrentItem() {

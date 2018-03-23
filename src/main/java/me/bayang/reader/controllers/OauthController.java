@@ -1,6 +1,7 @@
 package me.bayang.reader.controllers;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 import org.dmfs.httpessentials.exceptions.ProtocolError;
 import org.dmfs.httpessentials.exceptions.ProtocolException;
@@ -37,9 +38,17 @@ public class OauthController {
     
     private Stage stage;
     
+    private static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
+    
     @FXML
     private void initialize() {
-        oauthView.getEngine().load(connectServer.getAuthorizationUrl().toString());
+        
+        try {
+            oauthView.getEngine().load(connectServer.getAuthorizationUrl().toString());
+        } catch (Exception ex) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("failure during initialization of oauthController", ex);
+        }
             oauthView.getEngine().locationProperty().addListener((observable, oldValue, newValue) -> {
             if (oldValue != null && newValue != null) {
                 LOGGER.debug("{} -> {}",oldValue, newValue);
@@ -49,6 +58,7 @@ public class OauthController {
                         token = connectServer.getGrant().withRedirect(redirect).accessToken(connectServer.getExecutor());
                         LOGGER.debug("token : {} - {} - {} - {} - {}", token.accessToken(),token.expirationDate().toString(), token.refreshToken(), token.tokenType(), token.scope());
                         connectServer.setToken(token);
+                        connectServer.setShouldAskPermissionOrLogin(false);
                         connectServer.fetchAndSaveUSer();
 //                        String authorization = String.format("Bearer %s", token.accessToken());
 //                        Request request = new Request.Builder()

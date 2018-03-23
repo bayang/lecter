@@ -25,6 +25,7 @@ import javafx.scene.paint.Color;
 import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.rssmodels.FolderFeedOrder;
 import me.bayang.reader.rssmodels.Item;
+import me.bayang.reader.utils.StringUtils;
 
 public class ItemGridCell extends GridCell<Item> {
     
@@ -110,12 +111,7 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
             subjectLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             subjectLabel.setWrapText(true);
             subjectLabel.setText(StringEscapeUtils.unescapeHtml4(item.getTitle()));
-            if (item.getSummary().getContent().length() > 20) {
-                contentLabel.setText(StringEscapeUtils.unescapeHtml4(item.getSummary().getContent().substring(0, 20)));
-            }
-            else {
-                contentLabel.setText(StringEscapeUtils.unescapeHtml4(item.getSummary().getContent()));
-            }
+            contentLabel.setText(StringUtils.processContent(item.getSummary().getContent()));
             
             setText(null);
             setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);

@@ -36,8 +36,8 @@
     -fx-background-color : #dda0dd;
 }
 
-#popupProgress > .bar {
-    -fx-background-color : #00ff00;
+.webViewProgress > .bar {
+    -fx-background-color : #00ff7f;
     -fx-pref-height : 5;
 }
 

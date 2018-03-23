@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -27,6 +28,9 @@ import javafx.scene.paint.Color;
 import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.rssmodels.FolderFeedOrder;
 import me.bayang.reader.rssmodels.Item;
+import me.bayang.reader.utils.StringUtils;
+import net.htmlparser.jericho.Renderer;
+import net.htmlparser.jericho.Source;
 
 public class ItemListCell extends JFXListCell<Item> {
     
@@ -114,12 +118,7 @@ public class ItemListCell extends JFXListCell<Item> {
             subjectLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             subjectLabel.setWrapText(true);
             subjectLabel.setText(StringEscapeUtils.unescapeHtml4(item.getTitle()));
-            if (item.getSummary().getContent().length() > 20) {
-                contentLabel.setText(StringEscapeUtils.unescapeHtml4(item.getSummary().getContent().substring(0, 20)));
-            }
-            else {
-                contentLabel.setText(StringEscapeUtils.unescapeHtml4(item.getSummary().getContent()));
-            }
+            contentLabel.setText(StringUtils.processContent(item.getSummary().getContent()));
             
             setText(null);
             setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);

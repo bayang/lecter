@@ -9,6 +9,7 @@ import me.bayang.reader.controllers.RssView;
 
 @SpringBootApplication
 public class FXMain extends AbstractJavaFxApplicationSupport {
+    
     private static Stage addSubscriptionStage;
     
     private static AddSubscriptionController addSubscriptionController;
