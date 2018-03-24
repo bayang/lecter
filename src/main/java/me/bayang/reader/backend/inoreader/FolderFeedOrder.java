@@ -1,4 +1,4 @@
-package me.bayang.reader.rssmodels;
+package me.bayang.reader.backend.inoreader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,7 +24,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import javafx.scene.image.Image;
-import me.bayang.reader.backend.inoreader.ConnectServer;
+import me.bayang.reader.backend.UserInfo;
+import me.bayang.reader.rssmodels.Categories;
+import me.bayang.reader.rssmodels.Feed;
+import me.bayang.reader.rssmodels.FoldersTagsList;
+import me.bayang.reader.rssmodels.Subscription;
+import me.bayang.reader.rssmodels.SubscriptionsList;
+import me.bayang.reader.rssmodels.Tag;
 
 /**
  * This class is used to get the order of the folder and the feed inside.

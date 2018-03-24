@@ -42,17 +42,19 @@
 }
 
 #grid {
-    -fx-background-color: #ffffff;
+    -fx-background-color: #eeeeee;
 }
 
 .gridCell {
-    -fx-background-color: #dcdcdc;
-    
+    -fx-background-color: #fafafa;
+    -fx-effect: dropshadow( one-pass-box , rgba(0,0,0,0.6) , 8 , 0.0 , 1 , 2 );
+    -fx-padding:5px;
 }
 
 .gridCell:hover {
-    -fx-border-color: #708090;
+    -fx-border-color: #fafafa;
     -fx-border-width: 2px;
+    -fx-effect: null;
 }
 
 .plusButton {

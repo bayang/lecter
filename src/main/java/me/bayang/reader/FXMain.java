@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import de.felixroske.jfxsupport.AbstractJavaFxApplicationSupport;
 import javafx.stage.Stage;
 import me.bayang.reader.controllers.AddSubscriptionController;
-import me.bayang.reader.controllers.RssView;
+import me.bayang.reader.view.RssView;
 
 @SpringBootApplication
 public class FXMain extends AbstractJavaFxApplicationSupport {

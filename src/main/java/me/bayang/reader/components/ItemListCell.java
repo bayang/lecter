@@ -1,4 +1,4 @@
-package me.bayang.reader.controllers;
+package me.bayang.reader.components;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.regex.Matcher;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
@@ -26,11 +25,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import me.bayang.reader.backend.inoreader.ConnectServer;
-import me.bayang.reader.rssmodels.FolderFeedOrder;
+import me.bayang.reader.backend.inoreader.FolderFeedOrder;
+import me.bayang.reader.controllers.RssController;
 import me.bayang.reader.rssmodels.Item;
 import me.bayang.reader.utils.StringUtils;
-import net.htmlparser.jericho.Renderer;
-import net.htmlparser.jericho.Source;
 
 public class ItemListCell extends JFXListCell<Item> {
     
@@ -61,11 +59,13 @@ public class ItemListCell extends JFXListCell<Item> {
     
     private ContextMenu menu = new ContextMenu();
     
-    // FIXME remove this from here
     private ConnectServer connectServer;
+    
+    private RssController rssController;
 
-    public ItemListCell(ConnectServer connectServer) {
+    public ItemListCell(RssController rssController, ConnectServer connectServer) {
         this.connectServer = connectServer;
+        this.rssController = rssController;
         MenuItem starItem = new MenuItem("Mark Starred");
         MenuItem unStarItem = new MenuItem("Mark Unstarred");
         menu.getItems().addAll(starItem, unStarItem);
@@ -73,6 +73,7 @@ public class ItemListCell extends JFXListCell<Item> {
         starItem.setOnAction(event -> {
             LOGGER.debug("mark star " + getListView().getSelectionModel().getSelectedItem().getDecimalId());
             this.connectServer.star(this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
+            this.rssController.addToStarredList(this.getListView().getSelectionModel().getSelectedItem());
         });
         unStarItem.setOnAction(event -> {
             LOGGER.debug("unstar " + this.getListView().getSelectionModel().getSelectedItem().getDecimalId());

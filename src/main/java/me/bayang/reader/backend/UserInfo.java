@@ -1,4 +1,4 @@
-package me.bayang.reader.rssmodels;
+package me.bayang.reader.backend;
 
 public class UserInfo {
 

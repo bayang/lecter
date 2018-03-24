@@ -1,4 +1,4 @@
-package me.bayang.reader.controllers;
+package me.bayang.reader.view;
 
 import de.felixroske.jfxsupport.AbstractFxmlView;
 import de.felixroske.jfxsupport.FXMLView;

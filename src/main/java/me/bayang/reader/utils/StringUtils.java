@@ -11,7 +11,7 @@ import net.htmlparser.jericho.Source;
 public class StringUtils {
     
     public static String processContent(String content) {
-        String s = StringEscapeUtils.unescapeHtml4(stripAds(content));
+        String s = stripHeadImages(StringEscapeUtils.unescapeHtml4(stripAds(content)));
         if (s.length() > 160) {
             return s.substring(0, 160);
         }
@@ -33,6 +33,14 @@ public class StringUtils {
         Renderer renderer = source.getRenderer();
         renderer.setDecorateFontStyles(true);
         return renderer.toString();
+    }
+    
+    public static String stripHeadImages(String text) {
+        Matcher m = RssController.IMG_PATTERN.matcher(text);
+        if (m.find()) {
+            return (text.substring(m.end(1)).trim());
+        }
+        return text;
     }
 
 }

@@ -20,6 +20,9 @@
                   <Insets left="10.0" />
                </HBox.margin></Label>
          </children>
+         <VBox.margin>
+            <Insets bottom="1.0" />
+         </VBox.margin>
       </HBox>
       <Label fx:id="dateLabel" alignment="BOTTOM_RIGHT" text="Label">
          <font>

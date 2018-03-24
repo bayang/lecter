@@ -49,12 +49,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import me.bayang.reader.backend.UserInfo;
 import me.bayang.reader.controllers.RssController;
 import me.bayang.reader.rssmodels.Item;
 import me.bayang.reader.rssmodels.StreamContent;
 import me.bayang.reader.rssmodels.UnreadCounter;
 import me.bayang.reader.rssmodels.UnreadCounts;
-import me.bayang.reader.rssmodels.UserInfo;
 import me.bayang.reader.rssmodels.UserInformation;
 import me.bayang.reader.storage.IStorageService;
 import okhttp3.HttpUrl;
@@ -62,9 +62,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-/**
- * This class provide functions to connect the server and get the related Reader.
- */
 @Service
 public class ConnectServer {
     
@@ -167,36 +164,13 @@ public class ConnectServer {
         grant = new AuthorizationCodeGrant(
                 client, new BasicScope("read write"));
         authorizationUrl = grant.authorizationUrl();
-//        LOGGER.debug("auth url = {}", authorizationUrl.toString());
-//        if (! isShouldAskPermissionOrLogin()) {
-//            refreshTokenAsync();
-//        }
-//        String userId = storage.loadUser();
-//        if (userId == null || userId.isEmpty()) {
-//            fetchAndSaveUSer();
-////            UserInformation userInfo = getUserInformation();
-////            if (userInfo != null) {
-////                UserInfo.setUserId(userInfo.getUserId());
-////                storage.saveUser(userInfo);
-////            }
-//        }
-//        else {
-//            UserInfo.setUserId(userId);
-//        }
-//        initDone = true;
-//        if (isShouldAskPermissionOrLogin()) {
-//            RssController.snackbarNotifyBlocking(bundle.getString("pleaseLogin"));
-//        }
     }
     
     public void initData() throws IOException, ProtocolError, ProtocolException {
         LOGGER.debug("initializing data");
         if (! isShouldAskPermissionOrLogin()) {
-            OAuth2AccessToken newToken;
-                newToken = new TokenRefreshGrant(client, token).accessToken(executor);
-                setToken(newToken);
-//                LOGGER.error("refreshToken error", e);
-//            refreshToken();
+            OAuth2AccessToken newToken = new TokenRefreshGrant(client, token).accessToken(executor);
+            setToken(newToken);
         }
         String userId = storage.loadUser();
         if (userId == null || userId.isEmpty()) {
@@ -227,11 +201,6 @@ public class ConnectServer {
         return t;
     }
 
-    /**
-     * Connect the server and get the Reader.
-     * @param url the related URL in the field.
-     * @return the BufferedReader which can be used by Gson to get information.
-     */
     public BufferedReader connectServer(String url) {
         Response response = null;
         try {
@@ -246,7 +215,6 @@ public class ConnectServer {
                     .url(url)
                     .addHeader("Authorization", authorization)
                     .build();
-            // FIXME passer en asynchrone
             response = getOkClient().newCall(request).execute();
             
             if (response.isSuccessful()) {
@@ -277,11 +245,6 @@ public class ConnectServer {
         return null;
     }
     
-    /**
-     * Connect the server and get the Reader.
-     * @param url the related URL in the field.
-     * @return the BufferedReader which can be used by Gson to get information.
-     */
     public BufferedReader connectServer(HttpUrl url) {
         Response response = null;
         try {
@@ -296,7 +259,6 @@ public class ConnectServer {
                     .url(url)
                     .addHeader("Authorization", authorization)
                     .build();
-            // FIXME passer en asynchrone
             response = getOkClient().newCall(request).execute();
             
             if (response.isSuccessful()) {
@@ -454,7 +416,7 @@ public class ConnectServer {
             if (continuationsMap.containsKey(streamId)) {
                 urlWithParams = baseStreamContentHTTPUrl.newBuilder()
                         .addPathSegment(streamId)
-                        .setQueryParameter("n", "50")
+                        .setQueryParameter("n", "25")
                         .setQueryParameter("c", continuationsMap.get(streamId))
                         .build();
             }
@@ -462,7 +424,7 @@ public class ConnectServer {
             else {
                 urlWithParams = baseStreamContentHTTPUrl.newBuilder()
                         .addPathSegment(streamId)
-                        .setQueryParameter("n", "50")
+                        .setQueryParameter("n", "30")
                         .build();
             }
             reader = connectServer(urlWithParams);
@@ -671,6 +633,5 @@ public class ConnectServer {
     public void setInitDone(boolean initDone) {
         this.initDone = initDone;
     }
-    
 
 }

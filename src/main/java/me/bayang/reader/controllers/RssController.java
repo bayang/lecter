@@ -51,7 +51,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
@@ -69,16 +68,22 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import me.bayang.reader.FXMain;
+import me.bayang.reader.backend.UserInfo;
 import me.bayang.reader.backend.inoreader.ConnectServer;
+import me.bayang.reader.backend.inoreader.FolderFeedOrder;
+import me.bayang.reader.components.ItemGridCell;
+import me.bayang.reader.components.ItemListCell;
 import me.bayang.reader.mobilizer.MercuryMobilizer;
 import me.bayang.reader.mobilizer.MercuryResult;
 import me.bayang.reader.rssmodels.Categories;
 import me.bayang.reader.rssmodels.Feed;
-import me.bayang.reader.rssmodels.FolderFeedOrder;
 import me.bayang.reader.rssmodels.Item;
 import me.bayang.reader.rssmodels.Subscription;
 import me.bayang.reader.rssmodels.Tag;
-import me.bayang.reader.rssmodels.UserInfo;
+import me.bayang.reader.view.AddSubscriptionView;
+import me.bayang.reader.view.EditSubscriptionView;
+import me.bayang.reader.view.OauthView;
+import me.bayang.reader.view.PopupWebView;
 
 @FXMLController
 public class RssController {
@@ -86,6 +91,7 @@ public class RssController {
     private static Logger LOGGER = LoggerFactory.getLogger(RssController.class);
     
     public static final Pattern PATTERN = Pattern.compile("<center>[.*<>\\/\\a-zA-Z0-9]*Ads from Inoreader[.*<>\\/\\a-zA-Z0-9]*<\\/center>");
+    public static final Pattern IMG_PATTERN = Pattern.compile("^(\\[[%-_a-zA-Z0-9].*(\\.png|\\.jp|\\.pn|\\.jpg|\\.jpeg|\\.JPEG|\\.JPG|\\.PNG|\\.bmp)\\])\\s+.+");
     
     @FXML
     private BorderPane rssViewContainer;
@@ -216,11 +222,11 @@ public class RssController {
         initializeWebView();
         snackbar = new JFXSnackbar(rssViewContainer);
        initializePlusIcons();
-       initNetworkTask();
+       initializeNetworkTask();
     }
 
     private void eventHandleInitialize() {
-        listView.setCellFactory(l -> new ItemListCell(connectServer));
+        listView.setCellFactory(l -> new ItemListCell(this, connectServer));
         treeView.setCellFactory(t -> new MyTreeCell());
         gridView.setCellFactory(g -> new ItemGridCell(this, connectServer));
         
@@ -471,7 +477,7 @@ public class RssController {
         });
     }
     
-    public void initNetworkTask() {
+    public void initializeNetworkTask() {
         Task<Void> t = connectServer.initTask();
         t.setOnSucceeded(e -> {
             progressBar.setVisible(false);
@@ -834,12 +840,18 @@ public class RssController {
             return;
         }
         olderItemsListTask = connectServer.getOlderreadItemsTask(f.getId());
+        olderItemsListTask.setOnRunning(e -> {
+            progressBar.setVisible(true);
+            progressBar.setProgress(-1);
+            });
+        olderItemsListTask.setOnFailed(e -> progressBar.setVisible(false));
+        olderItemsListTask.setOnCancelled(e -> progressBar.setVisible(false));
         olderItemsListTask.setOnSucceeded(event -> {
+            progressBar.setVisible(false);
+            Platform.runLater(() -> {
             for (Item i : olderItemsListTask.getValue()) {
                 if (observableReadList.stream().noneMatch(item -> item.getId().equals(i.getId()))) {
-                    Platform.runLater(() -> {
                         observableReadList.add(i);
-                    });
                 }
                 else{
                     LOGGER.debug("not adding {}", i);
@@ -851,6 +863,7 @@ public class RssController {
             // in some cases the selection was not refreshed
             treeView.getSelectionModel().clearSelection();
             treeView.getSelectionModel().select(idx);
+            });
         });     
         connectServer.getTaskExecutor().submit(olderItemsListTask);
     }
@@ -876,6 +889,33 @@ public class RssController {
             editSubscriptionController.setSubscription(subscription);
             editSubscriptionStage.showAndWait();
         }
+    }
+    
+    public void addToStarredList(Item item) {
+        if (this.starredList != null) {
+            if (this.starredList.stream().noneMatch(i -> i.getId().equals(item.getId()))) {
+                this.starredList.add(item);
+            }
+        }
+        int c = unreadCountsMap.getOrDefault("user/" + UserInfo.getUserId() + "/state/com.google/starred", 1);
+        if (c > 1) {
+            c++;
+        }
+        unreadCountsMap.put("user/" + UserInfo.getUserId() + "/state/com.google/starred", c);
+    }
+    
+    public void removeFromStarredList(Item item) {
+        if (this.starredList != null) {
+            this.starredList.stream()
+                            .filter(i -> i.getId().equals(item.getId()))
+                            .findFirst()
+                            .ifPresent(c -> this.starredList.remove(c));
+        }
+        int c = unreadCountsMap.getOrDefault("user/" + UserInfo.getUserId() + "/state/com.google/starred", 0);
+        if (c > 0) {
+            c--;
+        }
+        unreadCountsMap.put("user/" + UserInfo.getUserId() + "/state/com.google/starred", c);
     }
 
     private TreeItem<Feed> handleFolderFeedOrder() {
@@ -927,7 +967,7 @@ public class RssController {
     
     public static void snackbarNotify(String msg) {
         if (msg != null) {
-            snackbar.enqueue(new SnackbarEvent(msg, null, 2500, false, null));
+            snackbar.enqueue(new SnackbarEvent(msg, null, 1500, false, null));
         }
     }
 }

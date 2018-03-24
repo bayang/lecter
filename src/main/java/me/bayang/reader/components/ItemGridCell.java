@@ -1,4 +1,4 @@
-package me.bayang.reader.controllers;
+package me.bayang.reader.components;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -16,6 +16,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -23,7 +24,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import me.bayang.reader.backend.inoreader.ConnectServer;
-import me.bayang.reader.rssmodels.FolderFeedOrder;
+import me.bayang.reader.backend.inoreader.FolderFeedOrder;
+import me.bayang.reader.controllers.RssController;
 import me.bayang.reader.rssmodels.Item;
 import me.bayang.reader.utils.StringUtils;
 
@@ -56,7 +58,6 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
     
     private ContextMenu menu = new ContextMenu();
     
-    // FIXME remove this from here
     private ConnectServer connectServer;
     
     private RssController rssController;
@@ -68,8 +69,24 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
         this.rssController = rssController;
         this.connectServer = connectServer;
         setOnMouseClicked(event -> {
-            this.rssController.showWebView(this.currentItem);
-            this.rssController.markItemRead(this.currentItem);
+            if (event.getButton() == MouseButton.PRIMARY) {
+                this.rssController.showWebView(this.currentItem);
+                this.rssController.markItemRead(this.currentItem);
+            }
+        });
+        MenuItem starItem = new MenuItem("Mark Starred");
+        MenuItem unStarItem = new MenuItem("Mark Unstarred");
+        menu.getItems().addAll(starItem, unStarItem);
+
+        starItem.setOnAction(event -> {
+            LOGGER.debug("mark star " + this.currentItem.getDecimalId() + " "+this.currentItem.getSummary());
+            this.connectServer.star(this.currentItem.getDecimalId());
+            this.rssController.addToStarredList(currentItem);
+        });
+        unStarItem.setOnAction(event -> {
+            LOGGER.debug("unstar " + this.currentItem.getDecimalId() + " "+this.currentItem.getSummary());
+            this.connectServer.unStar(this.currentItem.getDecimalId());
+            this.rssController.removeFromStarredList(currentItem);
         });
         this.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
@@ -86,6 +103,7 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
             setText(null);
             setGraphic(null);
         } else {
+            
             if (mLLoader == null) {
                 mLLoader = new FXMLLoader(
                         getClass().getResource("/fxml/ItemGridCell.fxml"));
@@ -96,6 +114,7 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
                     LOGGER.error("",e);
                 }
             }
+            
             
             //get the time style
             LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(item.getCrawlTimeMsec())), ZoneId.systemDefault());
