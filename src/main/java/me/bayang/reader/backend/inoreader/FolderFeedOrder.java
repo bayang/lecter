@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -64,59 +63,59 @@ public class FolderFeedOrder {
             if (reader != null) {
                 reader.close();
             }
-        } catch (IOException ioe) {
-            LOGGER.error("error while getting inoreadr order",ioe);
-        }
-
-        //parse the streamprefs and get the folder order
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(streamprefs);
-        JsonObject object = element.getAsJsonObject();
-        JsonArray root = object.getAsJsonObject("streamprefs").getAsJsonArray("user/" + userId + "/state/com.google/root");
-        String folderOrderString = root.get(0).getAsJsonObject().get("value").getAsString();
-        List<String> folderOrderList = sortOrder(folderOrderString);
-
-        //get the folderTagList and the subscriptionList
-        Gson gson = new Gson();
-        FoldersTagsList foldersTagsList = gson.fromJson(connectServer.connectServer(ConnectServer.folderTagListURL), FoldersTagsList.class);
-        LOGGER.debug("foldersTagsList -> {}", foldersTagsList);
-        SubscriptionsList subscriptionsList = gson.fromJson(connectServer.connectServer(ConnectServer.subscriptionListURL), SubscriptionsList.class);
-        LOGGER.debug("subscriptionsList -> {}", subscriptionsList);
-        //get the icon map
-        iconMap = new HashMap<>();
-        for (Subscription subscription : subscriptionsList.getSubscriptions()) {
-            if (!subscription.getIconUrl().equals("")) {
-                if (! iconMap.containsKey(subscription.getId())) {
-                    iconMap.put(subscription.getId(), new Image(subscription.getIconUrl(), true));
-                }
-            }
-        }
-        //sort the folder order
-        Map<Feed, List<Subscription>> orderMap = new LinkedHashMap<>();
-        orderMap.put(new Tag("All Items", null), null);
-        orderMap.put(foldersTagsList.getTags().get(0), null);
-        for (String s : folderOrderList) {
-            boolean isFolder = false;
-            for (Tag tag : foldersTagsList.getTags()) {
-                if (s.equals(tag.getSortid())) {
-                    isFolder = true;
-
-                    //get the feed order in the folder
-                    List<Subscription> list = getFeedOrder(object, tag.getId(), subscriptionsList);
-                    orderMap.put(tag, list);
-                    break;
-                }
-            }
-            if (!isFolder) {
-                for (Subscription subscription : subscriptionsList.getSubscriptions()) {
-                    if (s.equals(subscription.getSortid())) {
-                        orderMap.put(subscription, null);
-                        break;
+            JsonParser parser = new JsonParser();
+            JsonElement element = parser.parse(streamprefs);
+            JsonObject object = element.getAsJsonObject();
+            JsonArray root = object.getAsJsonObject("streamprefs").getAsJsonArray("user/" + userId + "/state/com.google/root");
+            String folderOrderString = root.get(0).getAsJsonObject().get("value").getAsString();
+            List<String> folderOrderList = sortOrder(folderOrderString);
+            
+            //get the folderTagList and the subscriptionList
+            BufferedReader folderReader = connectServer.connectServer(ConnectServer.folderTagListURL);
+            FoldersTagsList foldersTagsList = mapper.readValue(folderReader, FoldersTagsList.class);
+            BufferedReader subscriptionsReader = connectServer.connectServer(ConnectServer.subscriptionListURL);
+            SubscriptionsList subscriptionsList = mapper.readValue(subscriptionsReader, SubscriptionsList.class);
+            ConnectServer.closeReader(folderReader);
+            ConnectServer.closeReader(subscriptionsReader);
+            //get the icon map
+            iconMap = new HashMap<>();
+            for (Subscription subscription : subscriptionsList.getSubscriptions()) {
+                if (!subscription.getIconUrl().equals("")) {
+                    if (! iconMap.containsKey(subscription.getId())) {
+                        iconMap.put(subscription.getId(), new Image(subscription.getIconUrl(), true));
                     }
                 }
             }
+            //sort the folder order
+            Map<Feed, List<Subscription>> orderMap = new LinkedHashMap<>();
+            orderMap.put(new Tag("All Items", null), null);
+            orderMap.put(foldersTagsList.getTags().get(0), null);
+            for (String s : folderOrderList) {
+                boolean isFolder = false;
+                for (Tag tag : foldersTagsList.getTags()) {
+                    if (s.equals(tag.getSortid())) {
+                        isFolder = true;
+                        
+                        //get the feed order in the folder
+                        List<Subscription> list = getFeedOrder(object, tag.getId(), subscriptionsList);
+                        orderMap.put(tag, list);
+                        break;
+                    }
+                }
+                if (!isFolder) {
+                    for (Subscription subscription : subscriptionsList.getSubscriptions()) {
+                        if (s.equals(subscription.getSortid())) {
+                            orderMap.put(subscription, null);
+                            break;
+                        }
+                    }
+                }
+                return orderMap;
+            }
+        } catch (IOException ioe) {
+            LOGGER.error("error while getting inoreadr order",ioe);
         }
-        return orderMap;
+        return Collections.emptyMap();
     }
     
     public Map<Feed, List<Subscription>> getAlphabeticalOrder() {

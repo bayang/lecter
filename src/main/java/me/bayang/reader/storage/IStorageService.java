@@ -8,6 +8,10 @@ public interface IStorageService {
     
     void saveToken(OAuth2AccessToken token) throws Exception;
     
+    void savePocketToken(String token);
+    
+    void savePocketUser(String user);
+    
     OAuth2AccessToken loadToken();
     
     void saveUser(UserInformation user);

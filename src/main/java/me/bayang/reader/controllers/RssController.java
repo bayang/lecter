@@ -86,6 +86,7 @@ import me.bayang.reader.view.AboutPopupView;
 import me.bayang.reader.view.AddSubscriptionView;
 import me.bayang.reader.view.EditSubscriptionView;
 import me.bayang.reader.view.OauthView;
+import me.bayang.reader.view.PocketOauthView;
 import me.bayang.reader.view.PopupWebView;
 
 @FXMLController
@@ -157,6 +158,7 @@ public class RssController {
     private Stage editSubscriptionStage = null;
     private Stage popupWebViewStage = null;
     private Stage aboutPopupStage = null;
+    private Stage pocketOauthStage;
     
     @Autowired
     private AddSubscriptionView addSubscriptionView;
@@ -173,6 +175,10 @@ public class RssController {
     @Autowired
     private AboutPopupView aboutPopupView;
     private AboutPopupController aboutPopupController;
+    
+    @Autowired
+    private PocketOauthView pocketOauthView;
+    private PocketOauthController pocketOauthController;
     
     private List<Item> itemList = new ArrayList<>();
     private List<Item> readItemList = new ArrayList<>();
@@ -931,6 +937,28 @@ public class RssController {
         else {
             editSubscriptionController.setSubscription(subscription);
             editSubscriptionStage.showAndWait();
+        }
+    }
+    
+    @FXML
+    public void showPocketOauthStage() {
+        if (pocketOauthStage == null) {
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle(bundle.getString("pocketLogin"));
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(FXMain.getStage());
+            dialogStage.getIcons().add(new Image("icon.png"));
+            dialogStage.setResizable(true);
+            Scene scene = new Scene(pocketOauthView.getView());
+            dialogStage.setScene(scene);
+            this.pocketOauthStage = dialogStage;
+            pocketOauthController = (PocketOauthController) pocketOauthView.getPresenter();
+            pocketOauthController.setStage(dialogStage);
+            // Show the dialog and wait until the user closes it
+            dialogStage.showAndWait();
+        }
+        else {
+            pocketOauthStage.showAndWait();
         }
     }
     

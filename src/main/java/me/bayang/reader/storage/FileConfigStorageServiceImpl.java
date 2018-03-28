@@ -70,15 +70,15 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         String scope = token.scope().toString();
         LOGGER.debug("access {}, refresh {}, scope {}", accessToken, refreshToken, scope);
         
-        tokenConfiguration.setProperty("token.access", accessToken);
-        tokenConfiguration.setProperty("token.refresh", refreshToken);
-        tokenConfiguration.setProperty("token.scope", scope);
+        tokenConfiguration.setProperty("inoreader.token.access", accessToken);
+        tokenConfiguration.setProperty("inoreader.token.refresh", refreshToken);
+        tokenConfiguration.setProperty("inoreader.token.scope", scope);
     }
 
     @Override
     public OAuth2AccessToken loadToken() {
-        String refresh = tokenConfiguration.getString("token.refresh");
-        String scope = tokenConfiguration.getString("token.scope");
+        String refresh = tokenConfiguration.getString("inoreader.token.refresh");
+        String scope = tokenConfiguration.getString("inoreader.token.scope");
         OAuth2AccessToken token = new OAuth2AccessToken() {
             public CharSequence accessToken() throws ProtocolException {
                 throw new UnsupportedOperationException("accessToken not present");
@@ -109,24 +109,34 @@ public class FileConfigStorageServiceImpl implements IStorageService {
 
     @Override
     public void saveUser(UserInformation user) {
-        userConfiguration.setProperty("userId", user.getUserId());
+        userConfiguration.setProperty("inoreader.userId", user.getUserId());
     }
 
     @Override
     public String loadUser() {
         return userConfiguration.getString("userId");
     }
+    
+    @Override
+    public void savePocketToken(String token) {
+        tokenConfiguration.setProperty("pocket.token", token);
+    }
+
+    @Override
+    public void savePocketUser(String user) {
+        tokenConfiguration.setProperty("pocket.user", user);
+    }
 
     @Override
     public boolean hasToken() {
         return (tokenConfiguration != null 
-                && tokenConfiguration.getString("token.refresh") != null 
-                && tokenConfiguration.getString("token.scope") != null);
+                && tokenConfiguration.getString("inoreader.token.refresh") != null 
+                && tokenConfiguration.getString("inoreader.token.scope") != null);
     }
 
     @Override
     public boolean hasUser() {
-        return (userConfiguration != null && userConfiguration.getString("userId") != null);
+        return (userConfiguration != null && userConfiguration.getString("inoreader.userId") != null);
     }
     
     @Override

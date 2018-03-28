@@ -118,6 +118,14 @@ public class PropertiesStorageServiceImpl implements IStorageService {
     }
 
     @Override
+    public void savePocketToken(String token) {
+    }
+
+    @Override
+    public void savePocketUser(String user) {
+    }
+
+    @Override
     public boolean hasToken() {
         File f = new File(tokenPropertiesFilename);
         return f.exists();
