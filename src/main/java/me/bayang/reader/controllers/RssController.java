@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import javax.swing.event.HyperlinkEvent;
 
@@ -34,6 +33,8 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import eu.lestard.advanced_bindings.api.CollectionBindings;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -80,6 +81,8 @@ import me.bayang.reader.rssmodels.Feed;
 import me.bayang.reader.rssmodels.Item;
 import me.bayang.reader.rssmodels.Subscription;
 import me.bayang.reader.rssmodels.Tag;
+import me.bayang.reader.storage.IStorageService;
+import me.bayang.reader.view.AboutPopupView;
 import me.bayang.reader.view.AddSubscriptionView;
 import me.bayang.reader.view.EditSubscriptionView;
 import me.bayang.reader.view.OauthView;
@@ -89,9 +92,6 @@ import me.bayang.reader.view.PopupWebView;
 public class RssController {
     
     private static Logger LOGGER = LoggerFactory.getLogger(RssController.class);
-    
-    public static final Pattern PATTERN = Pattern.compile("<center>[.*<>\\/\\a-zA-Z0-9]*Ads from Inoreader[.*<>\\/\\a-zA-Z0-9]*<\\/center>");
-    public static final Pattern IMG_PATTERN = Pattern.compile("^(\\[[%-_a-zA-Z0-9].*(\\.png|\\.jp|\\.pn|\\.jpg|\\.jpeg|\\.JPEG|\\.JPG|\\.PNG|\\.bmp)\\])\\s+.+");
     
     @FXML
     private BorderPane rssViewContainer;
@@ -155,7 +155,8 @@ public class RssController {
     private Stage oauthDialogStage = null;
     private Stage addSubscriptionStage = null;
     private Stage editSubscriptionStage = null;
-    private Stage popupWebViewStage;
+    private Stage popupWebViewStage = null;
+    private Stage aboutPopupStage = null;
     
     @Autowired
     private AddSubscriptionView addSubscriptionView;
@@ -168,6 +169,10 @@ public class RssController {
     @Autowired
     private PopupWebView popupWebView;
     private PopupWebViewController popupWebViewController;
+    
+    @Autowired
+    private AboutPopupView aboutPopupView;
+    private AboutPopupController aboutPopupController;
     
     private List<Item> itemList = new ArrayList<>();
     private List<Item> readItemList = new ArrayList<>();
@@ -193,7 +198,7 @@ public class RssController {
     
     private static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     
-    private boolean gridMode = false;
+    private BooleanProperty gridModeproperty = new SimpleBooleanProperty(false);
     
     private final FontAwesomeIconView listIcon = new FontAwesomeIconView(FontAwesomeIcon.BARS);
     private final FontAwesomeIconView gridIcon = new FontAwesomeIconView(FontAwesomeIcon.TH);
@@ -204,7 +209,10 @@ public class RssController {
     
     @Autowired
     private MercuryMobilizer mercuryMobilizer;
-
+    
+    @Autowired
+    private IStorageService configStorage;
+    
     @FXML
     private void initialize() {
         FXMain.getStage().setMinWidth(700);
@@ -221,8 +229,30 @@ public class RssController {
         gridIcon.setSize("24");
         initializeWebView();
         snackbar = new JFXSnackbar(rssViewContainer);
-       initializePlusIcons();
-       initializeNetworkTask();
+        initializePlusIcons();
+        initializeNetworkTask();
+        initGridViewListener();
+    }
+
+    private void initGridViewListener() {
+        gridModeproperty.addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && ! newValue) {
+                splitPane.getItems().add(listViewContainer);
+                splitPane.getItems().add(webViewContainer);
+                splitPane.getItems().remove(gridContainer);
+                switchViewButton.setGraphic(gridIcon);
+                adjustSplitPaneDividers();
+                
+            }
+            else if (newValue != null && newValue) {
+                splitPane.getItems().remove(listViewContainer);
+                splitPane.getItems().remove(webViewContainer);
+                splitPane.getItems().add(gridContainer);
+                switchViewButton.setGraphic(listIcon);
+                adjustSplitPaneDividers();
+            }
+        });
+        gridModeproperty.set(configStorage.prefersGridLayout());
     }
 
     private void eventHandleInitialize() {
@@ -482,6 +512,7 @@ public class RssController {
         t.setOnSucceeded(e -> {
             progressBar.setVisible(false);
             refreshButton.setDisable(false);
+            markReadButton.setDisable(false);
             addSubscriptionButton.setDisable(false);
             LOGGER.debug("Server successfully reached");
             snackbarNotify("Server successfully reached");
@@ -491,12 +522,14 @@ public class RssController {
             LOGGER.debug("Trying to reach server...Please wait...");
             snackbarNotify("Trying to reach server...\nPlease wait...");
             refreshButton.setDisable(true);
+            markReadButton.setDisable(true);
             addSubscriptionButton.setDisable(true);
         });
         t.setOnFailed(e -> {
             progressBar.setVisible(false);
             refreshButton.setDisable(false);
             addSubscriptionButton.setDisable(false);
+            markReadButton.setDisable(false);
             LOGGER.debug("Failed to contact server");
             snackbarNotifyBlocking("Failed to contact server.\nCheck connection and retry in a moment");
         });
@@ -659,22 +692,7 @@ public class RssController {
 
     @FXML
     public void switchView() {
-        if (! gridMode) {
-            gridMode = true;
-            splitPane.getItems().remove(listViewContainer);
-            splitPane.getItems().remove(webViewContainer);
-            splitPane.getItems().add(gridContainer);
-            switchViewButton.setGraphic(listIcon);
-            adjustSplitPaneDividers();
-        }
-        else {
-            gridMode = false;
-            splitPane.getItems().add(listViewContainer);
-            splitPane.getItems().add(webViewContainer);
-            splitPane.getItems().remove(gridContainer);
-            switchViewButton.setGraphic(gridIcon);
-            adjustSplitPaneDividers();
-        }
+        gridModeproperty.set(! gridModeproperty.get());
     }
     
     private void adjustSplitPaneDividers() {
@@ -839,7 +857,9 @@ public class RssController {
         if (! (f instanceof Subscription)) {
             return;
         }
-        olderItemsListTask = connectServer.getOlderreadItemsTask(f.getId());
+        int unreadAlreadyInMemory = unreadCountsMap.getOrDefault(f.getId(), 0);
+        LOGGER.debug("older nb {}", unreadAlreadyInMemory);
+        olderItemsListTask = connectServer.getOlderreadItemsTask(f.getId(), unreadAlreadyInMemory);
         olderItemsListTask.setOnRunning(e -> {
             progressBar.setVisible(true);
             progressBar.setProgress(-1);
@@ -866,6 +886,29 @@ public class RssController {
             });
         });     
         connectServer.getTaskExecutor().submit(olderItemsListTask);
+    }
+    
+    @FXML
+    public void displayAboutPopup() {
+        if (aboutPopupStage == null) {
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle(bundle.getString("about"));
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(FXMain.getStage());
+            dialogStage.getIcons().add(new Image("icon.png"));
+            dialogStage.setResizable(true);
+            Scene scene = new Scene(aboutPopupView.getView());
+            dialogStage.setScene(scene);
+            this.aboutPopupStage = dialogStage;
+            aboutPopupController = (AboutPopupController) aboutPopupView.getPresenter();
+            aboutPopupController.setStage(dialogStage);
+            // Show the dialog and wait until the user closes it
+            dialogStage.showAndWait();
+        }
+        else {
+            aboutPopupStage.showAndWait();
+        }
+        
     }
     
     private void showEditSubscription(Subscription subscription) {

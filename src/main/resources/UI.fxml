@@ -113,7 +113,7 @@
                   </Button>
                   <MenuButton alignment="CENTER" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" minHeight="32.0" minWidth="48.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="48.0">
                     <items>
-                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                      <MenuItem mnemonicParsing="false" onAction="#displayAboutPopup" text="%about" />
                       <MenuItem mnemonicParsing="false" text="Action 2" />
                     </items>
                     <graphic>

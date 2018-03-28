@@ -17,5 +17,7 @@ public interface IStorageService {
     boolean hasToken();
     
     boolean hasUser();
+    
+    boolean prefersGridLayout();
 
 }

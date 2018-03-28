@@ -38,7 +38,7 @@ import me.bayang.reader.rssmodels.Tag;
 @Service
 public class FolderFeedOrder {
     
-    Logger LOGGER = LoggerFactory.getLogger(FolderFeedOrder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FolderFeedOrder.class);
     
     @Autowired
     private ConnectServer connectServer;

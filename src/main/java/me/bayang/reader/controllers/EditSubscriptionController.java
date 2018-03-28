@@ -12,12 +12,12 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import me.bayang.reader.FXMain;
 import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.backend.inoreader.FolderFeedOrder;
 import me.bayang.reader.components.DeletableLabel;
 import me.bayang.reader.rssmodels.Categories;
 import me.bayang.reader.rssmodels.Subscription;
+import me.bayang.reader.utils.StringUtils;
 
 @FXMLController
 public class EditSubscriptionController {
@@ -57,18 +57,14 @@ public class EditSubscriptionController {
     
     @FXML
     public void onFeedUrlClicked() {
-        openHyperlink(subscriptionUrl.getText());
+        StringUtils.openHyperlink(subscriptionUrl.getText());
     }
     
     @FXML
     public void onUrlClicked() {
-        openHyperlink(subscriptionHtmlUrl.getText());
+        StringUtils.openHyperlink(subscriptionHtmlUrl.getText());
     }
     
-    public void openHyperlink(String url) {
-        FXMain.getAppHostServices().showDocument(url);
-    }
-
     public Stage getStage() {
         return stage;
     }

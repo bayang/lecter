@@ -34,7 +34,7 @@ public class AddSubscriptionController {
     private Label statusLabel;
 
     @Autowired
-    ConnectServer connectServer;
+    private ConnectServer connectServer;
     
     @Autowired
     private ObjectMapper mapper;

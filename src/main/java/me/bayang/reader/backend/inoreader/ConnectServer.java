@@ -91,7 +91,7 @@ public class ConnectServer {
     private ObjectMapper mapper;
     
     @Resource(name = "threadPoolTaskExecutor")
-    ThreadPoolTaskExecutor taskExecutor;
+    private ThreadPoolTaskExecutor taskExecutor;
     
     private ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     
@@ -172,16 +172,18 @@ public class ConnectServer {
             OAuth2AccessToken newToken = new TokenRefreshGrant(client, token).accessToken(executor);
             setToken(newToken);
         }
-        String userId = storage.loadUser();
-        if (userId == null || userId.isEmpty()) {
-            UserInformation userInfo = getUserInformation();
-            if (userInfo != null) {
-                UserInfo.setUserId(userInfo.getUserId());
-                storage.saveUser(userInfo);
+        if (storage.hasUser()) {
+            String userId = storage.loadUser();
+            if (userId == null || userId.isEmpty()) {
+                UserInformation userInfo = getUserInformation();
+                if (userInfo != null) {
+                    UserInfo.setUserId(userInfo.getUserId());
+                    storage.saveUser(userInfo);
+                }
             }
-        }
-        else {
-            UserInfo.setUserId(userId);
+            else {
+                UserInfo.setUserId(userId);
+            }
         }
         setInitDone(true);
         LOGGER.debug("initializing done");
@@ -408,7 +410,7 @@ public class ConnectServer {
         return Collections.emptyList();
     }
     
-    public List<Item> getOlderStreamContent(String streamId) {
+    public List<Item> getOlderStreamContent(String streamId, int nbItemsAlreadyInMemory) {
         BufferedReader reader = null;
         try {
             HttpUrl urlWithParams;
@@ -424,7 +426,7 @@ public class ConnectServer {
             else {
                 urlWithParams = baseStreamContentHTTPUrl.newBuilder()
                         .addPathSegment(streamId)
-                        .setQueryParameter("n", "30")
+                        .setQueryParameter("n", String.valueOf(nbItemsAlreadyInMemory + 30))
                         .build();
             }
             reader = connectServer(urlWithParams);
@@ -462,12 +464,12 @@ public class ConnectServer {
         return Collections.emptyList();
     }
     
-    public Task<List<Item>> getOlderreadItemsTask(String streamId) {
+    public Task<List<Item>> getOlderreadItemsTask(String streamId, int nbItemsAlreadyInMemory) {
         Task<List<Item>> t = new Task<List<Item>>() {
             @Override
             protected List<Item> call() throws Exception {
                 LOGGER.debug("start getOlderreadItemsTask");
-                return getOlderStreamContent(streamId);
+                return getOlderStreamContent(streamId, nbItemsAlreadyInMemory);
             }
         };
         return t;

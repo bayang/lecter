@@ -26,10 +26,10 @@ public class OauthController {
     private static Logger LOGGER = LoggerFactory.getLogger(OauthController.class);
     
     @FXML
-    WebView oauthView;
+    private WebView oauthView;
     
     @FXML
-    AnchorPane oauthViewWrapper;
+    private AnchorPane oauthViewWrapper;
     
     @Autowired
     private ConnectServer connectServer;

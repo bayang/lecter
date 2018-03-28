@@ -129,4 +129,9 @@ public class PropertiesStorageServiceImpl implements IStorageService {
         return f.exists();
     }
 
+    @Override
+    public boolean prefersGridLayout() {
+        return false;
+    }
+
 }

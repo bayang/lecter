@@ -50,3 +50,7 @@ TokenInfo.dat
 .idea/
 streamContent.txt
 src/test/
+config.properties
+user.properties
+token.properties
+

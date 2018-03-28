@@ -1,4 +1,4 @@
-package me.bayang.reader;
+package me.bayang.reader.view;
 
 import de.felixroske.jfxsupport.SplashScreen;
 import javafx.scene.Parent;
