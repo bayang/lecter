@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXToggleButton?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.141" fx:controller="me.bayang.reader.controllers.SettingsController">
+   <children>
+      <JFXButton fx:id="backButton" onAction="#showMainScreen" text="%settingsBack" />
+      <Label text="%settingsDisplay" />
+      <Separator prefWidth="200.0" />
+      <Label text="%settingsPreferredLayout" />
+      <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+         <children>
+            <Label text="%settingsPreferredLayoutList" />
+            <JFXToggleButton fx:id="layoutToggle" contentDisplay="GRAPHIC_ONLY" />
+            <Label text="%settingsPreferredLayoutGrid" />
+         </children>
+      </HBox>
+      <Label text="%settingsShare" />
+      <Separator prefWidth="200.0" />
+      <Label text="Pocket" />
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Label text="%settingsActivate" />
+            <JFXToggleButton fx:id="pocketActivate" contentDisplay="GRAPHIC_ONLY" />
+         </children>
+      </HBox>
+      <JFXButton fx:id="pocketConfigure" buttonType="RAISED" onAction="#showPocketOauthStage" ripplerFill="#07c621" text="%settingsConfigure">
+         <font>
+            <Font name="System Bold" size="13.0" />
+         </font>
+      </JFXButton>
+      <Label fx:id="pocketStatus" text="Label" />
+   </children>
+</VBox>

@@ -10,7 +10,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <springboot-javafx.version>2.1.5</springboot-javafx.version>
+        <springboot-javafx.version>2.1.6</springboot-javafx.version>
         <spring.boot.version>2.0.0.RELEASE</spring.boot.version>
     </properties>
 
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>com.jfoenix</groupId>
             <artifactId>jfoenix</artifactId>
-            <version>8.0.1</version>
+            <version>8.0.3</version>
         </dependency>
         <dependency>
             <groupId>de.jensd</groupId>

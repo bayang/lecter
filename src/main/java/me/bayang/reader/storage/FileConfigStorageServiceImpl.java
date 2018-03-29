@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import me.bayang.reader.rssmodels.UserInformation;
 
 @Service
@@ -41,6 +43,9 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     private Configuration userConfiguration;
     private Configuration tokenConfiguration;
     
+    private BooleanProperty pocketEnabled = new SimpleBooleanProperty();
+    private BooleanProperty prefersGridLayout = new SimpleBooleanProperty();
+    
     @PostConstruct
     public void initialize() throws IOException, ConfigurationException {
         File propertiesFile = new File("config.properties");
@@ -58,9 +63,22 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         this.appConfiguration = appConfig.getConfiguration();
         this.userConfiguration = userConfig.getConfiguration();
         this.tokenConfiguration = tokenConfig.getConfiguration();
-        if (appConfiguration.getString("prefers.layout.grid") == null) {
-            appConfiguration.setProperty("prefers.layout.grid", false);
-        }
+        
+        prefersGridLayoutProperty().set(appConfiguration.getBoolean("prefers.layout.grid", false));
+        prefersGridLayoutProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                LOGGER.debug("prefers grid layout {} ",newValue);
+                setPrefersGridLayout(newValue);
+            }
+        });
+        
+        pocketEnabledProperty().set(appConfiguration.getBoolean("pocket.enabled", false));
+        pocketEnabledProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                LOGGER.debug("pocket enabled {} ",newValue);
+                setPocketEnabled(newValue);
+            }
+        });
     }
 
     @Override
@@ -114,7 +132,26 @@ public class FileConfigStorageServiceImpl implements IStorageService {
 
     @Override
     public String loadUser() {
-        return userConfiguration.getString("userId");
+        return userConfiguration.getString("inoreader.userId");
+    }
+    
+    @Override
+    public BooleanProperty pocketEnabledProperty() {
+        return pocketEnabled;
+    }
+    
+    public boolean isPocketEnabled() {
+        return pocketEnabledProperty().get();
+    }
+    
+    public void setPocketEnabled(boolean enabled) {
+        pocketEnabledProperty().set(enabled);
+        savePocketEnabled(enabled);
+    }
+    
+    public void savePocketEnabled(boolean enabled) {
+        appConfiguration.setProperty("pocket.enabled", enabled);
+        LOGGER.debug("saving pocket enabled state : {}", enabled);
     }
     
     @Override
@@ -140,8 +177,19 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     }
     
     @Override
+    public BooleanProperty prefersGridLayoutProperty() {
+        return prefersGridLayout;
+    }
+    
+    @Override
     public boolean prefersGridLayout() {
-        return appConfiguration.getBoolean("prefers.layout.grid", false);
+        return prefersGridLayoutProperty().get();
+    }
+    
+    public void setPrefersGridLayout(boolean prefersGridLayout) {
+        prefersGridLayoutProperty().set(prefersGridLayout);
+        appConfiguration.setProperty("prefers.layout.grid", prefersGridLayout);
+        LOGGER.debug("saving prefers grid layout state : {}", prefersGridLayout);
     }
 
     public String getKey() {

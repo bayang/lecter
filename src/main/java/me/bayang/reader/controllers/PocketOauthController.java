@@ -43,12 +43,43 @@ public class PocketOauthController {
     
     private static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     
+    public void processLogin() {
+        Response response = null;
+        try {
+            response = pocketClient.getRequestToken();
+            if (response.isSuccessful()) {
+                PocketTokenResponse pr = mapper.readValue(response.body().charStream(), PocketTokenResponse.class);
+                LOGGER.debug("pocketrequesttoken {}", pr);
+                pocketClient.setCode(pr.getCode());
+                String url = pocketClient.loginApprovalUrl(pr.getCode());
+                LOGGER.debug("url {}", url);
+                oauthView.getEngine().load(url);
+            }
+            else {
+                RssController.snackbarNotify(bundle.getString("connectionFailure"));
+                LOGGER.error("error header : {}", response.header("X-Error"));
+                LOGGER.error("failure during initialization of PocketOauthController code {}", response.code());
+            }
+        } catch (Exception ex) {
+            RssController.snackbarNotify(bundle.getString("connectionFailure"));
+            LOGGER.error("failure during initialization of oauthController", ex);
+        }
+        finally {
+            try {
+                response.close();
+            }
+            catch (Exception e) {
+                /* noop */
+            }
+        }
+    }
+    
     @FXML
     private void initialize() {
         oauthView.getEngine().locationProperty().addListener((observable, oldValue, newValue) -> {
-            if (pocketClient.getCode() == null || pocketClient.getCode().isEmpty()) {
-                return;
-            }
+//            if (pocketClient.getCode() == null || pocketClient.getCode().isEmpty()) {
+//                return;
+//            }
             if (oldValue != null && newValue != null) {
                 LOGGER.debug("{} -> {}",oldValue, newValue);
                 if (newValue.contains(PocketClient.redirectUrlNoScheme)) {
@@ -87,35 +118,6 @@ public class PocketOauthController {
                 LOGGER.debug(newValue);
             }
         });
-        Response response = null;
-        try {
-            response = pocketClient.getRequestToken();
-            if (response.isSuccessful()) {
-                PocketTokenResponse pr = mapper.readValue(response.body().charStream(), PocketTokenResponse.class);
-                LOGGER.debug("pocketrequesttoken {}", pr);
-                pocketClient.setCode(pr.getCode());
-                String url = pocketClient.loginApprovalUrl(pr.getCode());
-                LOGGER.debug("url {}", url);
-                oauthView.getEngine().load(url);
-            }
-            else {
-                RssController.snackbarNotify(bundle.getString("connectionFailure"));
-                LOGGER.error("error header : {}", response.header("X-Error"));
-                LOGGER.error("failure during initialization of PocketOauthController code {}", response.code());
-            }
-        } catch (Exception ex) {
-            RssController.snackbarNotify(bundle.getString("connectionFailure"));
-            LOGGER.error("failure during initialization of oauthController", ex);
-        }
-        finally {
-            try {
-                response.close();
-            }
-            catch (Exception e) {
-                /* noop */
-            }
-        }
-            
     }
 
     public Stage getStage() {

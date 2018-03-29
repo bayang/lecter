@@ -1,20 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.AboutPopupController">
+<HBox alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.AboutPopupController">
    <children>
-      <ImageView fx:id="appLogo" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
-      <VBox>
+      <ImageView fx:id="appLogo" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../icon.png" />
+         </image>
+         <HBox.margin>
+            <Insets right="15.0" />
+         </HBox.margin></ImageView>
+      <VBox alignment="CENTER">
          <children>
             <Label text="%appName" />
-            <Label text="" fx:id="versionLabel" />
+            <Label fx:id="versionLabel" text="" />
             <Hyperlink fx:id="hyperLink" onAction="#openLink" text="%appSite" />
          </children>
       </VBox>
    </children>
+   <padding>
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
 </HBox>

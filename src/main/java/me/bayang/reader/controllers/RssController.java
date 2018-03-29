@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.ResourceBundle.Control;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
@@ -88,6 +89,7 @@ import me.bayang.reader.view.EditSubscriptionView;
 import me.bayang.reader.view.OauthView;
 import me.bayang.reader.view.PocketOauthView;
 import me.bayang.reader.view.PopupWebView;
+import me.bayang.reader.view.SettingsView;
 
 @FXMLController
 public class RssController {
@@ -158,7 +160,7 @@ public class RssController {
     private Stage editSubscriptionStage = null;
     private Stage popupWebViewStage = null;
     private Stage aboutPopupStage = null;
-    private Stage pocketOauthStage;
+//    private Stage pocketOauthStage;
     
     @Autowired
     private AddSubscriptionView addSubscriptionView;
@@ -176,9 +178,9 @@ public class RssController {
     private AboutPopupView aboutPopupView;
     private AboutPopupController aboutPopupController;
     
-    @Autowired
-    private PocketOauthView pocketOauthView;
-    private PocketOauthController pocketOauthController;
+//    @Autowired
+//    private PocketOauthView pocketOauthView;
+//    private PocketOauthController pocketOauthController;
     
     private List<Item> itemList = new ArrayList<>();
     private List<Item> readItemList = new ArrayList<>();
@@ -941,25 +943,8 @@ public class RssController {
     }
     
     @FXML
-    public void showPocketOauthStage() {
-        if (pocketOauthStage == null) {
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle(bundle.getString("pocketLogin"));
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(FXMain.getStage());
-            dialogStage.getIcons().add(new Image("icon.png"));
-            dialogStage.setResizable(true);
-            Scene scene = new Scene(pocketOauthView.getView());
-            dialogStage.setScene(scene);
-            this.pocketOauthStage = dialogStage;
-            pocketOauthController = (PocketOauthController) pocketOauthView.getPresenter();
-            pocketOauthController.setStage(dialogStage);
-            // Show the dialog and wait until the user closes it
-            dialogStage.showAndWait();
-        }
-        else {
-            pocketOauthStage.showAndWait();
-        }
+    public void displaySettings() {
+        FXMain.showView(SettingsView.class);
     }
     
     public void addToStarredList(Item item) {

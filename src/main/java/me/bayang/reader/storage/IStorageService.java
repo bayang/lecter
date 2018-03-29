@@ -2,6 +2,7 @@ package me.bayang.reader.storage;
 
 import org.dmfs.oauth2.client.OAuth2AccessToken;
 
+import javafx.beans.property.BooleanProperty;
 import me.bayang.reader.rssmodels.UserInformation;
 
 public interface IStorageService {
@@ -23,5 +24,9 @@ public interface IStorageService {
     boolean hasUser();
     
     boolean prefersGridLayout();
+    
+    public BooleanProperty pocketEnabledProperty();
+    
+    public BooleanProperty prefersGridLayoutProperty();
 
 }
