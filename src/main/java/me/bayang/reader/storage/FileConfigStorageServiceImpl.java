@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import me.bayang.reader.rssmodels.UserInformation;
 
 @Service
@@ -45,6 +47,7 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     
     private BooleanProperty pocketEnabled = new SimpleBooleanProperty();
     private BooleanProperty prefersGridLayout = new SimpleBooleanProperty();
+    private StringProperty pocketUser = new SimpleStringProperty();
     
     @PostConstruct
     public void initialize() throws IOException, ConfigurationException {
@@ -77,6 +80,13 @@ public class FileConfigStorageServiceImpl implements IStorageService {
             if (newValue != null) {
                 LOGGER.debug("pocket enabled {} ",newValue);
                 setPocketEnabled(newValue);
+            }
+        });
+        pocketUserProperty().set(loadPocketUser());
+        pocketUserProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                LOGGER.debug("pocket user {} ",newValue);
+                setPocketUser(newValue);
             }
         });
     }
@@ -135,6 +145,21 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         return userConfiguration.getString("inoreader.userId");
     }
     
+    public String getPocketUser() {
+        return pocketUserProperty().get();
+    }
+    
+    @Override
+    public void setPocketUser(String user) {
+        pocketUserProperty().set(user);
+        savePocketUser(user);
+    }
+    
+    @Override
+    public StringProperty pocketUserProperty() {
+        return pocketUser;
+    }
+    
     @Override
     public BooleanProperty pocketEnabledProperty() {
         return pocketEnabled;
@@ -160,8 +185,16 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     }
 
     @Override
+    public String loadPocketToken() {
+        return tokenConfiguration.getString("pocket.token", "");
+    }
+
     public void savePocketUser(String user) {
-        tokenConfiguration.setProperty("pocket.user", user);
+        userConfiguration.setProperty("pocket.user", user);
+    }
+    
+    public String loadPocketUser() {
+        return userConfiguration.getString("pocket.user", "");
     }
 
     @Override
@@ -190,14 +223,6 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         prefersGridLayoutProperty().set(prefersGridLayout);
         appConfiguration.setProperty("prefers.layout.grid", prefersGridLayout);
         LOGGER.debug("saving prefers grid layout state : {}", prefersGridLayout);
-    }
-
-    public String getKey() {
-        return this.appConfiguration.getString("toto", "default");
-    }
-    
-    public void setKey() {
-        this.appConfiguration.setProperty("toto", "code");
     }
 
 }

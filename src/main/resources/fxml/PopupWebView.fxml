@@ -17,9 +17,18 @@
       <WebView fx:id="popupWebView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
       <HBox alignment="CENTER" prefWidth="200.0" styleClass="plusButton">
          <children>
-            <JFXRadioButton fx:id="popupRssRadioButton" text="%rss" />
-            <JFXRadioButton fx:id="popupWebRadioButton" text="%web" />
-            <JFXRadioButton fx:id="mercuryRadioButton" text="%mobileContent" />
+            <JFXRadioButton fx:id="popupRssRadioButton" text="%rss">
+               <HBox.margin>
+                  <Insets right="10.0" />
+               </HBox.margin></JFXRadioButton>
+            <JFXRadioButton fx:id="popupWebRadioButton" text="%web">
+               <padding>
+                  <Insets right="10.0" />
+               </padding></JFXRadioButton>
+            <JFXRadioButton fx:id="mercuryRadioButton" text="%mobileContent">
+               <HBox.margin>
+                  <Insets right="10.0" />
+               </HBox.margin></JFXRadioButton>
          </children>
       </HBox>
    </children>

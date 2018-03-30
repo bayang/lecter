@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import me.bayang.reader.FXMain;
+import me.bayang.reader.controllers.RssController;
 import me.bayang.reader.storage.IStorageService;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -75,26 +77,45 @@ public class PocketClient {
         requestTokenBody = RequestBody.create(MediaType.parse("application/json"), mapper.writeValueAsString(payload));
     }
     
-    public void addLink(String link, String tags) {
-        PocketAddLinkPayload p = new PocketAddLinkPayload();
-        p.setAccessToken(accessToken);
-        p.setConsumerKey(key);
-        p.setUrl(link);
-        if (tags != null && ! tags.isEmpty()) {
-            p.setTags(tags);
+    public boolean isConfigured() {
+        String accessToken = storage.loadPocketToken();
+        if (accessToken.isEmpty()) {
+            RssController.snackbarNotifyBlocking(FXMain.bundle.getString("pocketLoginRequired"));
+            return false;
         }
-        try {
-            RequestBody r = RequestBody.create(MediaType.parse("application/json"), mapper.writeValueAsString(p));
-            Request request = new Request.Builder()
-                    .url(addLinkUrl)
-                    .addHeader("Content-Type", "application/json; charset=UTF-8")
-                    .addHeader("X-Accept", "application/json")
-                    .post(r)
-                    .build();
-        } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        else {
+            this.setAccessToken(accessToken);
+            return true;
         }
+    }
+    
+    public Request addLink(String link, String tags) {
+        if (storage.loadPocketToken().isEmpty()) {
+            RssController.snackbarNotifyBlocking(FXMain.bundle.getString("pocketLoginRequired"));
+            return null;
+        }
+        else {
+            PocketAddLinkPayload p = new PocketAddLinkPayload();
+            p.setAccessToken(accessToken);
+            p.setConsumerKey(key);
+            p.setUrl(link);
+            if (tags != null && ! tags.isEmpty()) {
+                p.setTags(tags);
+            }
+            try {
+                RequestBody r = RequestBody.create(MediaType.parse("application/json"), mapper.writeValueAsString(p));
+                Request request = new Request.Builder()
+                        .url(addLinkUrl)
+                        .addHeader("Content-Type", "application/json; charset=UTF-8")
+                        .addHeader("X-Accept", "application/json")
+                        .post(r)
+                        .build();
+                return request;
+            } catch (JsonProcessingException e) {
+                LOGGER.error("error sending link to pocket", e);
+            }
+        }
+        return null;
     }
     
     public Response getRequestToken() throws IOException {
@@ -174,7 +195,7 @@ public class PocketClient {
 
     public void setUsername(String username) {
         this.username = username;
-        storage.savePocketUser(username);
+        storage.setPocketUser(username);
     }
     
 

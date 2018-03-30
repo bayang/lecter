@@ -2,18 +2,24 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXToggleButton?>
+<?import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-
-<VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.141" fx:controller="me.bayang.reader.controllers.SettingsController">
+<VBox xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.SettingsController">
    <children>
-      <JFXButton fx:id="backButton" onAction="#showMainScreen" text="%settingsBack" />
-      <Label text="%settingsDisplay" />
-      <Separator prefWidth="200.0" />
+      <JFXButton fx:id="backButton" buttonType="RAISED" onAction="#showMainScreen" styleClass="generic-button" text="%settingsBack">
+         <VBox.margin>
+            <Insets bottom="20.0" />
+         </VBox.margin></JFXButton>
+      <Label styleClass="settings-subtitle" text="%settingsDisplay" />
+      <Separator>
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin></Separator>
       <Label text="%settingsPreferredLayout" />
       <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
          <children>
@@ -22,20 +28,37 @@
             <Label text="%settingsPreferredLayoutGrid" />
          </children>
       </HBox>
-      <Label text="%settingsShare" />
-      <Separator prefWidth="200.0" />
-      <Label text="Pocket" />
+      <Label styleClass="settings-subtitle" text="%settingsShare">
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin></Label>
+      <Separator>
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin></Separator>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Label text="Pocket" />
+            <MaterialDesignIconView glyphName="POCKET" size="14">
+               <HBox.margin>
+                  <Insets left="5.0" />
+               </HBox.margin>
+            </MaterialDesignIconView>
+         </children>
+      </HBox>
       <HBox alignment="CENTER_LEFT">
          <children>
             <Label text="%settingsActivate" />
             <JFXToggleButton fx:id="pocketActivate" contentDisplay="GRAPHIC_ONLY" />
          </children>
       </HBox>
-      <JFXButton fx:id="pocketConfigure" buttonType="RAISED" onAction="#showPocketOauthStage" ripplerFill="#07c621" text="%settingsConfigure">
-         <font>
-            <Font name="System Bold" size="13.0" />
-         </font>
-      </JFXButton>
-      <Label fx:id="pocketStatus" text="Label" />
+      <Label fx:id="pocketStatus" text="Label">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin></Label>
+      <JFXButton fx:id="pocketConfigure" buttonType="RAISED" onAction="#showPocketOauthStage" ripplerFill="#07c621" styleClass="generic-button" text="%settingsConfigure" />
    </children>
+   <padding>
+      <Insets bottom="10.0" left="50.0" right="10.0" top="20.0" />
+   </padding>
 </VBox>

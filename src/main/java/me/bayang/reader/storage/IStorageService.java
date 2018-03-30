@@ -3,6 +3,7 @@ package me.bayang.reader.storage;
 import org.dmfs.oauth2.client.OAuth2AccessToken;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.StringProperty;
 import me.bayang.reader.rssmodels.UserInformation;
 
 public interface IStorageService {
@@ -11,7 +12,11 @@ public interface IStorageService {
     
     void savePocketToken(String token);
     
-    void savePocketUser(String user);
+    String loadPocketToken();
+    
+    void setPocketUser(String user);
+    
+    StringProperty pocketUserProperty();
     
     OAuth2AccessToken loadToken();
     

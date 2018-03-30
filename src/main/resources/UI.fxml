@@ -46,6 +46,14 @@
                         <JFXRadioButton fx:id="rssRadioButton" mnemonicParsing="false" text="%rss" />
                         <JFXRadioButton fx:id="webRadioButton" mnemonicParsing="false" text="%web" />
                         <JFXRadioButton fx:id="mercuryRadioButton" mnemonicParsing="false" text="%mobileContent" />
+                        <MenuButton contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="MenuButton">
+                          <items>
+                            <MenuItem fx:id="pocketShareMenu" mnemonicParsing="false" onAction="#shareItemPocket" text="Pocket" />
+                          </items>
+                           <graphic>
+                              <FontAwesomeIconView glyphName="SHARE_ALT" size="20" />
+                           </graphic>
+                        </MenuButton>
                            </children>
                         </HBox>
                </children>
@@ -66,7 +74,7 @@
    <top>
       <VBox fx:id="toolBarContainer" BorderPane.alignment="CENTER">
          <children>
-            <ToolBar prefHeight="40.0" prefWidth="200.0">
+            <ToolBar prefHeight="40.0" prefWidth="200.0" styleClass="white-bg">
               <items>
                 <Button fx:id="loginButton" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#loginMenuFired" prefHeight="32.0" prefWidth="32.0" text="Button">
                      <graphic>

@@ -1,3 +1,8 @@
+
+.white-bg {
+    -fx-background-color: WHITE;
+}
+
 .split-pane *.split-pane-divider {
     -fx-padding: 0.0 0.1 0.0 0.1;
 }
@@ -34,11 +39,12 @@
 
 #progressBar > .bar {
     -fx-background-color : #dda0dd;
+    -fx-pref-height : 6;
 }
 
 .webViewProgress > .bar {
     -fx-background-color : #00ff7f;
-    -fx-pref-height : 5;
+    -fx-pref-height : 6;
 }
 
 #grid {
@@ -60,3 +66,20 @@
 .plusButton {
     -fx-background-color: #ffffff;
 }
+
+.settings-subtitle {
+    -fx-font-size : 16px;
+    -fx-font-weight : bold;
+}
+
+.generic-button {
+    -fx-background-color: #fafafa;
+    -fx-font-weight : bold;
+    -fx-font-size : 14px;
+}
+
+.generic-button > .jfx-rippler {
+    -jfx-rippler-fill:  #f2f2f2;
+    
+}
+

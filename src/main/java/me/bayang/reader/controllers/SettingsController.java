@@ -1,5 +1,6 @@
 package me.bayang.reader.controllers;
 
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXToggleButton;
 
 import de.felixroske.jfxsupport.FXMLController;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -55,6 +57,9 @@ public class SettingsController {
     public void initialize() {
         pocketActivate.selectedProperty().bindBidirectional(configStorage.pocketEnabledProperty());
         layoutToggle.selectedProperty().bindBidirectional(configStorage.prefersGridLayoutProperty());
+        pocketStatus.textProperty().bind(Bindings.when(configStorage.pocketUserProperty().isEmpty())
+                                .then("")
+                                .otherwise(MessageFormat.format(bundle.getString("settingsShareProviderStatus"), configStorage.pocketUserProperty().getValue())));
     }
     
     @FXML
