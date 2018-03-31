@@ -19,6 +19,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
@@ -28,6 +30,8 @@ import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.mobilizer.MercuryMobilizer;
 import me.bayang.reader.mobilizer.MercuryResult;
 import me.bayang.reader.rssmodels.Item;
+import me.bayang.reader.share.pocket.PocketClient;
+import me.bayang.reader.view.PocketAddLinkView;
 
 @FXMLController
 public class PopupWebViewController {
@@ -52,6 +56,9 @@ public class PopupWebViewController {
     @FXML
     private VBox container;
     
+    @FXML
+    private MenuItem pocketShareMenu;
+    
     private WebViewHyperlinkListener eventPrintingListener;
     
     private AtomicBoolean isWebViewListenerAttached = new AtomicBoolean(false);
@@ -61,10 +68,17 @@ public class PopupWebViewController {
     private Stage stage;
     
     @Autowired
+    private PocketAddLinkView pocketAddLinkView;
+    private PocketAddLinkController pocketAddLinkController;
+    
+    @Autowired
     private MercuryMobilizer mercuryMobilizer;
     
     @Autowired
     private ConnectServer connectServer;
+    
+    @Autowired
+    private PocketClient pocketClient;
     
     @FXML
     private void initialize() {
@@ -121,6 +135,30 @@ public class PopupWebViewController {
                 progressBar.setVisible(false);
             }
         });
+    }
+    
+    @FXML
+    public void shareItemPocket() {
+        if (currentItem != null) {
+            if (! pocketClient.isConfigured()) {
+                return;
+            }
+            if (FXMain.pocketAddLinkStage == null) {
+                FXMain.createPocketAddLinkStage();
+                Scene scene = new Scene(pocketAddLinkView.getView());
+                FXMain.pocketAddLinkStage.setScene(scene);
+                pocketAddLinkController = (PocketAddLinkController) pocketAddLinkView.getPresenter();
+                pocketAddLinkController.setStage(FXMain.pocketAddLinkStage);
+                pocketAddLinkController.setCurrentItem(currentItem);
+                // Show the dialog and wait until the user closes it
+                FXMain.pocketAddLinkStage.showAndWait();
+            }
+            else {
+                pocketAddLinkController.setCurrentItem(currentItem);
+                // Show the dialog and wait until the user closes it
+                FXMain.pocketAddLinkStage.showAndWait();
+            }
+        }
     }
     
     private void launchMercuryTask() {

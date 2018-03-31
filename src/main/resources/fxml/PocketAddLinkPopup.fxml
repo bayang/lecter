@@ -21,7 +21,10 @@
             <Insets bottom="20.0" />
          </VBox.margin>
       </JFXTextArea>
-      <Label styleClass="text-bigger" text="%pocketAddLinkAddTag" />
+      <Label styleClass="text-bigger" text="%pocketAddLinkAddTag">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin></Label>
       <HBox alignment="CENTER">
          <children>
             <JFXTextField fx:id="tagField" />
@@ -31,10 +34,19 @@
                </graphic>
             </JFXButton>
          </children>
+         <VBox.margin>
+            <Insets bottom="15.0" />
+         </VBox.margin>
       </HBox>
-      <Label styleClass="text-bigger" text="%pocketAddLinkTags" />
-      <FlowPane fx:id="tagsContainer" alignment="CENTER" />
-      <JFXButton fx:id="submitButton" styleClass="generic-button" alignment="CENTER" buttonType="FLAT" onAction="#submitLink" text="%pocketAddLinkSubmit" />
+      <Label styleClass="text-bigger" text="%pocketAddLinkTags">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin></Label>
+      <FlowPane fx:id="tagsContainer" alignment="CENTER">
+         <VBox.margin>
+            <Insets bottom="5.0" />
+         </VBox.margin></FlowPane>
+      <JFXButton fx:id="submitButton" alignment="CENTER" buttonType="FLAT" onAction="#submitLink" styleClass="generic-button" text="%pocketAddLinkSubmit" />
    </children>
    <padding>
       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

@@ -21,6 +21,7 @@ import org.controlsfx.control.textfield.CustomTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
@@ -90,6 +91,7 @@ import me.bayang.reader.view.EditSubscriptionView;
 import me.bayang.reader.view.OauthView;
 import me.bayang.reader.view.PocketAddLinkView;
 import me.bayang.reader.view.PopupWebView;
+import me.bayang.reader.view.RssView;
 import me.bayang.reader.view.SettingsView;
 
 @FXMLController
@@ -229,6 +231,9 @@ public class RssController {
     
     private Item currentlySelectedItem = null;
     
+    @Value("${javafx.css[2]}")
+    List<String> v;
+    
     @FXML
     private void initialize() {
         FXMain.getStage().setMinWidth(700);
@@ -245,6 +250,7 @@ public class RssController {
         initializeNetworkTask();
         initGridViewListener();
         pocketShareMenu.disableProperty().bind(Bindings.not(configStorage.pocketEnabledProperty()));
+        LOGGER.debug("{}", v);
     }
 
     private void initGridViewListener() {
@@ -480,11 +486,11 @@ public class RssController {
     
     private void initializePlusIcons() {
         plusIcon.setVisible(false);
-        plusIcon.setOnMouseEntered(event -> plusIcon.setFill(Color.CORNFLOWERBLUE));
+        plusIcon.setOnMouseEntered(event -> plusIcon.setFill(FXMain.primaryColor));
         plusIcon.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
         plusIconGrid.setVisible(false);
-        plusIconGrid.setOnMouseEntered(event -> plusIcon.setFill(Color.CORNFLOWERBLUE));
-        plusIconGrid.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
+        plusIconGrid.setOnMouseEntered(event -> plusIconGrid.setFill(FXMain.primaryColor));
+        plusIconGrid.setOnMouseExited(event -> plusIconGrid.setFill(Color.BLACK));
         
         Tooltip t = new Tooltip(bundle.getString("loadRead"));
         Tooltip.install(plusIcon, t);
@@ -640,6 +646,7 @@ public class RssController {
                 setGraphic(null);
             } else {
                 HBox hBox = new HBox();
+                hBox.getStyleClass().add("tree-cell-box");
                 hBox.setSpacing(10);
                 hBox.setMaxWidth(250);
                 if (item instanceof Subscription) {
@@ -654,6 +661,7 @@ public class RssController {
                     titleLabel.setPrefWidth(150);
                     Tooltip tooltip = new Tooltip(title);
                     this.setTooltip(tooltip);
+                    titleLabel.getStyleClass().add("tree-cell-label");
                     //using HBox to add all the content
                     if (FolderFeedOrder.iconMap != null) {
                         ImageView imageView = new ImageView(FolderFeedOrder.iconMap.get(item.getId()));
@@ -684,6 +692,7 @@ public class RssController {
                     String label= StringEscapeUtils.unescapeHtml4(item.getLabel());
                     Label titleLabel = new Label(label);
                     titleLabel.setPrefWidth(120);
+                    titleLabel.getStyleClass().add("tree-cell-label");
                     Tooltip tooltip = new Tooltip(label);
                     this.setTooltip(tooltip);
 
@@ -696,6 +705,7 @@ public class RssController {
                     Label countLabel = new Label(countString);
                     Label titleLabel = new Label(s.substring(s.lastIndexOf("/") + 1));
                     titleLabel.setPrefWidth(120);
+                    titleLabel.getStyleClass().add("tree-cell-label");
 
                     hBox.getChildren().addAll(titleLabel, countLabel);
                 }

@@ -12,6 +12,8 @@ import org.controlsfx.control.GridCell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jfoenix.controls.JFXRippler;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContextMenu;
@@ -114,7 +116,6 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
                     LOGGER.error("",e);
                 }
             }
-            
             
             //get the time style
             LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(item.getCrawlTimeMsec())), ZoneId.systemDefault());

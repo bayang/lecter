@@ -6,7 +6,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 import me.bayang.reader.FXMain;
 
 public class DeletableLabel extends HBox {
@@ -19,15 +18,15 @@ public class DeletableLabel extends HBox {
         this.content = content;
         Label l = new Label(content);
         l.getStyleClass().add("deletable-content");
-        l.setPadding(new Insets(0, 2, 0, 2));
+        l.setPadding(new Insets(0, 5, 0, 3));
         this.getChildren().add(l);
         FontAwesomeIconView fv = new FontAwesomeIconView(FontAwesomeIcon.TIMES, "18");
+        fv.setFill(FXMain.invertedColor);
         fv.setOnMouseEntered(event -> fv.setFill(FXMain.primaryColor));
-        fv.setOnMouseExited(event -> fv.setFill(Color.WHITE));
+        fv.setOnMouseExited(event -> fv.setFill(FXMain.invertedColor));
         this.getChildren().add(fv);
         this.deleteCross = fv;
         this.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
-//        this.getStyleClass().add("contact-card");
         this.setAlignment(Pos.CENTER);
         this.getStyleClass().add("deletable-box");
     }

@@ -18,6 +18,7 @@ public class FXMain extends AbstractJavaFxApplicationSupport {
     public static Stage pocketAddLinkStage = null;
     
     public static Color primaryColor = Color.rgb(0, 150, 136, 1);
+    public static Color invertedColor = Color.WHITE;
     
     public static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     

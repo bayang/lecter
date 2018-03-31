@@ -19,8 +19,8 @@
          </HBox.margin></ImageView>
       <VBox alignment="CENTER">
          <children>
-            <Label text="%appName" />
-            <Label fx:id="versionLabel" text="" />
+            <Label text="%appName" styleClass="app-title"/>
+            <Label fx:id="versionLabel" text="" styleClass="text-bigger"/>
             <Hyperlink fx:id="hyperLink" onAction="#openLink" text="%appSite" />
          </children>
       </VBox>
