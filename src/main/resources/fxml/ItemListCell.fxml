@@ -13,27 +13,19 @@
       <HBox fx:id="firstLine" alignment="CENTER">
          <children>
             <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" />
-            <Label fx:id="fromLabel" text="Label">
-               <font>
-                  <Font size="14.0" />
-               </font>
+            <Label fx:id="fromLabel" styleClass="feed-from" text="Label">
                <HBox.margin>
                   <Insets left="10.0" />
                </HBox.margin></Label>
             <Pane HBox.hgrow="ALWAYS" />
-            <Label fx:id="dateLabel" alignment="BOTTOM_RIGHT" text="Label">
-               <font>
-                  <Font size="9.0" />
-               </font>
+            <Label fx:id="dateLabel" alignment="BOTTOM_RIGHT" styleClass="date-label" text="Label">
                <HBox.margin>
                   <Insets right="15.0" />
                </HBox.margin></Label>
          </children>
       </HBox>
-      <Label fx:id="subjectLabel" text="Label" wrapText="true" />
-      <Label fx:id="contentLabel" text="Label">
-         <font>
-            <Font size="11.0" />
-         </font></Label>
+      <Label fx:id="subjectLabel" styleClass="feed-subject" text="Label" wrapText="true" />
+      <Label fx:id="contentLabel" styleClass="feed-content" text="Label">
+         </Label>
    </children>
 </VBox>

@@ -38,8 +38,8 @@
          </VBox.margin></Separator>
       <HBox alignment="CENTER_LEFT">
          <children>
-            <Label text="Pocket" />
-            <MaterialDesignIconView glyphName="POCKET" size="14">
+            <Label styleClass="text-bigger" text="Pocket" />
+            <MaterialDesignIconView glyphName="POCKET" size="20">
                <HBox.margin>
                   <Insets left="5.0" />
                </HBox.margin>
@@ -59,6 +59,6 @@
       <JFXButton fx:id="pocketConfigure" buttonType="RAISED" onAction="#showPocketOauthStage" ripplerFill="#07c621" styleClass="generic-button" text="%settingsConfigure" />
    </children>
    <padding>
-      <Insets bottom="10.0" left="50.0" right="10.0" top="20.0" />
+      <Insets bottom="10.0" left="75.0" right="50.0" top="30.0" />
    </padding>
 </VBox>

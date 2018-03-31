@@ -239,10 +239,6 @@ public class RssController {
         initializeRadioButton();
         initializeSearchBar();
         initializeProgressBar();
-        listIcon.setFill(Color.valueOf("#a5a3a3"));
-        listIcon.setSize("24");
-        gridIcon.setFill(Color.valueOf("#a5a3a3"));
-        gridIcon.setSize("24");
         initializeWebView();
         snackbar = new JFXSnackbar(rssViewContainer);
         initializePlusIcons();
@@ -252,6 +248,10 @@ public class RssController {
     }
 
     private void initGridViewListener() {
+        listIcon.setFill(Color.valueOf("#a5a3a3"));
+        listIcon.setSize("24");
+        gridIcon.setFill(Color.valueOf("#a5a3a3"));
+        gridIcon.setSize("24");
         gridModeproperty.addListener((observable, oldValue, newValue) -> {
             if (newValue != null && ! newValue) {
                 splitPane.getItems().add(listViewContainer);
@@ -295,7 +295,7 @@ public class RssController {
         //handle event between treeView and listView
         treeView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             
-            LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
+//            LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
             if (starredList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
                     plusIcon.setVisible(false);
@@ -752,7 +752,6 @@ public class RssController {
                 LOGGER.debug("add = {}", added);
                 LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
                 listView.refresh();
-                    
             });
             //inform treeView to refresh the unread count
             if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {

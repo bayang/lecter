@@ -7,6 +7,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import me.bayang.reader.FXMain;
 
 public class DeletableLabel extends HBox {
     
@@ -17,17 +18,18 @@ public class DeletableLabel extends HBox {
     public DeletableLabel(String content) {
         this.content = content;
         Label l = new Label(content);
+        l.getStyleClass().add("deletable-content");
         l.setPadding(new Insets(0, 2, 0, 2));
         this.getChildren().add(l);
-        FontAwesomeIconView fv = new FontAwesomeIconView(FontAwesomeIcon.TIMES, "15");
-        fv.setOnMouseEntered(event -> fv.setFill(Color.CORNFLOWERBLUE));
-        fv.setOnMouseExited(event -> fv.setFill(Color.BLACK));
+        FontAwesomeIconView fv = new FontAwesomeIconView(FontAwesomeIcon.TIMES, "18");
+        fv.setOnMouseEntered(event -> fv.setFill(FXMain.primaryColor));
+        fv.setOnMouseExited(event -> fv.setFill(Color.WHITE));
         this.getChildren().add(fv);
         this.deleteCross = fv;
         this.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
 //        this.getStyleClass().add("contact-card");
         this.setAlignment(Pos.CENTER);
-        
+        this.getStyleClass().add("deletable-box");
     }
 
     public FontAwesomeIconView getDeleteCross() {

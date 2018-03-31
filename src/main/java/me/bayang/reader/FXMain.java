@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import de.felixroske.jfxsupport.AbstractJavaFxApplicationSupport;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import me.bayang.reader.view.NoOpSplashScreen;
@@ -15,6 +16,8 @@ import me.bayang.reader.view.RssView;
 public class FXMain extends AbstractJavaFxApplicationSupport {
     
     public static Stage pocketAddLinkStage = null;
+    
+    public static Color primaryColor = Color.rgb(0, 150, 136, 1);
     
     public static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     

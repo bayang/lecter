@@ -1,0 +1,147 @@
+* {
+   -fx-primary-color: -teal-500;
+   -fx-primary-color-fainted: rgba(0, 150, 136, 0.33);
+}
+
+
+.root * {
+    -fx-focus-color: -fx-primary-color;
+    -fx-faint-focus-color: -fx-primary-color-fainted;
+    -fx-accent: -fx-primary-color;
+    -fx-dark-text-color: white;
+    -fx-font-family: "Roboto";
+}
+
+.jfx-text-area {
+    -jfx-focus-color: -fx-primary-color ;
+    -fx-font-size: 14px;
+}
+
+.jfx-text-field {
+    -jfx-focus-color: -fx-primary-color ;
+    -fx-font-size: 14px;
+}
+
+.date-label {
+    -fx-font-size: 9px;
+}
+
+.feed-subject {
+    -fx-font-weight: bold;
+}
+
+.feed-from {
+    -fx-font-size: 14px;
+}
+
+.feed-content {
+    -fx-font-size: 11px;
+}
+
+.white-bg {
+    -fx-background-color: WHITE;
+}
+
+.split-pane *.split-pane-divider {
+    -fx-padding: 0.0 0.1 0.0 0.1;
+}
+
+.badge-label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-color: -grey-500;
+    -fx-background-radius: 2.0em ;
+    
+}
+
+.edit-subscription-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.jfx-snackbar-content {
+    -fx-background-color: #323232;
+    -fx-opacity : 0.7;
+    -fx-padding : 10;
+    -fx-font-size: 14px;
+}
+
+.jfx-snackbar-toast {
+    -fx-text-fill: WHITE;   
+}
+
+.jfx-snackbar-action {
+    -fx-text-fill: -light-green-500;
+    -fx-margin : 0 10 0 0;
+    -fx-background-color: #323232;
+}
+
+#progressBar > .bar {
+    -fx-background-color : -fx-primary-color;
+    -fx-pref-height : 6;
+}
+
+.webViewProgress > .bar {
+    -fx-background-color : -fx-primary-color;
+    -fx-pref-height : 6;
+}
+
+#grid {
+    -fx-background-color: -grey-200;
+}
+
+.gridCell {
+    -fx-background-color: -grey-50;
+    -fx-effect: dropshadow( one-pass-box , rgba(0,0,0,0.6) , 8 , 0.0 , 1 , 2 );
+    -fx-padding:5px;
+}
+
+.gridCell:hover {
+    -fx-border-color: -grey-50;
+    -fx-border-width: 2px;
+    -fx-effect: null;
+}
+
+.plusButton {
+    -fx-background-color: white;
+}
+
+.settings-subtitle {
+    -fx-font-size : 16px;
+    -fx-font-family: "Roboto Medium";
+    -fx-font-weight : bold;
+}
+
+.generic-button {
+    -fx-background-color: transparent;
+    -jfx-button-type: FLAT;
+    -fx-font-weight : bold;
+    -fx-font-size : 16px;
+    -fx-font-family: "Roboto Medium";
+}
+
+.generic-button:hover {
+    -fx-background-color: -teal-200;
+}
+
+.generic-button > .jfx-rippler {
+    -jfx-rippler-fill:  -teal-400;
+    
+}
+
+.text-bigger {
+    -fx-font-size : 16px;
+}
+
+.deletable-content {
+    -fx-font-size : 16px;
+    -fx-text-fill: white;
+}
+
+.deletable-box {
+    -fx-background-color: -grey-500;
+    -fx-opacity : 0.7;
+    -fx-background-radius : 10 10 10 10;
+    -fx-padding : 0 5 0 5;
+}
+

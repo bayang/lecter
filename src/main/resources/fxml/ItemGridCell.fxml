@@ -12,10 +12,7 @@
       <HBox fx:id="firstLine" alignment="CENTER_LEFT">
          <children>
             <ImageView fx:id="icon" pickOnBounds="true" preserveRatio="true" />
-            <Label fx:id="fromLabel" text="Label" wrapText="true">
-               <font>
-                  <Font size="14.0" />
-               </font>
+            <Label fx:id="fromLabel" styleClass="feed-from" text="Label" wrapText="true">
                <HBox.margin>
                   <Insets left="10.0" />
                </HBox.margin></Label>
@@ -24,15 +21,10 @@
             <Insets bottom="1.0" />
          </VBox.margin>
       </HBox>
-      <Label fx:id="dateLabel" alignment="BOTTOM_RIGHT" text="Label">
-         <font>
-            <Font size="9.0" />
-         </font>
+      <Label fx:id="dateLabel" alignment="BOTTOM_RIGHT" styleClass="date-label" text="Label">
       </Label>
-      <Label fx:id="subjectLabel" text="Label" wrapText="true" />
-      <Label fx:id="contentLabel" text="Label" wrapText="true">
-         <font>
-            <Font size="11.0" />
-         </font></Label>
+      <Label fx:id="subjectLabel" styleClass="feed-subject" text="Label" wrapText="true" />
+      <Label fx:id="contentLabel" styleClass="feed-content" text="Label" wrapText="true">
+         </Label>
    </children>
 </VBox>

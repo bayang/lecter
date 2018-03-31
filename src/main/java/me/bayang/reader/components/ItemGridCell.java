@@ -126,7 +126,7 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
             fromLabel.setText(StringEscapeUtils.unescapeHtml4(item.getOrigin().getTitle()));
             dateLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             dateLabel.setText(timeString);
-            subjectLabel.setStyle("-fx-font-weight: bold;");
+//            subjectLabel.setStyle("-fx-font-weight: bold;");
             subjectLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             subjectLabel.setWrapText(true);
             subjectLabel.setText(StringEscapeUtils.unescapeHtml4(item.getTitle()));
