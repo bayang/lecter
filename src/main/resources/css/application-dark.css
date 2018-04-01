@@ -10,12 +10,25 @@
     -fx-faint-focus-color: -fx-primary-color-fainted;
     -fx-accent: -fx-primary-color;
     -fx-dark-text-color: -grey-400;
+    -fx-dark-text-read-color: -grey-600;
     -fx-font-family: "Roboto";
-    -fx-text-fill: -fx-dark-text-color; 
+    -fx-text-fill: -fx-dark-text-color;
 }
 
 .tree-view .tree-cell, .jfx-list-view {
     -fx-background-color: -fx-base;
+}
+
+.context-menu {
+    -fx-background-color: -fx-base;
+}
+
+.menu-item .label {
+    -fx-font-size: 16px;
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: black;
 }
 
 .jfx-radio-button {
@@ -54,12 +67,6 @@
     -fx-background-color: -fx-accent;
 }
 
-/*
-.tree-view .tree-cell:selected .tree-cell-box {
-    -fx-background-color: -fx-accent;
-}
-*/
-
 .tree-cell:selected > .tree-disclosure-node > .arrow {
     -fx-background-color: #000000;
 }
@@ -68,20 +75,68 @@
     -fx-text-fill: #000000;
 }
 
-.list-cell:odd {
-    -fx-background-color: -fx-base;
+.readable-cell:focused:selected:read {
+    -fx-background-color: -fx-primary-color;
 }
 
-.list-cell:even {
-    -fx-background-color: -blue-grey-700;
+.readable-cell:read:selected {
+    -fx-background-color: -fx-primary-color;
+}
+
+.readable-cell:selected {
+    -fx-background-color: -fx-primary-color;
 }
 
 .list-cell:selected {
     -fx-background-color: -fx-primary-color;
 }
 
-.list-cell:selected > .date-label, .feed-subject, .feed-from, .feed-content {
+.list-cell:odd:selected {
+    -fx-background-color: -fx-primary-color;
+}
+
+.list-cell:even:selected {
+    -fx-background-color: -fx-primary-color;
+}
+
+.list-cell:odd {
+    -fx-background-color: -fx-base;
+}
+
+.list-cell:even {
+    -fx-background-color: -blue-grey-800;
+}
+
+.list-cell:selected  * {
     -fx-text-fill: #000000;
+}
+
+.readable-cell:read {
+    -fx-text-fill: -fx-dark-text-read-color;
+}
+
+.readable-cell {
+    -fx-text-fill: -fx-dark-text-color;
+}
+
+.readable-cell * {
+    -fx-text-fill: -fx-dark-text-color;
+}
+
+.readable-cell:read .date-label {
+    -fx-text-fill: -fx-dark-text-read-color;
+}
+
+.readable-cell:read .feed-from {
+    -fx-text-fill: -fx-dark-text-read-color;
+}
+
+.readable-cell:read .feed-content {
+    -fx-text-fill: -fx-dark-text-read-color;
+}
+
+.readable-cell:read .feed-subject {
+    -fx-text-fill: -fx-dark-text-read-color;
 }
 
 .jfx-rippler {
@@ -100,16 +155,22 @@
     -fx-background-color: -fx-primary-color-fainted;
 }
 
-.jfx-text-area {
+.jfx-text-area, .jfx-text-area:focused {
     -jfx-focus-color: -fx-primary-color ;
     -fx-font-size: 14px;
+    -jfx-unfocus-color:derive(-fx-primary-color,10%);
 }
 
-.jfx-text-field {
+.jfx-text-field, .jfx-text-field:focused {
     -jfx-focus-color: -fx-primary-color ;
     -fx-font-size: 14px;
+    -jfx-unfocus-color:derive(-fx-primary-color,10%);
+    -fx-text-fill: -fx-dark-text-color;
 }
 
+.text-field, .text-field:focused {
+    -fx-text-fill: black;
+}
 
 .white-bg {
     -fx-background-color: -fx-base;
@@ -145,7 +206,7 @@
 }
 
 .jfx-snackbar-action {
-    -fx-text-fill: -light-green-500;
+    -fx-text-fill: -fx-primary-color;
     -fx-margin : 0 10 0 0;
     -fx-background-color: #323232;
 }
@@ -161,23 +222,23 @@
 }
 
 #grid {
-    -fx-background-color: -blue-grey-900;
+    -fx-background-color: -fx-base;
 }
 
 .gridCell {
-    -fx-background-color: -grey-50;
-    -fx-effect: dropshadow( one-pass-box , rgba(0,0,0,0.6) , 8 , 0.0 , 1 , 2 );
+    -fx-background-color: -fx-base;
+    -fx-effect: dropshadow( one-pass-box , rgba(1,1,1,0.6) , 8 , 0.0 , 1 , 2 );
     -fx-padding:5px;
 }
 
 .gridCell:hover {
-    -fx-border-color: -grey-50;
+    -fx-border-color: -blue-grey-700;
     -fx-border-width: 2px;
     -fx-effect: null;
 }
 
 .plusButton {
-    -fx-background-color: -blue-grey-900;
+    -fx-background-color: -fx-base;
 }
 
 .settings-subtitle {
@@ -222,4 +283,44 @@
 .app-title {
     -fx-font-size : 20px;
     -fx-font-family: "Roboto Bold";
+}
+
+.plus-icon {
+    -fx-fill: -fx-dark-text-color;
+}
+
+.plus-icon:hover {
+    -fx-fill: -fx-focus-color;
+}
+
+.base-background {
+    -fx-background-color: -fx-base;
+}
+
+.primary-fill {
+    -fx-fill: -fx-focus-color;
+}
+
+.gray-600-fill {
+    -fx-fill: -fx-dark-text-read-color;
+}
+
+.deletable-cross {
+    -fx-fill: -fx-focus-color;
+}
+
+.deletable-cross:hover {
+    -fx-fill: -fx-dark-text-color;
+}
+
+.bigger-icon {
+    -glyph-size: 20;
+}
+
+.bigger-menu-text .label {
+    -fx-font-size : 16px;
+}
+
+.jfx-combo-box .list-cell:selected {
+    -fx-text-fill: black;
 }

@@ -65,7 +65,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -91,7 +90,6 @@ import me.bayang.reader.view.EditSubscriptionView;
 import me.bayang.reader.view.OauthView;
 import me.bayang.reader.view.PocketAddLinkView;
 import me.bayang.reader.view.PopupWebView;
-import me.bayang.reader.view.RssView;
 import me.bayang.reader.view.SettingsView;
 
 @FXMLController
@@ -213,9 +211,6 @@ public class RssController {
     
     private BooleanProperty gridModeproperty = new SimpleBooleanProperty(false);
     
-    private final FontAwesomeIconView listIcon = new FontAwesomeIconView(FontAwesomeIcon.BARS);
-    private final FontAwesomeIconView gridIcon = new FontAwesomeIconView(FontAwesomeIcon.TH);
-    
     private WebViewHyperlinkListener eventPrintingListener;
     
     private AtomicBoolean isWebViewListenerAttached = new AtomicBoolean(false);
@@ -254,16 +249,12 @@ public class RssController {
     }
 
     private void initGridViewListener() {
-        listIcon.setFill(Color.valueOf("#a5a3a3"));
-        listIcon.setSize("24");
-        gridIcon.setFill(Color.valueOf("#a5a3a3"));
-        gridIcon.setSize("24");
         gridModeproperty.addListener((observable, oldValue, newValue) -> {
             if (newValue != null && ! newValue) {
                 splitPane.getItems().add(listViewContainer);
                 splitPane.getItems().add(webViewContainer);
                 splitPane.getItems().remove(gridContainer);
-                switchViewButton.setGraphic(gridIcon);
+                switchViewIcon.setIcon(FontAwesomeIcon.TH);
                 adjustSplitPaneDividers();
                 
             }
@@ -271,7 +262,7 @@ public class RssController {
                 splitPane.getItems().remove(listViewContainer);
                 splitPane.getItems().remove(webViewContainer);
                 splitPane.getItems().add(gridContainer);
-                switchViewButton.setGraphic(listIcon);
+                switchViewIcon.setIcon(FontAwesomeIcon.BARS);
                 adjustSplitPaneDividers();
             }
         });
@@ -486,11 +477,8 @@ public class RssController {
     
     private void initializePlusIcons() {
         plusIcon.setVisible(false);
-        plusIcon.setOnMouseEntered(event -> plusIcon.setFill(FXMain.primaryColor));
-        plusIcon.setOnMouseExited(event -> plusIcon.setFill(Color.BLACK));
+        
         plusIconGrid.setVisible(false);
-        plusIconGrid.setOnMouseEntered(event -> plusIconGrid.setFill(FXMain.primaryColor));
-        plusIconGrid.setOnMouseExited(event -> plusIconGrid.setFill(Color.BLACK));
         
         Tooltip t = new Tooltip(bundle.getString("loadRead"));
         Tooltip.install(plusIcon, t);

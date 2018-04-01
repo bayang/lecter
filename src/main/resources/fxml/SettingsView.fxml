@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXComboBox?>
 <?import com.jfoenix.controls.JFXToggleButton?>
 <?import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView?>
 <?import javafx.geometry.Insets?>
@@ -9,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.SettingsController">
+<VBox styleClass="base-background" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.SettingsController">
    <children>
       <JFXButton fx:id="backButton" buttonType="RAISED" onAction="#showMainScreen" styleClass="generic-button" text="%settingsBack">
          <VBox.margin>
@@ -28,6 +29,12 @@
             <Label text="%settingsPreferredLayoutGrid" />
          </children>
       </HBox>
+      <HBox>
+         <children>
+            <Label text="%settingsTheme" />
+            <JFXComboBox fx:id="themeComboBox" onAction="#changeTheme" />
+         </children>
+      </HBox>
       <Label styleClass="settings-subtitle" text="%settingsShare">
          <VBox.margin>
             <Insets top="10.0" />
@@ -39,7 +46,7 @@
       <HBox alignment="CENTER_LEFT">
          <children>
             <Label styleClass="text-bigger" text="Pocket" />
-            <MaterialDesignIconView glyphName="POCKET" size="20">
+            <MaterialDesignIconView glyphName="POCKET" size="20" styleClass="gray-600-fill">
                <HBox.margin>
                   <Insets left="5.0" />
                </HBox.margin>

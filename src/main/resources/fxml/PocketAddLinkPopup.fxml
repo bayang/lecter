@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.PocketAddLinkController">
+<VBox alignment="CENTER" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" styleClass="base-background" fx:controller="me.bayang.reader.controllers.PocketAddLinkController">
    <children>
       <Label styleClass="settings-subtitle" text="%pocketAddLink">
          <VBox.margin>

@@ -169,3 +169,20 @@
     -fx-font-size : 20px;
     -fx-font-family: "Roboto Bold";
 }
+
+.plus-icon {
+    -fx-fill: black;
+}
+
+.plus-icon:hover {
+    -fx-fill: -fx-focus-color;
+}
+
+.deletable-cross {
+    -fx-fill: black;
+}
+
+.deletable-cross:hover {
+    -fx-fill: -fx-focus-color;
+}
+

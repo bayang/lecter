@@ -5,7 +5,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="179.0" prefWidth="489.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.AddSubscriptionController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="179.0" prefWidth="489.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" styleClass="base-background" fx:controller="me.bayang.reader.controllers.AddSubscriptionController">
    <children>
       <TextField fx:id="addressField" layoutX="49.0" layoutY="76.0" prefHeight="27.0" prefWidth="386.0" />
       <Label layoutX="50.0" layoutY="29.0" styleClass="settings-subtitle" text="%subscriptionAdress" />

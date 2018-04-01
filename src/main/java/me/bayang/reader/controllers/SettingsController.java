@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXToggleButton;
 
 import de.felixroske.jfxsupport.FXMLController;
@@ -22,6 +23,7 @@ import me.bayang.reader.FXMain;
 import me.bayang.reader.storage.IStorageService;
 import me.bayang.reader.view.PocketOauthView;
 import me.bayang.reader.view.RssView;
+import me.bayang.reader.view.SettingsView;
 
 @FXMLController
 public class SettingsController {
@@ -29,6 +31,7 @@ public class SettingsController {
     private static final Logger LOGGER = LoggerFactory.getLogger(SettingsController.class);
     
     private static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
+    
     
     @Autowired
     private IStorageService configStorage;
@@ -48,6 +51,12 @@ public class SettingsController {
     @FXML
     private Label pocketStatus;
     
+    @FXML
+    private JFXComboBox<String> themeComboBox;
+    
+    @Autowired
+    SettingsView view;
+    
     @Autowired
     private PocketOauthView pocketOauthView;
     private PocketOauthController pocketOauthController;
@@ -55,6 +64,8 @@ public class SettingsController {
     
     @FXML
     public void initialize() {
+        themeComboBox.getItems().add("Light");
+        themeComboBox.getItems().add("Dark");
         pocketActivate.selectedProperty().bindBidirectional(configStorage.pocketEnabledProperty());
         layoutToggle.selectedProperty().bindBidirectional(configStorage.prefersGridLayoutProperty());
         pocketStatus.textProperty().bind(Bindings.when(configStorage.pocketUserProperty().isEmpty())
@@ -91,5 +102,23 @@ public class SettingsController {
         }
     }
     
+    @FXML
+    public void changeTheme() {
+        LOGGER.debug("theme : {}", themeComboBox.getValue());
+        if (themeComboBox.getValue().equals("Light")) {
+            FXMain.getScene().getStylesheets().clear();
+            FXMain.getScene().setUserAgentStylesheet(null);
+            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-fonts.css").toExternalForm());
+            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-design.css").toExternalForm());
+            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
+        }
+        else if (themeComboBox.getValue().equals("Dark")) {
+            FXMain.getScene().getStylesheets().clear();
+            FXMain.getScene().setUserAgentStylesheet(null);
+            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-fonts.css").toExternalForm());
+            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-design.css").toExternalForm());
+            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/application-dark.css").toExternalForm());
+        }
+    }
 
 }

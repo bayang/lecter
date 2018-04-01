@@ -12,8 +12,9 @@ import org.controlsfx.control.GridCell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jfoenix.controls.JFXRippler;
-
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContextMenu;
@@ -24,7 +25,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.backend.inoreader.FolderFeedOrder;
 import me.bayang.reader.controllers.RssController;
@@ -65,6 +65,10 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
     private RssController rssController;
     
     private Item currentItem;
+    
+    private static PseudoClass READ_PSEUDO_CLASS = PseudoClass.getPseudoClass("read");
+    
+    BooleanProperty readProperty;
 
     public ItemGridCell(RssController rssController, ConnectServer connectServer) {
         super();
@@ -95,6 +99,9 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
                 e.consume();
             }
         });
+        readProperty = new SimpleBooleanProperty(false);
+        readProperty.addListener(e -> pseudoClassStateChanged(READ_PSEUDO_CLASS, readProperty.get()));
+        getStyleClass().add("readable-cell");
     }
 
     @Override
@@ -123,18 +130,15 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
             if (!localDateTime.toLocalDate().equals(LocalDate.now())) {
                 timeString = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
             }
-            fromLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
+            setReadProperty(item.isRead());
+//            LOGGER.debug("read {}", isReadProperty());
             fromLabel.setText(StringEscapeUtils.unescapeHtml4(item.getOrigin().getTitle()));
-            dateLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             dateLabel.setText(timeString);
-//            subjectLabel.setStyle("-fx-font-weight: bold;");
-            subjectLabel.setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             subjectLabel.setWrapText(true);
             subjectLabel.setText(StringEscapeUtils.unescapeHtml4(item.getTitle()));
             contentLabel.setText(StringUtils.processContent(item.getSummary().getContent()));
             
             setText(null);
-            setTextFill(item.isRead() ? Color.GRAY : Color.BLACK);
             if (FolderFeedOrder.iconMap != null) {
                 icon.setImage(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));
                 icon.setFitWidth(20);
@@ -143,6 +147,14 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
             setGraphic(cellWrapper);
             setContextMenu(menu);
         }
+    }
+    
+    public void setReadProperty(boolean read) {
+        this.readProperty.set(read);
+    }
+    
+    public boolean isReadProperty() {
+        return this.readProperty.get();
     }
     
 }

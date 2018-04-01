@@ -21,9 +21,10 @@ public class DeletableLabel extends HBox {
         l.setPadding(new Insets(0, 5, 0, 3));
         this.getChildren().add(l);
         FontAwesomeIconView fv = new FontAwesomeIconView(FontAwesomeIcon.TIMES, "18");
-        fv.setFill(FXMain.invertedColor);
-        fv.setOnMouseEntered(event -> fv.setFill(FXMain.primaryColor));
-        fv.setOnMouseExited(event -> fv.setFill(FXMain.invertedColor));
+        fv.getStyleClass().add("deletable-cross");
+//        fv.setFill(FXMain.invertedColor);
+//        fv.setOnMouseEntered(event -> fv.setFill(FXMain.primaryColor));
+//        fv.setOnMouseExited(event -> fv.setFill(FXMain.invertedColor));
         this.getChildren().add(fv);
         this.deleteCross = fv;
         this.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
