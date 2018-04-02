@@ -2,10 +2,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.bayang</groupId>
-    <artifactId>reader</artifactId>
+    <artifactId>lecter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>reader</name>
-    <description>inoreader client</description>
+    <name>lecter</name>
+    <description>inoreader rss client</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -174,7 +174,7 @@
         <verbose>true</verbose>
         <needShortcut>true</needShortcut>
         <needMenu>true</needMenu>
-        <vendor>Bayang</vendor>
+        <vendor>bayang</vendor>
         <appName>${project.artifactId}</appName>
         <jvmArgs>
             <jvmArg>-Xmx1g</jvmArg>
