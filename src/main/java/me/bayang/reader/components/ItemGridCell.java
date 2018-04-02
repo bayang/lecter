@@ -74,6 +74,7 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
         super();
         this.rssController = rssController;
         this.connectServer = connectServer;
+        this.getStyleClass().add("readable-cell");
         setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 this.rssController.showWebView(this.currentItem);
@@ -99,9 +100,8 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
                 e.consume();
             }
         });
-        readProperty = new SimpleBooleanProperty(false);
-        readProperty.addListener(e -> pseudoClassStateChanged(READ_PSEUDO_CLASS, readProperty.get()));
-        getStyleClass().add("readable-cell");
+        this.readProperty = new SimpleBooleanProperty(false);
+        this.readProperty.addListener(e -> this.pseudoClassStateChanged(READ_PSEUDO_CLASS, readProperty.get()));
     }
 
     @Override
@@ -123,6 +123,7 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
                     LOGGER.error("",e);
                 }
             }
+            readProperty.bind(item.readProperty());
             
             //get the time style
             LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(item.getCrawlTimeMsec())), ZoneId.systemDefault());
@@ -130,7 +131,6 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
             if (!localDateTime.toLocalDate().equals(LocalDate.now())) {
                 timeString = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
             }
-            setReadProperty(item.isRead());
 //            LOGGER.debug("read {}", isReadProperty());
             fromLabel.setText(StringEscapeUtils.unescapeHtml4(item.getOrigin().getTitle()));
             dateLabel.setText(timeString);

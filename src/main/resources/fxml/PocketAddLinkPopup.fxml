@@ -28,7 +28,7 @@
       <HBox alignment="CENTER">
          <children>
             <JFXTextField fx:id="tagField" />
-            <JFXButton fx:id="addTagButton" contentDisplay="GRAPHIC_ONLY" onAction="#addTag">
+            <JFXButton fx:id="addTagButton" contentDisplay="GRAPHIC_ONLY" styleClass="generic-button" onAction="#addTag">
                <graphic>
                   <FontAwesomeIconView glyphName="PLUS" size="20" />
                </graphic>

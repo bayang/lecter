@@ -8,6 +8,7 @@ import de.felixroske.jfxsupport.AbstractJavaFxApplicationSupport;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import me.bayang.reader.controllers.PocketAddLinkController;
 import me.bayang.reader.view.NoOpSplashScreen;
 import me.bayang.reader.view.RssView;
 
@@ -15,6 +16,7 @@ import me.bayang.reader.view.RssView;
 public class FXMain extends AbstractJavaFxApplicationSupport {
     
     public static Stage pocketAddLinkStage = null;
+    public static PocketAddLinkController pocketAddLinkController = null;
     
     public static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     

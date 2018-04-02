@@ -24,6 +24,9 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 @EnableAsync
 public class AppConfig {
     
+    public static final File appDir = new File(System.getProperty("user.home"));
+    public static final File appConfigDir = new File(appDir, ".config/lecter");
+    
     // TODO configurer le thread pool
     // http://www.baeldung.com/spring-async
     
@@ -56,7 +59,7 @@ public class AppConfig {
     public FileBasedConfigurationBuilder<FileBasedConfiguration> tokenConfig() {
         Parameters params = new Parameters();
         // Read data from this file
-        File propertiesFile = new File("token.properties");
+        File propertiesFile = new File(appConfigDir, "token.properties");
 
         FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
          new FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration.class)
@@ -70,7 +73,7 @@ public class AppConfig {
     public FileBasedConfigurationBuilder<FileBasedConfiguration> userConfig() {
         Parameters params = new Parameters();
         // Read data from this file
-        File propertiesFile = new File("user.properties");
+        File propertiesFile = new File(appConfigDir, "user.properties");
 
         FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
          new FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration.class)
@@ -84,7 +87,7 @@ public class AppConfig {
     public FileBasedConfigurationBuilder<FileBasedConfiguration> applicationConfig() {
         Parameters params = new Parameters();
         // Read data from this file
-        File propertiesFile = new File("config.properties");
+        File propertiesFile = new File(appConfigDir, "config.properties");
 
         FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
          new FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration.class)

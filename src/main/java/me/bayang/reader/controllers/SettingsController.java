@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXToggleButton;
+import com.sun.javafx.css.Stylesheet;
 
 import de.felixroske.jfxsupport.FXMLController;
 import javafx.beans.binding.Bindings;
@@ -107,14 +108,16 @@ public class SettingsController {
         LOGGER.debug("theme : {}", themeComboBox.getValue());
         if (themeComboBox.getValue().equals("Light")) {
             FXMain.getScene().getStylesheets().clear();
-            FXMain.getScene().setUserAgentStylesheet(null);
+            FXMain.setUserAgentStylesheet(null);
+            FXMain.setUserAgentStylesheet(FXMain.STYLESHEET_MODENA);
             FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-fonts.css").toExternalForm());
             FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-design.css").toExternalForm());
             FXMain.getScene().getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
         }
         else if (themeComboBox.getValue().equals("Dark")) {
             FXMain.getScene().getStylesheets().clear();
-            FXMain.getScene().setUserAgentStylesheet(null);
+            FXMain.setUserAgentStylesheet(null);
+//            FXMain.setUserAgentStylesheet(FXMain.STYLESHEET_MODENA);
             FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-fonts.css").toExternalForm());
             FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-design.css").toExternalForm());
             FXMain.getScene().getStylesheets().add(getClass().getResource("/css/application-dark.css").toExternalForm());

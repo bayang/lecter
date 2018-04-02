@@ -67,11 +67,12 @@ public class ItemListCell extends JFXListCell<Item> {
     
     private static PseudoClass READ_PSEUDO_CLASS = PseudoClass.getPseudoClass("read");
     
-    BooleanProperty readProperty;
+    private BooleanProperty readProperty;
 
     public ItemListCell(RssController rssController, ConnectServer connectServer) {
         this.connectServer = connectServer;
         this.rssController = rssController;
+        this.getStyleClass().add("readable-cell");
         MenuItem starItem = new MenuItem("Mark Starred");
         MenuItem unStarItem = new MenuItem("Mark Unstarred");
         menu.getItems().addAll(starItem, unStarItem);
@@ -90,9 +91,9 @@ public class ItemListCell extends JFXListCell<Item> {
                 e.consume();
             }
         });
-        readProperty = new SimpleBooleanProperty(false);
-        getStyleClass().add("readable-cell");
-        readProperty.addListener(e -> pseudoClassStateChanged(READ_PSEUDO_CLASS, readProperty.get()));
+        this.readProperty = new SimpleBooleanProperty(false);
+        this.readProperty.addListener(e -> this.pseudoClassStateChanged(READ_PSEUDO_CLASS, readProperty.get()));
+        this.pseudoClassStateChanged(READ_PSEUDO_CLASS, readProperty.get());
     }
 
     @Override
@@ -113,6 +114,8 @@ public class ItemListCell extends JFXListCell<Item> {
                     LOGGER.error("",e);
                 }
             }
+//            setReadProperty(item.isRead());
+            readProperty.bind(item.readProperty());
             
             //get the time style
             LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(item.getCrawlTimeMsec())), ZoneId.systemDefault());
@@ -120,7 +123,6 @@ public class ItemListCell extends JFXListCell<Item> {
             if (!localDateTime.toLocalDate().equals(LocalDate.now())) {
                 timeString = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
             }
-            setReadProperty(item.isRead());
 //            LOGGER.debug("read {}", isReadProperty());
             fromLabel.setText(StringEscapeUtils.unescapeHtml4(item.getOrigin().getTitle()));
             dateLabel.setText(timeString);

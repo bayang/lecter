@@ -34,6 +34,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import eu.lestard.advanced_bindings.api.CollectionBindings;
 import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -68,6 +69,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import me.bayang.reader.FXMain;
 import me.bayang.reader.backend.UserInfo;
@@ -183,15 +185,14 @@ public class RssController {
     
     @Autowired
     private PocketAddLinkView pocketAddLinkView;
-    private PocketAddLinkController pocketAddLinkController;
     
     private List<Item> itemList = new ArrayList<>();
     private List<Item> readItemList = new ArrayList<>();
-    private ObservableList<Item> observableItemList = FXCollections.observableArrayList(itemList);
-    private ObservableList<Item> observableReadList = FXCollections.observableArrayList(readItemList);
+    private ObservableList<Item> observableItemList = FXCollections.observableArrayList(itemExtractor());
+    private ObservableList<Item> observableReadList = FXCollections.observableArrayList(itemExtractor());
     // FIXME find a less greedy data structure
-    private ObservableList<Item> observableAllList = CollectionBindings.concat(observableItemList, observableReadList);
-    
+//    private ObservableList<Item> observableAllList = CollectionBindings.concat(observableItemList, observableReadList);
+    private ObservableList<Item> observableAllList;
     private FilteredList<Item> filteredData;
     private Predicate <? super Item> currentPredicate;
     private SortedList<Item> sortedData;
@@ -229,8 +230,18 @@ public class RssController {
     @Value("${javafx.css[2]}")
     List<String> v;
     
+    public static Callback<Item, Observable[]> itemExtractor() {
+        Callback<Item, Observable[]> itemExtractor = (Item i) -> {
+            return new Observable[]{i.readProperty()};
+        };
+        return itemExtractor;
+    }
+    
     @FXML
     private void initialize() {
+        observableItemList.addAll(itemList);
+        observableReadList.addAll(readItemList);
+        observableAllList = CollectionBindings.concat(observableItemList, observableReadList);
         FXMain.getStage().setMinWidth(700);
         FXMain.getStage().setMinHeight(650);
         treeView.setDisable(true);
@@ -277,6 +288,7 @@ public class RssController {
         //handle event between listView and webView
         listView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null && newValue.getSummary().getContent() != null) {
+                currentlySelectedItem = newValue;
                 if (rssRadioButton.isSelected()) {
                     webView.getEngine().loadContent(Item.processContent(newValue.getTitle(), newValue.getSummary().getContent()));
                 } else if (webRadioButton.isSelected()) {
@@ -285,7 +297,6 @@ public class RssController {
                     launchMercuryTask(newValue);
                 }
                 markItemRead(newValue);
-                currentlySelectedItem = newValue;
             }
         }));
         
@@ -375,14 +386,18 @@ public class RssController {
                     unreadCountsMap.put(parent, --parentCount);
                 }
                 Platform.runLater(() -> {
+                    item.setRead(true);//change state to read and change color in listView
                     boolean removed = observableItemList.remove(item);
                     LOGGER.debug("remove = {}", removed);
                     boolean added = observableReadList.add(item);
                     LOGGER.debug("add = {}", added);
                     treeView.refresh();
+                    int itemIdx = listView.getItems().indexOf(item);
+//                    LOGGER.debug("idx {}", itemIdx);
+                    listView.getSelectionModel().clearSelection();
+                    listView.getSelectionModel().select(itemIdx);
                 });
             }
-            item.setRead(true);//change state to read and change color in listView
         }
     }
 
@@ -911,14 +926,14 @@ public class RssController {
                 FXMain.createPocketAddLinkStage();
                 Scene scene = new Scene(pocketAddLinkView.getView());
                 FXMain.pocketAddLinkStage.setScene(scene);
-                pocketAddLinkController = (PocketAddLinkController) pocketAddLinkView.getPresenter();
-                pocketAddLinkController.setStage(FXMain.pocketAddLinkStage);
-                pocketAddLinkController.setCurrentItem(currentlySelectedItem);
+                FXMain.pocketAddLinkController = (PocketAddLinkController) pocketAddLinkView.getPresenter();
+                FXMain.pocketAddLinkController.setStage(FXMain.pocketAddLinkStage);
+                FXMain.pocketAddLinkController.setCurrentItem(currentlySelectedItem);
                 // Show the dialog and wait until the user closes it
                 FXMain.pocketAddLinkStage.showAndWait();
             }
             else {
-                pocketAddLinkController.setCurrentItem(currentlySelectedItem);
+                FXMain.pocketAddLinkController.setCurrentItem(currentlySelectedItem);
                 // Show the dialog and wait until the user closes it
                 FXMain.pocketAddLinkStage.showAndWait();
             }

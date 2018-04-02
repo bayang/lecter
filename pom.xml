@@ -64,11 +64,6 @@
             <artifactId>gson</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.dmfs</groupId>
-            <artifactId>oauth2-essentials</artifactId>
-            <version>0.9</version>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
@@ -79,6 +74,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dmfs</groupId>
+            <artifactId>oauth2-essentials</artifactId>
+            <version>0.9</version>
         </dependency>
         <dependency>
             <groupId>org.dmfs</groupId>
@@ -164,8 +164,43 @@
                     <useDefaultDelimiters>false</useDefaultDelimiters>
                 </configuration>
             </plugin>
+            <plugin>
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin</artifactId>
+    <version>8.6.0</version>
+    <configuration>
+        <mainClass>me.bayang.reader.FXMain</mainClass>
+        <nativeReleaseVersion>0.0.1</nativeReleaseVersion>
+        <verbose>true</verbose>
+        <needShortcut>true</needShortcut>
+        <needMenu>true</needMenu>
+        <vendor>Bayang</vendor>
+        <appName>${project.artifactId}</appName>
+        <jvmArgs>
+            <jvmArg>-Xmx1g</jvmArg>
+            <jvmArg>-Djava.net.preferIPv4Stack=true</jvmArg>
+            <jvmArg>-Dspring.config.location=classpath:application.properties,classpath:/reader_config/reader.properties</jvmArg>
+        </jvmArgs>
+    </configuration>
+    <executions>
+        <execution>
+            <!-- required before build-native -->
+            <id>create-jfxjar</id>
+            <phase>package</phase>
+            <goals>
+                <goal>build-jar</goal>
+            </goals>
+        </execution>
+        <execution>
+            <id>create-native</id>
+            <phase>package</phase>
+            <goals>
+                <goal>build-native</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
         </plugins>
     </build>
-
 
 </project>

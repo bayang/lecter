@@ -9,6 +9,7 @@
     -fx-faint-focus-color: -fx-primary-color-fainted;
     -fx-accent: -fx-primary-color;
     -fx-dark-text-color: white;
+    -fx-dark-text-read-color: -grey-500 ;
     -fx-font-family: "Roboto";
 }
 
@@ -186,3 +187,34 @@
     -fx-fill: -fx-focus-color;
 }
 
+.bigger-icon {
+    -glyph-size: 20;
+}
+
+.bigger-menu-text .label {
+    -fx-font-size : 16px;
+}
+
+.primary-fill {
+    -fx-fill: -fx-focus-color;
+}
+
+.readable-cell:read .date-label {
+    -fx-text-fill: -fx-dark-text-read-color;
+}
+
+.readable-cell:read .feed-from {
+    -fx-text-fill: -fx-dark-text-read-color;
+}
+
+.readable-cell:read .feed-content {
+    -fx-text-fill: -fx-dark-text-read-color;
+}
+
+.readable-cell:read .feed-subject {
+    -fx-text-fill: -fx-dark-text-read-color;
+}
+
+.jfx-list-cell:selected {
+    -fx-background-color : -fx-primary-color;
+}

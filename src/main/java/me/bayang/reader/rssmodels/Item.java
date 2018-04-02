@@ -1,6 +1,9 @@
 package me.bayang.reader.rssmodels;
 import java.util.ArrayList;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+
 public class Item{
     
     private String crawlTimeMsec;
@@ -20,7 +23,8 @@ public class Item{
     private ArrayList annotations;
     private Origin origin;
     private boolean isRead = false;//doesn't include in the stream, but add this boolean to determine the color in listView
-
+    private BooleanProperty readPropperty = new SimpleBooleanProperty(isRead);
+    
     public Item() {
     }
 
@@ -108,11 +112,11 @@ public class Item{
     }
 
     public boolean isRead() {
-        return isRead;
+        return readProperty().get();
     }
 
     public void setRead(boolean read) {
-        isRead = read;
+        readProperty().set(read);
     }
 
     public String getDecimalId() {
@@ -181,6 +185,10 @@ public class Item{
 
     public void setOrigin(Origin origin) {
         this.origin = origin;
+    }
+    
+    public BooleanProperty readProperty() {
+        return readPropperty;
     }
     
     @Override

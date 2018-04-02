@@ -147,14 +147,14 @@ public class PopupWebViewController {
                 FXMain.createPocketAddLinkStage();
                 Scene scene = new Scene(pocketAddLinkView.getView());
                 FXMain.pocketAddLinkStage.setScene(scene);
-                pocketAddLinkController = (PocketAddLinkController) pocketAddLinkView.getPresenter();
-                pocketAddLinkController.setStage(FXMain.pocketAddLinkStage);
-                pocketAddLinkController.setCurrentItem(currentItem);
+                FXMain.pocketAddLinkController = (PocketAddLinkController) pocketAddLinkView.getPresenter();
+                FXMain.pocketAddLinkController.setStage(FXMain.pocketAddLinkStage);
+                FXMain.pocketAddLinkController.setCurrentItem(currentItem);
                 // Show the dialog and wait until the user closes it
                 FXMain.pocketAddLinkStage.showAndWait();
             }
             else {
-                pocketAddLinkController.setCurrentItem(currentItem);
+                FXMain.pocketAddLinkController.setCurrentItem(currentItem);
                 // Show the dialog and wait until the user closes it
                 FXMain.pocketAddLinkStage.showAndWait();
             }

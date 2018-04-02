@@ -24,6 +24,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import me.bayang.reader.config.AppConfig;
 import me.bayang.reader.rssmodels.UserInformation;
 
 @Service
@@ -51,15 +52,22 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     
     @PostConstruct
     public void initialize() throws IOException, ConfigurationException {
-        File propertiesFile = new File("config.properties");
+        LOGGER.debug(System.getProperty("user.home"));
+//        File appDir = new File(System.getProperty("user.home"));
+//        File appConfigDir = new File(appDir, ".config/lecter");
+        if (! AppConfig.appConfigDir.exists()) {
+            AppConfig.appConfigDir.mkdirs();
+        }
+        
+        File propertiesFile = new File(AppConfig.appConfigDir,"config.properties");
         if (! propertiesFile.exists()) {
             propertiesFile.createNewFile();
         }
-        File tokenPropertiesFile = new File("token.properties");
+        File tokenPropertiesFile = new File(AppConfig.appConfigDir,"token.properties");
         if (! tokenPropertiesFile.exists()) {
             tokenPropertiesFile.createNewFile();
         }
-        File userPropertiesFile = new File("user.properties");
+        File userPropertiesFile = new File(AppConfig.appConfigDir,"user.properties");
         if (! userPropertiesFile.exists()) {
             userPropertiesFile.createNewFile();
         }
