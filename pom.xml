@@ -12,6 +12,7 @@
         <java.version>1.8</java.version>
         <springboot-javafx.version>2.1.6</springboot-javafx.version>
         <spring.boot.version>2.0.0.RELEASE</spring.boot.version>
+        <native.release.version>0.0.2</native.release.version>
     </properties>
 
     <dependencies>
@@ -170,7 +171,7 @@
     <version>8.6.0</version>
     <configuration>
         <mainClass>me.bayang.reader.FXMain</mainClass>
-        <nativeReleaseVersion>0.0.1</nativeReleaseVersion>
+        <nativeReleaseVersion>${native.release.version}</nativeReleaseVersion>
         <verbose>true</verbose>
         <needShortcut>true</needShortcut>
         <needMenu>true</needMenu>

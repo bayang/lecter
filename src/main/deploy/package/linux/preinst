@@ -1,5 +1,5 @@
 #!/bin/sh
-# preinst script for reader
+# preinst script for lecter
 #
 # see: dh_installdeb(1)
 
