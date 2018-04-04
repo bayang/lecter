@@ -18,9 +18,15 @@ APP_FOLDER=$HOME/.config/lecter
 case "$1" in
     install|upgrade)
 		mkdir -p $APP_FOLDER
-		touch $APP_FOLDER/config.properties
-		touch $APP_FOLDER/token.properties
-		touch $APP_FOLDER/user.properties
+		if [ ! -f $APP_FOLDER/config.properties ]; then
+    		touch $APP_FOLDER/config.properties
+        fi
+        if [ ! -f $APP_FOLDER/token.properties ]; then
+    		touch $APP_FOLDER/token.properties
+        fi
+        if [ ! -f $APP_FOLDER/user.properties ]; then
+	       	touch $APP_FOLDER/user.properties
+        fi
 
     ;;
 

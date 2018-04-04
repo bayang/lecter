@@ -21,7 +21,6 @@ import org.controlsfx.control.textfield.CustomTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
@@ -227,16 +226,13 @@ public class RssController {
     
     private Item currentlySelectedItem = null;
     
-    @Value("${javafx.css[2]}")
-    List<String> v;
-    
     public static Callback<Item, Observable[]> itemExtractor() {
         Callback<Item, Observable[]> itemExtractor = (Item i) -> {
             return new Observable[]{i.readProperty()};
         };
         return itemExtractor;
     }
-    
+        
     @FXML
     private void initialize() {
         observableItemList.addAll(itemList);
@@ -244,6 +240,9 @@ public class RssController {
         observableAllList = CollectionBindings.concat(observableItemList, observableReadList);
         FXMain.getStage().setMinWidth(700);
         FXMain.getStage().setMinHeight(650);
+//        FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-fonts.css").toExternalForm());
+//        FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-design.css").toExternalForm());
+//        FXMain.getScene().getStylesheets().add(getClass().getResource("/css/application-dark.css").toExternalForm());
         treeView.setDisable(true);
         splitPane.getItems().remove(gridContainer);
         eventHandleInitialize();
@@ -256,7 +255,6 @@ public class RssController {
         initializeNetworkTask();
         initGridViewListener();
         pocketShareMenu.disableProperty().bind(Bindings.not(configStorage.pocketEnabledProperty()));
-        LOGGER.debug("{}", v);
     }
 
     private void initGridViewListener() {
@@ -750,17 +748,17 @@ public class RssController {
             snackbarNotifyBlocking(bundle.getString("pleaseLogin"));
         } 
         else {
-            List<Item> read = new ArrayList<>();
-            for (Item item : listView.getItems()) {
-                LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
-                if (! item.isRead()) {
-                    item.setRead(true);
-                    read.add(item);
-                }
-            }
             Platform.runLater(() -> {
+                List<Item> read = new ArrayList<>();
+                LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
+                for (Item item : listView.getItems()) {
+                    if (! item.isRead()) {
+                        read.add(item);
+                    }
+                }
                 boolean removed = observableItemList.removeAll(read);
                 LOGGER.debug("remove = {}", removed);
+                read.stream().forEach(i -> i.setRead(true));
                 boolean added = observableReadList.addAll(read);
                 LOGGER.debug("add = {}", added);
                 LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());

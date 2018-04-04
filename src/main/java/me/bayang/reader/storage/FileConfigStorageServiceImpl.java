@@ -17,6 +17,7 @@ import org.dmfs.oauth2.client.scope.StringScope;
 import org.dmfs.rfc5545.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,9 @@ import me.bayang.reader.rssmodels.UserInformation;
 public class FileConfigStorageServiceImpl implements IStorageService {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(FileConfigStorageServiceImpl.class);
+    
+    @Value("${app.css}")
+    String appCss;
     
     @Resource(name="userConfig")
     private FileBasedConfigurationBuilder<FileBasedConfiguration> userConfig;
@@ -50,11 +54,12 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     private BooleanProperty prefersGridLayout = new SimpleBooleanProperty();
     private StringProperty pocketUser = new SimpleStringProperty();
     
+    
     @PostConstruct
     public void initialize() throws IOException, ConfigurationException {
         LOGGER.debug(System.getProperty("user.home"));
-//        File appDir = new File(System.getProperty("user.home"));
-//        File appConfigDir = new File(appDir, ".config/lecter");
+        LOGGER.debug(System.getProperty("os.name"));
+        LOGGER.debug("css {}" ,appCss);
         if (! AppConfig.appConfigDir.exists()) {
             AppConfig.appConfigDir.mkdirs();
         }
@@ -82,7 +87,6 @@ public class FileConfigStorageServiceImpl implements IStorageService {
                 setPrefersGridLayout(newValue);
             }
         });
-        
         pocketEnabledProperty().set(appConfiguration.getBoolean("pocket.enabled", false));
         pocketEnabledProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -231,6 +235,16 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         prefersGridLayoutProperty().set(prefersGridLayout);
         appConfiguration.setProperty("prefers.layout.grid", prefersGridLayout);
         LOGGER.debug("saving prefers grid layout state : {}", prefersGridLayout);
+    }
+
+    public String getAppCss() {
+        return appCss;
+    }
+
+    @Override
+    public void setAppCss(String appCss) {
+        this.appCss = appCss;
+        appConfiguration.setProperty("app.css", appCss);
     }
 
 }

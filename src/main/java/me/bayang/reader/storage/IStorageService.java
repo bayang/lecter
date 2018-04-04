@@ -33,5 +33,7 @@ public interface IStorageService {
     public BooleanProperty pocketEnabledProperty();
     
     public BooleanProperty prefersGridLayoutProperty();
+    
+    void setAppCss(String appCss);
 
 }

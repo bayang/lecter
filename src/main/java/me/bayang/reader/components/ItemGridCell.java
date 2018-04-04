@@ -20,6 +20,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -137,7 +138,8 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
             subjectLabel.setWrapText(true);
             subjectLabel.setText(StringEscapeUtils.unescapeHtml4(item.getTitle()));
             contentLabel.setText(StringUtils.processContent(item.getSummary().getContent()));
-            
+            Tooltip t = new Tooltip(subjectLabel.getText());
+            this.setTooltip(t);
             setText(null);
             if (FolderFeedOrder.iconMap != null) {
                 icon.setImage(FolderFeedOrder.iconMap.get(item.getOrigin().getStreamId()));

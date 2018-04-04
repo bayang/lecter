@@ -24,10 +24,12 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 @EnableAsync
 public class AppConfig {
     
+    // FIXME detect OS and build file path accordingly
+    // TODO use http://commons.apache.org/proper/commons-lang/javadocs/api-3.7/index.html
     public static final File appDir = new File(System.getProperty("user.home"));
     public static final File appConfigDir = new File(appDir, ".config/lecter");
     
-    // TODO configurer le thread pool
+    // TODO configure thread pool
     // http://www.baeldung.com/spring-async
     
     @Value("${appVersion}")
@@ -58,7 +60,6 @@ public class AppConfig {
     @Bean("tokenConfig")
     public FileBasedConfigurationBuilder<FileBasedConfiguration> tokenConfig() {
         Parameters params = new Parameters();
-        // Read data from this file
         File propertiesFile = new File(appConfigDir, "token.properties");
 
         FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
@@ -72,7 +73,6 @@ public class AppConfig {
     @Bean("userConfig")
     public FileBasedConfigurationBuilder<FileBasedConfiguration> userConfig() {
         Parameters params = new Parameters();
-        // Read data from this file
         File propertiesFile = new File(appConfigDir, "user.properties");
 
         FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
@@ -86,7 +86,6 @@ public class AppConfig {
     @Bean("applicationConfig")
     public FileBasedConfigurationBuilder<FileBasedConfiguration> applicationConfig() {
         Parameters params = new Parameters();
-        // Read data from this file
         File propertiesFile = new File(appConfigDir, "config.properties");
 
         FileBasedConfigurationBuilder<FileBasedConfiguration> builder =
