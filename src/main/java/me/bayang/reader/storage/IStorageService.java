@@ -5,6 +5,7 @@ import org.dmfs.oauth2.client.OAuth2AccessToken;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 import me.bayang.reader.rssmodels.UserInformation;
+import me.bayang.reader.utils.Theme;
 
 public interface IStorageService {
     
@@ -34,6 +35,8 @@ public interface IStorageService {
     
     public BooleanProperty prefersGridLayoutProperty();
     
-    void setAppCss(String appCss);
+    Theme getAppTheme();
+
+    void setAppTheme(Theme appTheme);
 
 }

@@ -27,6 +27,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import me.bayang.reader.config.AppConfig;
 import me.bayang.reader.rssmodels.UserInformation;
+import me.bayang.reader.utils.Theme;
 
 @Service
 @Primary
@@ -35,7 +36,9 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileConfigStorageServiceImpl.class);
     
     @Value("${app.css}")
-    String appCss;
+    private String appCss;
+    
+    private Theme appTheme;
     
     @Resource(name="userConfig")
     private FileBasedConfigurationBuilder<FileBasedConfiguration> userConfig;
@@ -60,6 +63,8 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         LOGGER.debug(System.getProperty("user.home"));
         LOGGER.debug(System.getProperty("os.name"));
         LOGGER.debug("css {}" ,appCss);
+        appTheme = Theme.valueOf(appCss);
+        
         if (! AppConfig.appConfigDir.exists()) {
             AppConfig.appConfigDir.mkdirs();
         }
@@ -237,14 +242,14 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         LOGGER.debug("saving prefers grid layout state : {}", prefersGridLayout);
     }
 
-    public String getAppCss() {
-        return appCss;
+    public Theme getAppTheme() {
+        return appTheme;
     }
 
-    @Override
-    public void setAppCss(String appCss) {
-        this.appCss = appCss;
-        appConfiguration.setProperty("app.css", appCss);
+    public void setAppTheme(Theme appTheme) {
+        this.appTheme = appTheme;
+        appConfiguration.setProperty("app.css", appTheme.name());
     }
+    
 
 }

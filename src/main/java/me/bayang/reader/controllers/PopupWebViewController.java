@@ -69,7 +69,6 @@ public class PopupWebViewController {
     
     @Autowired
     private PocketAddLinkView pocketAddLinkView;
-    private PocketAddLinkController pocketAddLinkController;
     
     @Autowired
     private MercuryMobilizer mercuryMobilizer;

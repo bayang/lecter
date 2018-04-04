@@ -1,6 +1,7 @@
 package me.bayang.reader.controllers;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXToggleButton;
 
+import de.felixroske.jfxsupport.AbstractFxmlView;
 import de.felixroske.jfxsupport.FXMLController;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
@@ -21,6 +23,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import me.bayang.reader.FXMain;
 import me.bayang.reader.storage.IStorageService;
+import me.bayang.reader.utils.Theme;
 import me.bayang.reader.view.PocketOauthView;
 import me.bayang.reader.view.RssView;
 
@@ -30,7 +33,6 @@ public class SettingsController {
     private static final Logger LOGGER = LoggerFactory.getLogger(SettingsController.class);
     
     private static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
-    
     
     @Autowired
     private IStorageService configStorage;
@@ -58,15 +60,20 @@ public class SettingsController {
     private PocketOauthController pocketOauthController;
     private Stage pocketOauthStage;
     
+    @Autowired
+    public List<AbstractFxmlView> views;
+    
     @FXML
     public void initialize() {
-        themeComboBox.getItems().add("Light");
-        themeComboBox.getItems().add("Dark");
+        for (Theme t : Theme.values()) {
+            themeComboBox.getItems().add(t.getDisplayName());
+        }
         pocketActivate.selectedProperty().bindBidirectional(configStorage.pocketEnabledProperty());
         layoutToggle.selectedProperty().bindBidirectional(configStorage.prefersGridLayoutProperty());
         pocketStatus.textProperty().bind(Bindings.when(configStorage.pocketUserProperty().isEmpty())
                                 .then("")
                                 .otherwise(MessageFormat.format(bundle.getString("settingsShareProviderStatus"), configStorage.pocketUserProperty().getValue())));
+        
     }
     
     @FXML
@@ -101,23 +108,23 @@ public class SettingsController {
     @FXML
     public void changeTheme() {
         LOGGER.debug("theme : {}", themeComboBox.getValue());
-        if (themeComboBox.getValue().equals("Light")) {
-            FXMain.getScene().getStylesheets().clear();
-            FXMain.setUserAgentStylesheet(null);
-            FXMain.setUserAgentStylesheet(FXMain.STYLESHEET_MODENA);
-            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-fonts.css").toExternalForm());
-            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-design.css").toExternalForm());
-            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
-            configStorage.setAppCss("/css/application.css");
+        Theme theme = Theme.forDisplayName(themeComboBox.getValue());
+        if (theme != null) {
+            configStorage.setAppTheme(theme);
+            setTheme(theme);
         }
-        else if (themeComboBox.getValue().equals("Dark")) {
-            FXMain.getScene().getStylesheets().clear();
-            FXMain.setUserAgentStylesheet(null);
-            FXMain.setUserAgentStylesheet(FXMain.STYLESHEET_MODENA);
-            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-fonts.css").toExternalForm());
-            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-design.css").toExternalForm());
-            FXMain.getScene().getStylesheets().add(getClass().getResource("/css/application-dark.css").toExternalForm());
-            configStorage.setAppCss("/css/application-dark.css");
+    }
+    
+    public void setTheme(Theme theme) {
+        LOGGER.debug("changing theme to {}", theme.getPath());
+        FXMain.getScene().getStylesheets().clear();
+        FXMain.setUserAgentStylesheet(null);
+        FXMain.setUserAgentStylesheet(FXMain.STYLESHEET_MODENA);
+        FXMain.getScene().getStylesheets().add(getClass().getResource(theme.getPath()).toExternalForm());
+        
+        for (AbstractFxmlView v : views) {
+            v.getView().getStylesheets().clear();
+            v.getView();
         }
     }
 

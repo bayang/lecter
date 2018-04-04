@@ -7,6 +7,7 @@ import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,17 +25,20 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 @EnableAsync
 public class AppConfig {
     
+    public static final File appDir = SystemUtils.getUserHome();
+    public static File appConfigDir;
     // FIXME detect OS and build file path accordingly
-    // TODO use http://commons.apache.org/proper/commons-lang/javadocs/api-3.7/index.html
-    public static final File appDir = new File(System.getProperty("user.home"));
-    public static final File appConfigDir = new File(appDir, ".config/lecter");
-    
-    // TODO configure thread pool
-    // http://www.baeldung.com/spring-async
+    static {
+        if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX 
+                || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_WINDOWS) {
+            appConfigDir = new File(appDir, ".config/lecter");
+        }
+    }
     
     @Value("${appVersion}")
     public String appVersion = "";
     
+    // http://www.baeldung.com/spring-async
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor t = new ThreadPoolTaskExecutor();
@@ -95,5 +99,6 @@ public class AppConfig {
         builder.setAutoSave(true);
         return builder;
     }
+
 
 }

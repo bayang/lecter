@@ -131,8 +131,8 @@
                   </Button>
                   <MenuButton alignment="CENTER" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" minHeight="32.0" minWidth="48.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="48.0">
                     <items>
-                      <MenuItem mnemonicParsing="false" onAction="#displaySettings" text="%settings" />
-                      <MenuItem mnemonicParsing="false" onAction="#displayAboutPopup" text="%about" />
+                      <MenuItem mnemonicParsing="false" onAction="#displaySettings" text="%settings" styleClass="bigger-menu-text" />
+                      <MenuItem mnemonicParsing="false" onAction="#displayAboutPopup" text="%about" styleClass="bigger-menu-text" />
                     </items>
                     <graphic>
                         <FontAwesomeIconView fx:id="settingsIcon" fill="#a5a3a3" glyphName="COG" size="24.0" />

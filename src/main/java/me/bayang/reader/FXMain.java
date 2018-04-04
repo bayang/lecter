@@ -13,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import me.bayang.reader.controllers.PocketAddLinkController;
+import me.bayang.reader.utils.Theme;
 import me.bayang.reader.view.NoOpSplashScreen;
 import me.bayang.reader.view.RssView;
 
@@ -23,6 +24,8 @@ public class FXMain extends AbstractJavaFxApplicationSupport {
     public static PocketAddLinkController pocketAddLinkController = null;
     
     public static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
+    
+    public static String startupCss;
     
     public static void main(String[] args) {
         launch(FXMain.class, RssView.class, new NoOpSplashScreen() ,args);
@@ -46,9 +49,11 @@ public class FXMain extends AbstractJavaFxApplicationSupport {
         if (GUIState.getScene() == null) {
             GUIState.setScene(new Scene(view.getView()));
         }
-        String appCss = ctx.getEnvironment().getProperty("app.css", "/css/application.css");
-        GUIState.getScene().getStylesheets().add(FXMain.class.getResource(appCss).toExternalForm());
-        System.out.println(ctx.getEnvironment().getProperty("app.css"));
+        Theme appTheme = Theme.valueOf(ctx.getEnvironment().getProperty("app.css", Theme.LIGHT.name()));
+        startupCss = appTheme.getPath();
+        GUIState.getScene().getStylesheets().add(FXMain.class.getResource(startupCss).toExternalForm());
+        stage.setMinWidth(700);
+        stage.setMinHeight(650);
     }
-
+    
 }

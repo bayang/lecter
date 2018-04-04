@@ -232,17 +232,12 @@ public class RssController {
         };
         return itemExtractor;
     }
-        
+    
     @FXML
     private void initialize() {
         observableItemList.addAll(itemList);
         observableReadList.addAll(readItemList);
         observableAllList = CollectionBindings.concat(observableItemList, observableReadList);
-        FXMain.getStage().setMinWidth(700);
-        FXMain.getStage().setMinHeight(650);
-//        FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-fonts.css").toExternalForm());
-//        FXMain.getScene().getStylesheets().add(getClass().getResource("/css/jfoenix-design.css").toExternalForm());
-//        FXMain.getScene().getStylesheets().add(getClass().getResource("/css/application-dark.css").toExternalForm());
         treeView.setDisable(true);
         splitPane.getItems().remove(gridContainer);
         eventHandleInitialize();
