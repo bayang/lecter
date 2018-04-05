@@ -68,6 +68,7 @@ public class SettingsController {
         for (Theme t : Theme.values()) {
             themeComboBox.getItems().add(t.getDisplayName());
         }
+        themeComboBox.getSelectionModel().select(configStorage.getAppTheme().getDisplayName());
         pocketActivate.selectedProperty().bindBidirectional(configStorage.pocketEnabledProperty());
         layoutToggle.selectedProperty().bindBidirectional(configStorage.prefersGridLayoutProperty());
         pocketStatus.textProperty().bind(Bindings.when(configStorage.pocketUserProperty().isEmpty())
