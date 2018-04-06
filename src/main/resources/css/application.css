@@ -150,6 +150,19 @@
     -fx-background-color: -teal-200;
 }
 
+.toolbar-button {
+    -fx-background-color: transparent;
+    -jfx-button-type: FLAT;
+    -fx-font-weight : bold;
+    -fx-font-size : 16px;
+    -fx-font-family: "Roboto Medium";
+}
+
+.toolbar-button:hover {
+    -fx-background-color: -fx-primary-color-fainted;
+}
+
+
 .text-bigger {
     -fx-font-size : 16px;
 }

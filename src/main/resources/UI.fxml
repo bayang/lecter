@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXListView?>
 <?import com.jfoenix.controls.JFXProgressBar?>
 <?import com.jfoenix.controls.JFXRadioButton?>
@@ -86,53 +87,53 @@
          <children>
             <ToolBar prefHeight="40.0" prefWidth="200.0" styleClass="white-bg">
               <items>
-                <Button fx:id="loginButton" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#loginMenuFired" prefHeight="32.0" prefWidth="32.0" text="Button">
+                <JFXButton fx:id="loginButton" styleClass="toolbar-button" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#loginMenuFired" prefHeight="32.0" prefWidth="32.0" text="Button">
                      <graphic>
                         <FontAwesomeIconView fx:id="loginIcon" fill="#a5a3a3" glyphName="USER" size="24.0" />
                      </graphic>
                      <tooltip>
                         <Tooltip text="%login" />
                      </tooltip>
-                  </Button>
-                <Button fx:id="refreshButton" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#refreshFired" prefHeight="32.0" prefWidth="32.0" text="Button">
+                  </JFXButton>
+                <JFXButton fx:id="refreshButton" styleClass="toolbar-button" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#refreshFired" prefHeight="32.0" prefWidth="32.0" text="Button">
                      <graphic>
                         <FontAwesomeIconView fx:id="refreshIcon" fill="#a5a3a3" glyphName="REFRESH" size="24.0" />
                      </graphic>
                      <tooltip>
                         <Tooltip text="%refresh" />
                      </tooltip>
-                  </Button>
-                     <Button fx:id="markReadButton" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#markReadButtonFired" prefHeight="32.0" prefWidth="32.0" text="Button">
+                  </JFXButton>
+                     <JFXButton fx:id="markReadButton" styleClass="toolbar-button" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#markReadButtonFired" prefHeight="32.0" prefWidth="32.0" text="Button">
                      <graphic>
                         <FontAwesomeIconView fx:id="markReadIcon" fill="#a5a3a3" glyphName="EYE" size="24.0" />
                      </graphic>
                      <tooltip>
                         <Tooltip text="%markRead" />
                      </tooltip>
-                  </Button>
-                     <Button fx:id="addSubscriptionButton" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#addSubscriptionFired" prefHeight="32.0" prefWidth="32.0" text="Button">
+                  </JFXButton>
+                     <JFXButton fx:id="addSubscriptionButton" styleClass="toolbar-button" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#addSubscriptionFired" prefHeight="32.0" prefWidth="32.0" text="Button">
                      <graphic>
                         <FontAwesomeIconView fx:id="addSubscriptionIcon" fill="#a5a3a3" glyphName="PLUS" size="24.0" />
                      </graphic>
                      <tooltip>
                         <Tooltip text="%addSubscription" />
                      </tooltip>
-                  </Button>
+                  </JFXButton>
                      <Pane HBox.hgrow="ALWAYS" />
                   <CustomTextField fx:id="searchBar" prefWidth="300.0" promptText="%searchPrompt" styleClass="highlight-fill" />
                   <Pane HBox.hgrow="ALWAYS" />
-                  <Button fx:id="switchViewButton" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#switchView" prefHeight="32.0" prefWidth="32.0" text="Button">
+                  <JFXButton fx:id="switchViewButton" styleClass="toolbar-button" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#switchView" prefHeight="32.0" prefWidth="32.0" text="Button">
                      <graphic>
                         <FontAwesomeIconView fx:id="switchViewIcon" fill="#a5a3a3" glyphName="TH" size="24.0" />
                      </graphic>
                      <tooltip>
                         <Tooltip text="%switchViewButton" />
                      </tooltip>
-                  </Button>
+                  </JFXButton>
                   <MenuButton alignment="CENTER" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" minHeight="32.0" minWidth="48.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="48.0">
                     <items>
-                      <MenuItem mnemonicParsing="false" onAction="#displaySettings" text="%settings" styleClass="bigger-menu-text" />
-                      <MenuItem mnemonicParsing="false" onAction="#displayAboutPopup" text="%about" styleClass="bigger-menu-text" />
+                      <MenuItem mnemonicParsing="false" onAction="#displaySettings" styleClass="bigger-menu-text" text="%settings" />
+                      <MenuItem mnemonicParsing="false" onAction="#displayAboutPopup" styleClass="bigger-menu-text" text="%about" />
                     </items>
                     <graphic>
                         <FontAwesomeIconView fx:id="settingsIcon" fill="#a5a3a3" glyphName="COG" size="24.0" />

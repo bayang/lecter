@@ -16,6 +16,7 @@ import me.bayang.reader.controllers.PocketAddLinkController;
 import me.bayang.reader.utils.Theme;
 import me.bayang.reader.view.NoOpSplashScreen;
 import me.bayang.reader.view.RssView;
+import me.bayang.reader.view.SpinnerSplashScreen;
 
 @SpringBootApplication
 public class FXMain extends AbstractJavaFxApplicationSupport {
@@ -28,7 +29,8 @@ public class FXMain extends AbstractJavaFxApplicationSupport {
     public static String startupCss;
     
     public static void main(String[] args) {
-        launch(FXMain.class, RssView.class, new NoOpSplashScreen() ,args);
+//        launch(FXMain.class, RssView.class, new NoOpSplashScreen() ,args);
+        launch(FXMain.class, RssView.class, new SpinnerSplashScreen(), args);
     }
     
     public static void createPocketAddLinkStage() {

@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
 import com.jfoenix.controls.JFXRadioButton;
@@ -91,6 +92,7 @@ import me.bayang.reader.view.EditSubscriptionView;
 import me.bayang.reader.view.OauthView;
 import me.bayang.reader.view.PocketAddLinkView;
 import me.bayang.reader.view.PopupWebView;
+import me.bayang.reader.view.RssView;
 import me.bayang.reader.view.SettingsView;
 
 @FXMLController
@@ -103,17 +105,17 @@ public class RssController {
     @FXML
     private TreeView<Feed> treeView;
     @FXML
-    private Button refreshButton;
+    private JFXButton refreshButton;
     @FXML
     private JFXListView<Item> listView;
     @FXML
     private WebView webView;
     @FXML
-    private Button markReadButton;
+    private JFXButton markReadButton;
     @FXML
-    private Button switchViewButton;
+    private JFXButton switchViewButton;
     @FXML
-    private Button addSubscriptionButton;
+    private JFXButton addSubscriptionButton;
     @FXML
     private FontAwesomeIconView switchViewIcon;
     @FXML
@@ -853,6 +855,7 @@ public class RssController {
             Stage dialogStage = new Stage();
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(FXMain.getStage());
+            dialogStage.setTitle("lecter");
             dialogStage.getIcons().add(new Image("icon.png"));
             dialogStage.setResizable(true);
             Scene scene = new Scene(popupWebView.getView());
@@ -866,6 +869,7 @@ public class RssController {
         }
         else {
             popupWebViewController.setCurrentItem(item);
+            popupWebViewStage.setTitle("lecter");
             popupWebViewStage.showAndWait();
         }
     }
