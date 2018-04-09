@@ -101,7 +101,6 @@
             <artifactId>advanced-bindings</artifactId>
             <version>0.4.0</version>
         </dependency>
-        <!-- webview hyperlinks -->
         <dependency>
             <groupId>org.codefx.libfx</groupId>
             <artifactId>LibFX</artifactId>
@@ -112,7 +111,6 @@
             <artifactId>jericho-html</artifactId>
             <version>3.4</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
@@ -223,24 +221,24 @@
                         </executions>
                     </plugin>
                     <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.6.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <executable>src/main/deploy/bin/generate_appimage.sh</executable>
-          <arguments>
-          <argument>${native.release.version}</argument>
-          </arguments>
-          <workingDirectory>${basedir}/target/lecter.AppDir</workingDirectory>
-        </configuration>
-      </plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <executable>src/main/deploy/bin/generate_appimage.sh</executable>
+                            <arguments>
+                                <argument>${native.release.version}</argument>
+                            </arguments>
+                            <workingDirectory>${basedir}/target/lecter.AppDir</workingDirectory>
+                        </configuration>
+                    </plugin>
                 </plugins>
 
             </build>
