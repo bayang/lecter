@@ -58,3 +58,4 @@ Output.json
 **/deploy/reader_config/*
 **/reader_config/
 icon_old.png
+*.streamContent.txt

@@ -3,7 +3,7 @@
 An Inoreader Desktop App  
 Still in early stage.
 
-## layout
+## layout
 
 Two layouts available : 
 
@@ -25,7 +25,7 @@ For each article there are three contents :
 
 * the cleaned up/mobile content (provided by The Mercury Web Parser https://mercury.postlight.com/)
 
-## Services
+## Services
 
 The articles can be shared to Pocket directly from the lecter.
 
