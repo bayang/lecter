@@ -36,6 +36,10 @@ Translations are welcome !
 
 ## Services
 
+Concerning Inoreader and Pocket, authentification and login are performed through Oauth2, so this app does **NOT** know and does **NOT** keep any of your credentials. 
+
+We respect yout privacy.
+
 The articles can be shared to Pocket directly from the lecter.
 
 Support for Wallabag and Instapaper is planned.
