@@ -12,15 +12,15 @@
    <children>
       <ImageView fx:id="appLogo" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../icon.png" />
+            <Image url="@../lecter_256.png" />
          </image>
          <HBox.margin>
             <Insets right="15.0" />
          </HBox.margin></ImageView>
       <VBox alignment="CENTER">
          <children>
-            <Label text="%appName" styleClass="app-title"/>
-            <Label fx:id="versionLabel" text="" styleClass="text-bigger"/>
+            <Label styleClass="app-title" text="%appName" />
+            <Label fx:id="versionLabel" styleClass="text-bigger" text="" />
             <Hyperlink fx:id="hyperLink" onAction="#openLink" text="%appSite" />
          </children>
       </VBox>

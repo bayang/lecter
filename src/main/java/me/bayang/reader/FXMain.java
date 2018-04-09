@@ -14,7 +14,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import me.bayang.reader.controllers.PocketAddLinkController;
 import me.bayang.reader.utils.Theme;
-import me.bayang.reader.view.NoOpSplashScreen;
 import me.bayang.reader.view.RssView;
 import me.bayang.reader.view.SpinnerSplashScreen;
 

@@ -35,7 +35,7 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(FileConfigStorageServiceImpl.class);
     
-    @Value("${app.css}")
+    @Value("${app.css:LIGHT}")
     private String appCss;
     
     private Theme appTheme;
@@ -60,13 +60,13 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     
     @PostConstruct
     public void initialize() throws IOException, ConfigurationException {
-        LOGGER.debug(System.getProperty("user.home"));
-        LOGGER.debug(System.getProperty("os.name"));
-        LOGGER.debug("css {}" ,appCss);
         appTheme = Theme.valueOf(appCss);
         
         if (! AppConfig.appConfigDir.exists()) {
-            AppConfig.appConfigDir.mkdirs();
+            boolean dirCreated = AppConfig.appConfigDir.mkdirs();
+            if (! dirCreated) {
+                LOGGER.error("app config dir could not be created '{}'", AppConfig.appConfigDir.toString());
+            }
         }
         
         File propertiesFile = new File(AppConfig.appConfigDir,"config.properties");

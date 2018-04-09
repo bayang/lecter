@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.bayang</groupId>
     <artifactId>lecter</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>0.0.11</version>
     <name>lecter</name>
     <description>inoreader rss client</description>
 
@@ -12,7 +12,7 @@
         <java.version>1.8</java.version>
         <springboot-javafx.version>2.1.6</springboot-javafx.version>
         <spring.boot.version>2.0.0.RELEASE</spring.boot.version>
-        <native.release.version>0.0.7</native.release.version>
+        <native.release.version>0.0.11</native.release.version>
     </properties>
 
     <dependencies>
@@ -126,7 +126,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.7</version>
         </dependency>
 
     </dependencies>
@@ -223,6 +222,25 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>src/main/deploy/bin/generate_appimage.sh</executable>
+          <arguments>
+          <argument>${native.release.version}</argument>
+          </arguments>
+          <workingDirectory>${basedir}/target/lecter.AppDir</workingDirectory>
+        </configuration>
+      </plugin>
                 </plugins>
 
             </build>

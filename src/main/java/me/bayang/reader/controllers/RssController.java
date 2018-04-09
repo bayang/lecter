@@ -945,7 +945,7 @@ public class RssController {
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(FXMain.getStage());
             dialogStage.getIcons().add(new Image("icon.png"));
-            dialogStage.setResizable(true);
+            dialogStage.setResizable(false);
             Scene scene = new Scene(aboutPopupView.getView());
             dialogStage.setScene(scene);
             this.aboutPopupStage = dialogStage;

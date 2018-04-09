@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=lecter
+Comment=rss feeds reader
+Exec=lecter
+Icon=lecter
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupWMClass=me.bayang.reader.FXMain

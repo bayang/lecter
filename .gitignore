@@ -54,7 +54,7 @@ config.properties
 user.properties
 token.properties
 Output.json
-l*.png
 **/deploy/reader_config/
 **/deploy/reader_config/*
 **/reader_config/
+icon_old.png
