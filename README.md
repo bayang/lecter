@@ -6,7 +6,7 @@ Still in early stage.
 The app is destined to become a client for online aggregators like Inoreader, Commafeed etc...
 
 
-## layout
+## Layout
 
 Two layouts available : 
 
@@ -38,7 +38,7 @@ Translations are welcome !
 
 Concerning Inoreader and Pocket, authentification and login are performed through Oauth2, so this app does **NOT** know and does **NOT** keep any of your credentials. 
 
-We respect yout privacy.
+We respect your privacy.
 
 The articles can be shared to Pocket directly from the lecter.
 
@@ -46,6 +46,10 @@ Support for Wallabag and Instapaper is planned.
 
 
 ## Screenshots
+
+
+You can see the different themes and layouts below : 
+
 
 ![grid view dark theme](screenshots/grid_dark.png)
 
@@ -66,6 +70,18 @@ Support for Wallabag and Instapaper is planned.
 ![inoreader login view light theme](screenshots/inoreader_login_light.png)
 
 
+## Installation
+
+At the moment we provide a .deb package and an appimage.
+
+An appimage is a standalone, no installation, package which is supposed to run seamlessly on all Linux platforms.
+
+To use it just set executable permission to the .appimage file and double-click/execute.
+
+You will be prompted to see whether you want desktop integration or not.
+
+Building .dmg and .exe should be possible once we find a build platform.
+
 
 ## Currently
 
@@ -78,5 +94,5 @@ A renaming occured to reflect this and the app now lives its own life.
 
 Well all RSS apps are called Feed or Reader or a combo of both.
 
-In french reader is translated lecteur and lecteur has the same pronounciation as lecter.
+In french the word reader is translated as lecteur and lecteur has the same pronounciation as lecter.
 
