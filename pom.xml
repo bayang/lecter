@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.bayang</groupId>
     <artifactId>lecter</artifactId>
-    <version>0.0.12-SNAPSHOT</version>
+    <version>0.0.13</version>
     <name>lecter</name>
     <description>inoreader rss client</description>
 
@@ -12,7 +12,7 @@
         <java.version>1.8</java.version>
         <springboot-javafx.version>2.1.6</springboot-javafx.version>
         <spring.boot.version>2.0.0.RELEASE</spring.boot.version>
-        <native.release.version>0.0.11</native.release.version>
+        <native.release.version>0.0.13</native.release.version>
     </properties>
 
     <dependencies>
@@ -167,20 +167,29 @@
                     <name>linux</name>
                 </property>
             </activation>
-            <properties>
-                <install.dir>${user.home}/.config/lecter</install.dir>
-            </properties>
+            <!-- <properties>
+            <dollar>$</dollar>
+            <custom.prop>{user.home}</custom.prop>
+            <full.prop>${dollar}${custom.prop}</full.prop>
+            <full.propa>\${dollar}${custom.prop}</full.propa>
+            <full.propb>\${dollar}\${custom.prop}</full.propb>
+            <full.propc>${dollar}\${custom.prop}</full.propc>
+            <full.propd>\${user.home}</full.propd>
+            <dollarSign></dollarSign>
+            <tt>#${user.home}</tt>
+            </properties> -->
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <version>2.7</version>
+                        <version>3.0.2</version>
                         <configuration>
                             <delimiters>
                                 <delimiter>@</delimiter>
                             </delimiters>
                             <useDefaultDelimiters>false</useDefaultDelimiters>
+                            <!-- <escapeString>#</escapeString> -->
                         </configuration>
                     </plugin>
                     <plugin>
@@ -196,10 +205,8 @@
                             <vendor>bayang</vendor>
                             <appName>${project.artifactId}</appName>
                             <jvmArgs>
-                                <jvmArg>-Xmx1g</jvmArg>
-                                <jvmArg>-Djava.net.preferIPv4Stack=true</jvmArg>
-                                <jvmArg>-Dspring.config.location=classpath:application.properties,classpath:/reader_config/reader.properties,file:${install.dir}/config.properties</jvmArg>
-                                <jvmArg>-Dlecter.log.dir=${install.dir}</jvmArg>
+                            <jvmArg>-Xmx512m</jvmArg>
+                            <jvmArg>-Dspring.config.location=classpath:application.properties,classpath:/reader_config/reader.properties</jvmArg>
                             </jvmArgs>
                         </configuration>
                         <executions>
