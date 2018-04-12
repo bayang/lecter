@@ -19,7 +19,7 @@ import me.bayang.reader.view.RssView;
 import me.bayang.reader.view.SpinnerSplashScreen;
 
 @SpringBootApplication
-@PropertySource("file:${home.dir.config}/.config/lecter/config.properties")
+@PropertySource(value="file:${home.dir.config}/.config/lecter/config.properties", ignoreResourceNotFound=true)
 public class FXMain extends AbstractJavaFxApplicationSupport {
     
     public static Stage pocketAddLinkStage = null;

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.bayang</groupId>
     <artifactId>lecter</artifactId>
-    <version>0.0.13</version>
+    <version>0.0.14</version>
     <name>lecter</name>
     <description>inoreader rss client</description>
 
@@ -12,7 +12,7 @@
         <java.version>1.8</java.version>
         <springboot-javafx.version>2.1.6</springboot-javafx.version>
         <spring.boot.version>2.0.0.RELEASE</spring.boot.version>
-        <native.release.version>0.0.13</native.release.version>
+        <native.release.version>0.0.14</native.release.version>
     </properties>
 
     <dependencies>
@@ -167,17 +167,6 @@
                     <name>linux</name>
                 </property>
             </activation>
-            <!-- <properties>
-            <dollar>$</dollar>
-            <custom.prop>{user.home}</custom.prop>
-            <full.prop>${dollar}${custom.prop}</full.prop>
-            <full.propa>\${dollar}${custom.prop}</full.propa>
-            <full.propb>\${dollar}\${custom.prop}</full.propb>
-            <full.propc>${dollar}\${custom.prop}</full.propc>
-            <full.propd>\${user.home}</full.propd>
-            <dollarSign></dollarSign>
-            <tt>#${user.home}</tt>
-            </properties> -->
             <build>
                 <plugins>
                     <plugin>
@@ -189,7 +178,6 @@
                                 <delimiter>@</delimiter>
                             </delimiters>
                             <useDefaultDelimiters>false</useDefaultDelimiters>
-                            <!-- <escapeString>#</escapeString> -->
                         </configuration>
                     </plugin>
                     <plugin>
