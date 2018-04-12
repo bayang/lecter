@@ -4,6 +4,7 @@ import java.util.ResourceBundle;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.PropertySource;
 
 import de.felixroske.jfxsupport.AbstractFxmlView;
 import de.felixroske.jfxsupport.AbstractJavaFxApplicationSupport;
@@ -18,6 +19,7 @@ import me.bayang.reader.view.RssView;
 import me.bayang.reader.view.SpinnerSplashScreen;
 
 @SpringBootApplication
+@PropertySource("file:${home.dir.config}/.config/lecter/config.properties")
 public class FXMain extends AbstractJavaFxApplicationSupport {
     
     public static Stage pocketAddLinkStage = null;
@@ -56,5 +58,6 @@ public class FXMain extends AbstractJavaFxApplicationSupport {
         stage.setMinWidth(700);
         stage.setMinHeight(650);
     }
+
     
 }

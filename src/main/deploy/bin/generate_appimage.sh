@@ -2,6 +2,15 @@
 
 echo "in post build script $(pwd)"
 VERSION="$1"
+
+#cat <<EOT >> ../jfx/native/lecter/app/lecter.cfg
+#[JVMOptions]
+#-Xmx1g
+#-Djava.net.preferIPv4Stack=true
+#-Dspring.config.location=classpath:application.properties,classpath:/reader_config/reader.properties,file:\${user.home}/.config/lecter/config.properties
+#-Dlecter.log.dir=\${user.home}/.config/lecter/
+#EOT
+
 cp -R ../jfx/native/lecter/* .
 cp ../../src/main/deploy/bin/desktopintegration lecter.wrapper
 chmod +x lecter.wrapper
