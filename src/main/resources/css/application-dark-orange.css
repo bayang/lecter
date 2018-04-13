@@ -182,7 +182,7 @@
 }
 
 .badge-label {
-    -fx-text-fill: -grey-100;
+    -fx-text-fill: -fx-base;
     -fx-font-weight: bold;
     -fx-background-color: -grey-500;
     -fx-background-radius: 2.0em ;
