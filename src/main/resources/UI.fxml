@@ -60,6 +60,8 @@
                                        </styleClass>
                                     </MaterialDesignIconView>
                                  </graphic></MenuItem>
+                                 <MenuItem fx:id="wallabagShareMenu" mnemonicParsing="false" onAction="#shareItemWallabag" styleClass="bigger-menu-text" text="Wallabag">
+                                 </MenuItem>
                           </items>
                            <graphic>
                               <FontAwesomeIconView glyphName="SHARE_ALT" size="20" styleClass="primary-fill" />

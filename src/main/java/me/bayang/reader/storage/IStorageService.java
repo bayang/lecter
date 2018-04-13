@@ -5,6 +5,7 @@ import org.dmfs.oauth2.client.OAuth2AccessToken;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 import me.bayang.reader.rssmodels.UserInformation;
+import me.bayang.reader.share.wallabag.WallabagCredentials;
 import me.bayang.reader.utils.Theme;
 
 public interface IStorageService {
@@ -14,6 +15,12 @@ public interface IStorageService {
     void savePocketToken(String token);
     
     String loadPocketToken();
+    
+    WallabagCredentials loadWallabagCredentials();
+    
+    void saveWallabagCredentials(WallabagCredentials wallabagCredentials);
+    
+    void saveWallabagRefreshToken(String token);
     
     void setPocketUser(String user);
     
@@ -31,9 +38,11 @@ public interface IStorageService {
     
     boolean prefersGridLayout();
     
-    public BooleanProperty pocketEnabledProperty();
+    BooleanProperty pocketEnabledProperty();
     
-    public BooleanProperty prefersGridLayoutProperty();
+    BooleanProperty wallabagEnabledProperty();
+    
+    BooleanProperty prefersGridLayoutProperty();
     
     Theme getAppTheme();
 

@@ -51,7 +51,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -84,16 +83,17 @@ import me.bayang.reader.rssmodels.Feed;
 import me.bayang.reader.rssmodels.Item;
 import me.bayang.reader.rssmodels.Subscription;
 import me.bayang.reader.rssmodels.Tag;
+import me.bayang.reader.share.Provider;
 import me.bayang.reader.share.pocket.PocketClient;
+import me.bayang.reader.share.wallabag.WallabagClient;
 import me.bayang.reader.storage.IStorageService;
 import me.bayang.reader.view.AboutPopupView;
 import me.bayang.reader.view.AddSubscriptionView;
 import me.bayang.reader.view.EditSubscriptionView;
 import me.bayang.reader.view.OauthView;
-import me.bayang.reader.view.PocketAddLinkView;
 import me.bayang.reader.view.PopupWebView;
-import me.bayang.reader.view.RssView;
 import me.bayang.reader.view.SettingsView;
+import me.bayang.reader.view.ShareLinkView;
 
 @FXMLController
 public class RssController {
@@ -149,6 +149,9 @@ public class RssController {
     private MenuItem pocketShareMenu;
     
     @FXML
+    private MenuItem wallabagShareMenu;
+    
+    @FXML
     private CustomTextField searchBar;
     private ChangeListener<? super String> rssSearchListener;
     
@@ -185,7 +188,7 @@ public class RssController {
     private AboutPopupController aboutPopupController;
     
     @Autowired
-    private PocketAddLinkView pocketAddLinkView;
+    private ShareLinkView shareLinkView;
     
     private List<Item> itemList = new ArrayList<>();
     private List<Item> readItemList = new ArrayList<>();
@@ -224,6 +227,9 @@ public class RssController {
     private PocketClient pocketClient;
     
     @Autowired
+    private WallabagClient wallabagClient;
+    
+    @Autowired
     private IStorageService configStorage;
     
     private Item currentlySelectedItem = null;
@@ -252,6 +258,7 @@ public class RssController {
         initializeNetworkTask();
         initGridViewListener();
         pocketShareMenu.disableProperty().bind(Bindings.not(configStorage.pocketEnabledProperty()));
+        wallabagShareMenu.disableProperty().bind(Bindings.not(configStorage.wallabagEnabledProperty()));
     }
 
     private void initGridViewListener() {
@@ -915,24 +922,38 @@ public class RssController {
     
     @FXML
     public void shareItemPocket() {
+        if (! pocketClient.isConfigured()) {
+            return;
+        }
+        shareItem(Provider.POCKET);
+    }
+    
+    @FXML
+    public void shareItemWallabag() {
+        if (! wallabagClient.isConfigured()) {
+            return;
+        }
+        shareItem(Provider.WALLABAG);
+    }
+    
+    private void shareItem(Provider provider) {
         if (currentlySelectedItem != null) {
-            if (! pocketClient.isConfigured()) {
-                return;
-            }
-            if (FXMain.pocketAddLinkStage == null) {
-                FXMain.createPocketAddLinkStage();
-                Scene scene = new Scene(pocketAddLinkView.getView());
-                FXMain.pocketAddLinkStage.setScene(scene);
-                FXMain.pocketAddLinkController = (PocketAddLinkController) pocketAddLinkView.getPresenter();
-                FXMain.pocketAddLinkController.setStage(FXMain.pocketAddLinkStage);
-                FXMain.pocketAddLinkController.setCurrentItem(currentlySelectedItem);
+            if (FXMain.shareLinkStage == null) {
+                FXMain.createShareLinkStage();
+                Scene scene = new Scene(shareLinkView.getView());
+                FXMain.shareLinkStage.setScene(scene);
+                FXMain.shareLinkController = (ShareLinkController) shareLinkView.getPresenter();
+                FXMain.shareLinkController.setStage(FXMain.shareLinkStage);
+                FXMain.shareLinkController.setCurrentItem(currentlySelectedItem);
+                FXMain.shareLinkController.setCurrentProvider(provider);
                 // Show the dialog and wait until the user closes it
-                FXMain.pocketAddLinkStage.showAndWait();
+                FXMain.shareLinkStage.showAndWait();
             }
             else {
-                FXMain.pocketAddLinkController.setCurrentItem(currentlySelectedItem);
+                FXMain.shareLinkController.setCurrentItem(currentlySelectedItem);
+                FXMain.shareLinkController.setCurrentProvider(provider);
                 // Show the dialog and wait until the user closes it
-                FXMain.pocketAddLinkStage.showAndWait();
+                FXMain.shareLinkStage.showAndWait();
             }
         }
     }

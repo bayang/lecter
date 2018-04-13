@@ -10,6 +10,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.lang3.StringUtils;
 import org.dmfs.httpessentials.exceptions.ProtocolException;
 import org.dmfs.oauth2.client.OAuth2AccessToken;
 import org.dmfs.oauth2.client.OAuth2Scope;
@@ -27,6 +28,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import me.bayang.reader.config.AppConfig;
 import me.bayang.reader.rssmodels.UserInformation;
+import me.bayang.reader.share.wallabag.WallabagCredentials;
 import me.bayang.reader.utils.Theme;
 
 @Service
@@ -54,6 +56,7 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     private Configuration tokenConfiguration;
     
     private BooleanProperty pocketEnabled = new SimpleBooleanProperty();
+    private BooleanProperty wallabagEnabled = new SimpleBooleanProperty();
     private BooleanProperty prefersGridLayout = new SimpleBooleanProperty();
     private StringProperty pocketUser = new SimpleStringProperty();
     
@@ -104,6 +107,13 @@ public class FileConfigStorageServiceImpl implements IStorageService {
             if (newValue != null) {
                 LOGGER.debug("pocket user {} ",newValue);
                 setPocketUser(newValue);
+            }
+        });
+        wallabagEnabledProperty().set(appConfiguration.getBoolean("wallabag.enabled", false));
+        wallabagEnabledProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                LOGGER.debug("wallabag enabled {} ",newValue);
+                setWallabagEnabled(newValue);
             }
         });
     }
@@ -196,6 +206,67 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         LOGGER.debug("saving pocket enabled state : {}", enabled);
     }
     
+    @Override
+    public BooleanProperty wallabagEnabledProperty() {
+        return wallabagEnabled;
+    }
+    
+    public boolean isWallabagEnabled() {
+        return wallabagEnabledProperty().get();
+    }
+    
+    public void setWallabagEnabled(boolean enabled) {
+        wallabagEnabledProperty().set(enabled);
+        saveWallabagEnabled(enabled);
+    }
+    
+    public void saveWallabagEnabled(boolean enabled) {
+        appConfiguration.setProperty("wallabag.enabled", enabled);
+        LOGGER.debug("saving wallabag enabled state : {}", enabled);
+    }
+    
+    @Override
+    public WallabagCredentials loadWallabagCredentials() {
+        String url = userConfiguration.getString("wallabag.url", "");
+        String user = userConfiguration.getString("wallabag.user", "");
+        String password = userConfiguration.getString("wallabag.password", "");
+        String clientId = userConfiguration.getString("wallabag.clientId", "");
+        String clientSecret = userConfiguration.getString("wallabag.clientSecret", "");
+        String refreshToken = tokenConfiguration.getString("wallabag.refreshToken", "");
+        
+        return new WallabagCredentials(url, user, password, clientId, clientSecret, refreshToken, null);
+    }
+    
+    @Override
+    public void saveWallabagCredentials(WallabagCredentials wallabagCredentials) {
+        LOGGER.debug(wallabagCredentials.toString());
+        if (! StringUtils.isBlank(wallabagCredentials.getUrl())) {
+            userConfiguration.setProperty("wallabag.url", wallabagCredentials.getUrl());
+        }
+        if (! StringUtils.isBlank(wallabagCredentials.getUsername())) {
+            userConfiguration.setProperty("wallabag.user", wallabagCredentials.getUsername());
+        }
+        if (! StringUtils.isBlank(wallabagCredentials.getPassword())) {
+            userConfiguration.setProperty("wallabag.password", wallabagCredentials.getPassword());
+        }
+        if (! StringUtils.isBlank(wallabagCredentials.getClientId())) {
+            userConfiguration.setProperty("wallabag.clientId", wallabagCredentials.getClientId());
+        }
+        if (! StringUtils.isBlank(wallabagCredentials.getClientSecret())) {
+            userConfiguration.setProperty("wallabag.clientSecret", wallabagCredentials.getClientSecret());
+        }
+        if (! StringUtils.isBlank(wallabagCredentials.getRefreshToken())) {
+            tokenConfiguration.setProperty("wallabag.refreshToken", wallabagCredentials.getRefreshToken());
+        }
+    }
+    
+    @Override
+    public void saveWallabagRefreshToken(String token) {
+        if (! StringUtils.isBlank(token)) {
+            tokenConfiguration.setProperty("wallabag.refreshToken", token);
+        }
+    }
+
     @Override
     public void savePocketToken(String token) {
         tokenConfiguration.setProperty("pocket.token", token);

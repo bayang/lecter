@@ -13,7 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import me.bayang.reader.controllers.PocketAddLinkController;
+import me.bayang.reader.controllers.ShareLinkController;
 import me.bayang.reader.utils.Theme;
 import me.bayang.reader.view.RssView;
 import me.bayang.reader.view.SpinnerSplashScreen;
@@ -22,8 +22,8 @@ import me.bayang.reader.view.SpinnerSplashScreen;
 @PropertySource(value="file:${home.dir.config}/.config/lecter/config.properties", ignoreResourceNotFound=true)
 public class FXMain extends AbstractJavaFxApplicationSupport {
     
-    public static Stage pocketAddLinkStage = null;
-    public static PocketAddLinkController pocketAddLinkController = null;
+    public static Stage shareLinkStage = null;
+    public static ShareLinkController shareLinkController = null;
     
     public static ResourceBundle bundle = ResourceBundle.getBundle("i18n.translations");
     
@@ -34,14 +34,13 @@ public class FXMain extends AbstractJavaFxApplicationSupport {
         launch(FXMain.class, RssView.class, new SpinnerSplashScreen(), args);
     }
     
-    public static void createPocketAddLinkStage() {
+    public static void createShareLinkStage() {
         Stage dialogStage = new Stage();
-        dialogStage.setTitle(bundle.getString("pocketAddLinkStage"));
         dialogStage.initModality(Modality.WINDOW_MODAL);
         dialogStage.initOwner(FXMain.getStage());
         dialogStage.getIcons().add(new Image("icon.png"));
         dialogStage.setResizable(true);
-        FXMain.pocketAddLinkStage = dialogStage;
+        FXMain.shareLinkStage = dialogStage;
     }
 
     @Override

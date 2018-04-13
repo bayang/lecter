@@ -1,6 +1,8 @@
 package me.bayang.reader.controllers;
 
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -15,22 +17,25 @@ import de.felixroske.jfxsupport.FXMLController;
 import javafx.fxml.FXML;
 import javafx.scene.layout.FlowPane;
 import javafx.stage.Stage;
+import me.bayang.reader.FXMain;
 import me.bayang.reader.components.DeletableLabel;
 import me.bayang.reader.rssmodels.Item;
+import me.bayang.reader.share.Provider;
 import me.bayang.reader.share.pocket.PocketClient;
-import me.bayang.reader.view.PocketAddLinkView;
+import me.bayang.reader.share.wallabag.WallabagClient;
+import me.bayang.reader.view.ShareLinkView;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Request;
 import okhttp3.Response;
 
 @FXMLController
-public class PocketAddLinkController {
+public class ShareLinkController {
     
-    private static Logger LOGGER  = LoggerFactory.getLogger(PocketAddLinkController.class);
+    private static Logger LOGGER  = LoggerFactory.getLogger(ShareLinkController.class);
     
     @Autowired
-    PocketAddLinkView view;
+    private ShareLinkView view;
     
     @FXML
     private JFXTextArea linkField;
@@ -50,21 +55,23 @@ public class PocketAddLinkController {
     @Autowired
     private PocketClient pocketClient;
     
+    @Autowired
+    private WallabagClient wallabagClient;
+    
     private Item currentItem;
     
     private Stage stage;
+    
+    private Provider currentProvider;
     
     @FXML
     public void initialize() {
         
     }
     
-    @FXML
-    public void submitLink() {
-        LOGGER.debug("link {}, tags {}", linkField.getText(), formatTags());
+    private void submitToPocket() {
         Request r = pocketClient.addLink(linkField.getText(), formatTags());
         pocketClient.getHttpClient().newCall(r).enqueue(new Callback() {
-            
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.code() != 200) {
@@ -83,6 +90,22 @@ public class PocketAddLinkController {
             }
         });
         this.stage.close();
+    }
+    
+    private void submitToWallabag() {
+        wallabagClient.submitLink(linkField.getText(), Arrays.asList(formatTags().split(",")));
+        this.stage.close();
+    }
+    
+    @FXML
+    public void submitLink() {
+        LOGGER.debug("link {}, tags {}", linkField.getText(), formatTags());
+        if (this.getCurrentProvider() == Provider.POCKET) {
+            submitToPocket();
+        }
+        else if (this.getCurrentProvider() == Provider.WALLABAG) {
+            submitToWallabag();
+        }
     }
     
     @FXML
@@ -124,5 +147,16 @@ public class PocketAddLinkController {
     public void setStage(Stage stage) {
         this.stage = stage;
     }
+
+    public Provider getCurrentProvider() {
+        return currentProvider;
+    }
+
+    public void setCurrentProvider(Provider currentProvider) {
+        this.currentProvider = currentProvider;
+        this.stage.setTitle(MessageFormat.format(FXMain.bundle.getString("shareLinkStageTitle"), currentProvider.toString()));
+    }
+    
+    
 
 }

@@ -2,6 +2,7 @@ package me.bayang.reader.config;
 
 import java.io.File;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
@@ -20,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+
+import okhttp3.OkHttpClient;
 
 @Configuration
 @EnableAsync
@@ -42,7 +45,7 @@ public class AppConfig {
     @Bean(name = "threadPoolTaskExecutor")
     public Executor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor t = new ThreadPoolTaskExecutor();
-        t.setMaxPoolSize(200);
+        t.setMaxPoolSize(50);
         return t;
     }
     
@@ -99,6 +102,15 @@ public class AppConfig {
         builder.setAutoSave(true);
         return builder;
     }
-
+    
+    @Bean("baseOkHttpClient")
+    public OkHttpClient okHttpClient() {
+        return new OkHttpClient.Builder()
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .readTimeout(1, TimeUnit.MINUTES)
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .build();
+    }
 
 }

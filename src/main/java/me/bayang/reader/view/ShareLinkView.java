@@ -7,11 +7,11 @@ import de.felixroske.jfxsupport.FXMLView;
 import javafx.scene.Parent;
 import me.bayang.reader.storage.IStorageService;
 
-@FXMLView(bundle="i18n.translations",value="/fxml/PocketAddLinkPopup.fxml", encoding = "UTF-8")
-public class PocketAddLinkView extends AbstractFxmlView {
+@FXMLView(bundle="i18n.translations",value="/fxml/ShareLinkPopup.fxml", encoding = "UTF-8")
+public class ShareLinkView extends AbstractFxmlView {
     
     @Autowired
-    IStorageService config;
+    private IStorageService config;
 
     @Override
     public Parent getView() {

@@ -168,6 +168,14 @@
     -fx-text-fill: -fx-dark-text-color;
 }
 
+.jfx-password-field, .jfx-password-field:focused {
+    -jfx-focus-color: -fx-primary-color ;
+    -fx-font-size: 14px;
+    -jfx-unfocus-color:derive(-fx-primary-color,10%);
+    -fx-text-fill: -fx-dark-text-color;
+}
+
+
 .text-field, .text-field:focused {
     -fx-text-fill: black;
 }

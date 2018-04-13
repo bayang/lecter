@@ -2,15 +2,20 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXComboBox?>
+<?import com.jfoenix.controls.JFXPasswordField?>
+<?import com.jfoenix.controls.JFXTextField?>
 <?import com.jfoenix.controls.JFXToggleButton?>
 <?import de.jensd.fx.glyphs.materialdesignicons.MaterialDesignIconView?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox styleClass="base-background" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.SettingsController">
+<VBox fx:id="settingsContainer" styleClass="base-background" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.bayang.reader.controllers.SettingsController">
    <children>
       <JFXButton fx:id="backButton" buttonType="RAISED" onAction="#showMainScreen" styleClass="generic-button" text="%settingsBack">
          <VBox.margin>
@@ -37,12 +42,8 @@
       </HBox>
       <Label styleClass="settings-subtitle" text="%settingsShare">
          <VBox.margin>
-            <Insets top="10.0" />
+            <Insets bottom="15.0" top="20.0" />
          </VBox.margin></Label>
-      <Separator>
-         <VBox.margin>
-            <Insets bottom="10.0" />
-         </VBox.margin></Separator>
       <HBox alignment="CENTER_LEFT">
          <children>
             <Label styleClass="text-bigger" text="Pocket" />
@@ -64,6 +65,68 @@
             <Insets bottom="10.0" />
          </VBox.margin></Label>
       <JFXButton fx:id="pocketConfigure" buttonType="RAISED" onAction="#showPocketOauthStage" ripplerFill="#07c621" styleClass="generic-button" text="%settingsConfigure" />
+      <Separator>
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </Separator>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Label styleClass="text-bigger" text="Wallabag" />
+         </children>
+      </HBox>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Label text="%settingsActivate" />
+            <JFXToggleButton fx:id="wallabagActivate" contentDisplay="GRAPHIC_ONLY" />
+         </children>
+      </HBox>
+      <GridPane alignment="CENTER_LEFT">
+        <columnConstraints>
+          <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="300.0" minWidth="10.0" prefWidth="300.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label text="%instanceUrl" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER">
+               <padding>
+                  <Insets right="10.0" />
+               </padding>
+            </Label>
+            <JFXTextField fx:id="wallabagUrlField" promptText="%instanceUrlHint" GridPane.columnIndex="1" />
+            <JFXTextField fx:id="wallabagUserField" promptText="%userName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label text="%userName" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="1">
+               <padding>
+                  <Insets right="10.0" />
+               </padding>
+            </Label>
+            <Label text="%password" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="2">
+               <padding>
+                  <Insets right="10.0" />
+               </padding>
+            </Label>
+            <JFXPasswordField fx:id="wallabagPasswordField" promptText="%password" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label text="%clientId" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="3">
+               <padding>
+                  <Insets right="10.0" />
+               </padding>
+            </Label>
+            <JFXTextField fx:id="wallabagClientIdField" promptText="%clientId" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label text="%clientSecret" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="4">
+               <padding>
+                  <Insets right="10.0" />
+               </padding>
+            </Label>
+            <JFXTextField fx:id="wallabagClientSecretField" promptText="%clientSecret" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+         </children>
+      </GridPane>
+      <JFXButton fx:id="wallabagConnect" onAction="#wallabagConnect" styleClass="generic-button" text="%connect" />
    </children>
    <padding>
       <Insets bottom="10.0" left="75.0" right="50.0" top="30.0" />

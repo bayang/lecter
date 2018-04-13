@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -66,6 +65,9 @@ import okhttp3.Response;
 public class ConnectServer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectServer.class);
+    
+    @Resource(name="baseOkHttpClient")
+    private OkHttpClient baseOkHttpClient;
     
     private OkHttpClient okClient;
     private HttpRequestExecutor executor;
@@ -143,12 +145,7 @@ public class ConnectServer {
                 setShouldAskPermissionOrLogin(false);
             }
         }
-        okClient = new OkHttpClient.Builder()
-                .followRedirects(true)
-                .followSslRedirects(true)
-                .readTimeout(1, TimeUnit.MINUTES)
-                .connectTimeout(1, TimeUnit.MINUTES)
-                .build();
+        okClient = baseOkHttpClient.newBuilder().build();
         Single<OkHttpClient> s = new ValueSingle<OkHttpClient>(okClient);
         executor = new OkHttpExecutor(s);
         provider = new BasicOAuth2AuthorizationProvider(
@@ -455,7 +452,7 @@ public class ConnectServer {
                 continuationsMap.put(streamId, content.getContinuation());
             }
             closeReader(reader);
-            LOGGER.debug("{}",itemList);
+//            LOGGER.debug("{}",itemList);
             return itemList;
         } catch (IOException e1) {
             RssController.snackbarNotify(bundle.getString("connectionFailure"));

@@ -1,7 +1,6 @@
 package me.bayang.reader.share.pocket;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -39,6 +38,9 @@ public class PocketClient {
     @Autowired
     private IStorageService storage;
     
+    @Resource(name="baseOkHttpClient")
+    private OkHttpClient baseOkHttpClient;
+    
     private static final String requestTokenUrl = "https://getpocket.com/v3/oauth/request";
     public static final HttpUrl requestTokenHTTPUrl = HttpUrl.parse(requestTokenUrl);
     
@@ -65,12 +67,7 @@ public class PocketClient {
     
     @PostConstruct
     public void initialize() throws JsonProcessingException {
-        httpClient = new OkHttpClient.Builder()
-                .followRedirects(true)
-                .followSslRedirects(true)
-                .readTimeout(1, TimeUnit.MINUTES)
-                .connectTimeout(1, TimeUnit.MINUTES)
-                .build();
+        httpClient = baseOkHttpClient.newBuilder().build();
         PocketTokenRequestPayload payload = new PocketTokenRequestPayload();
         payload.setConsumerKey(key);
         payload.setRedirectUri(redirectUrl);

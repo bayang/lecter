@@ -15,6 +15,7 @@ import com.jfoenix.controls.JFXRadioButton;
 
 import de.felixroske.jfxsupport.FXMLController;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker.State;
@@ -30,8 +31,11 @@ import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.mobilizer.MercuryMobilizer;
 import me.bayang.reader.mobilizer.MercuryResult;
 import me.bayang.reader.rssmodels.Item;
+import me.bayang.reader.share.Provider;
 import me.bayang.reader.share.pocket.PocketClient;
-import me.bayang.reader.view.PocketAddLinkView;
+import me.bayang.reader.share.wallabag.WallabagClient;
+import me.bayang.reader.storage.IStorageService;
+import me.bayang.reader.view.ShareLinkView;
 
 @FXMLController
 public class PopupWebViewController {
@@ -59,6 +63,9 @@ public class PopupWebViewController {
     @FXML
     private MenuItem pocketShareMenu;
     
+    @FXML
+    private MenuItem wallabagShareMenu;
+    
     private WebViewHyperlinkListener eventPrintingListener;
     
     private AtomicBoolean isWebViewListenerAttached = new AtomicBoolean(false);
@@ -68,7 +75,7 @@ public class PopupWebViewController {
     private Stage stage;
     
     @Autowired
-    private PocketAddLinkView pocketAddLinkView;
+    private ShareLinkView shareLinkView;
     
     @Autowired
     private MercuryMobilizer mercuryMobilizer;
@@ -78,6 +85,12 @@ public class PopupWebViewController {
     
     @Autowired
     private PocketClient pocketClient;
+    
+    @Autowired
+    private WallabagClient wallabagClient;
+    
+    @Autowired
+    private IStorageService configStorage;
     
     @FXML
     private void initialize() {
@@ -102,6 +115,8 @@ public class PopupWebViewController {
                 }
             }
         });
+        pocketShareMenu.disableProperty().bind(Bindings.not(configStorage.pocketEnabledProperty()));
+        wallabagShareMenu.disableProperty().bind(Bindings.not(configStorage.wallabagEnabledProperty()));
     }
     
     private void initWebView() {
@@ -138,24 +153,38 @@ public class PopupWebViewController {
     
     @FXML
     public void shareItemPocket() {
+        if (! pocketClient.isConfigured()) {
+            return;
+        }
+        shareItem(Provider.POCKET);
+    }
+    
+    @FXML
+    public void shareItemWallabag() {
+        if (! wallabagClient.isConfigured()) {
+            return;
+        }
+        shareItem(Provider.WALLABAG);
+    }
+    
+    private void shareItem(Provider provider) {
         if (currentItem != null) {
-            if (! pocketClient.isConfigured()) {
-                return;
-            }
-            if (FXMain.pocketAddLinkStage == null) {
-                FXMain.createPocketAddLinkStage();
-                Scene scene = new Scene(pocketAddLinkView.getView());
-                FXMain.pocketAddLinkStage.setScene(scene);
-                FXMain.pocketAddLinkController = (PocketAddLinkController) pocketAddLinkView.getPresenter();
-                FXMain.pocketAddLinkController.setStage(FXMain.pocketAddLinkStage);
-                FXMain.pocketAddLinkController.setCurrentItem(currentItem);
+            if (FXMain.shareLinkStage == null) {
+                FXMain.createShareLinkStage();
+                Scene scene = new Scene(shareLinkView.getView());
+                FXMain.shareLinkStage.setScene(scene);
+                FXMain.shareLinkController = (ShareLinkController) shareLinkView.getPresenter();
+                FXMain.shareLinkController.setStage(FXMain.shareLinkStage);
+                FXMain.shareLinkController.setCurrentItem(currentItem);
+                FXMain.shareLinkController.setCurrentProvider(provider);
                 // Show the dialog and wait until the user closes it
-                FXMain.pocketAddLinkStage.showAndWait();
+                FXMain.shareLinkStage.showAndWait();
             }
             else {
-                FXMain.pocketAddLinkController.setCurrentItem(currentItem);
+                FXMain.shareLinkController.setCurrentItem(currentItem);
+                FXMain.shareLinkController.setCurrentProvider(provider);
                 // Show the dialog and wait until the user closes it
-                FXMain.pocketAddLinkStage.showAndWait();
+                FXMain.shareLinkStage.showAndWait();
             }
         }
     }
