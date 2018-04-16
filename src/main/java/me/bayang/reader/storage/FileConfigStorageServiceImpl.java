@@ -18,6 +18,7 @@ import org.dmfs.oauth2.client.scope.StringScope;
 import org.dmfs.rfc5545.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import me.bayang.reader.config.AppConfig;
+import me.bayang.reader.config.AppConfigurationDecoder;
 import me.bayang.reader.rssmodels.UserInformation;
 import me.bayang.reader.share.wallabag.WallabagCredentials;
 import me.bayang.reader.utils.Theme;
@@ -50,6 +52,9 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     
     @Resource(name="applicationConfig")
     private FileBasedConfigurationBuilder<FileBasedConfiguration> appConfig;
+    
+    @Autowired
+    private AppConfigurationDecoder configurationDecoder;
     
     private Configuration appConfiguration;
     private Configuration userConfiguration;
@@ -229,7 +234,8 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     public WallabagCredentials loadWallabagCredentials() {
         String url = userConfiguration.getString("wallabag.url", "");
         String user = userConfiguration.getString("wallabag.user", "");
-        String password = userConfiguration.getString("wallabag.password", "");
+        String password = userConfiguration.getEncodedString("wallabag.password", configurationDecoder);
+//        String password = userConfiguration.getString("wallabag.password", "");
         String clientId = userConfiguration.getString("wallabag.clientId", "");
         String clientSecret = userConfiguration.getString("wallabag.clientSecret", "");
         String refreshToken = tokenConfiguration.getString("wallabag.refreshToken", "");
@@ -247,7 +253,7 @@ public class FileConfigStorageServiceImpl implements IStorageService {
             userConfiguration.setProperty("wallabag.user", wallabagCredentials.getUsername());
         }
         if (! StringUtils.isBlank(wallabagCredentials.getPassword())) {
-            userConfiguration.setProperty("wallabag.password", wallabagCredentials.getPassword());
+            userConfiguration.setProperty("wallabag.password", configurationDecoder.encode(wallabagCredentials.getPassword()));
         }
         if (! StringUtils.isBlank(wallabagCredentials.getClientId())) {
             userConfiguration.setProperty("wallabag.clientId", wallabagCredentials.getClientId());

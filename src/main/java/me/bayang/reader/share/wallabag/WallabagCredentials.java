@@ -103,7 +103,7 @@ public class WallabagCredentials {
         StringBuilder builder = new StringBuilder();
         builder.append("WallabagCredentials [url=").append(url)
                 .append(", username=").append(username).append(", password=")
-                .append(password).append(", clientId=").append(clientId)
+                .append("****").append(", clientId=").append(clientId)
                 .append(", clientSecret=").append(clientSecret)
                 .append(", refreshToken=").append(refreshToken)
                 .append(", accessToken=").append(accessToken).append("]");

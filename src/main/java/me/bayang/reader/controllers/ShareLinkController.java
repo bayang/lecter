@@ -3,6 +3,8 @@ package me.bayang.reader.controllers;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -93,7 +95,13 @@ public class ShareLinkController {
     }
     
     private void submitToWallabag() {
-        wallabagClient.submitLink(linkField.getText(), Arrays.asList(formatTags().split(",")));
+        if (! tagsContainer.getChildren().isEmpty()) {
+            List<String> tags = tagsContainer.getChildrenUnmodifiable().stream().map(l -> ((DeletableLabel) l).getContent()).collect(Collectors.toList());
+            wallabagClient.submitLink(linkField.getText(), tags);
+        }
+        else {
+            wallabagClient.submitLink(linkField.getText(), Collections.emptyList());
+        }
         this.stage.close();
     }
     
