@@ -233,14 +233,11 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     @Override
     public WallabagCredentials loadWallabagCredentials() {
         String url = userConfiguration.getString("wallabag.url", "");
-        String user = userConfiguration.getString("wallabag.user", "");
-        String password = userConfiguration.getEncodedString("wallabag.password", configurationDecoder);
-//        String password = userConfiguration.getString("wallabag.password", "");
         String clientId = userConfiguration.getString("wallabag.clientId", "");
         String clientSecret = userConfiguration.getString("wallabag.clientSecret", "");
         String refreshToken = tokenConfiguration.getString("wallabag.refreshToken", "");
         
-        return new WallabagCredentials(url, user, password, clientId, clientSecret, refreshToken, null);
+        return new WallabagCredentials(url, null, null, clientId, clientSecret, refreshToken, null);
     }
     
     @Override
@@ -248,12 +245,6 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         LOGGER.debug(wallabagCredentials.toString());
         if (! StringUtils.isBlank(wallabagCredentials.getUrl())) {
             userConfiguration.setProperty("wallabag.url", wallabagCredentials.getUrl());
-        }
-        if (! StringUtils.isBlank(wallabagCredentials.getUsername())) {
-            userConfiguration.setProperty("wallabag.user", wallabagCredentials.getUsername());
-        }
-        if (! StringUtils.isBlank(wallabagCredentials.getPassword())) {
-            userConfiguration.setProperty("wallabag.password", configurationDecoder.encode(wallabagCredentials.getPassword()));
         }
         if (! StringUtils.isBlank(wallabagCredentials.getClientId())) {
             userConfiguration.setProperty("wallabag.clientId", wallabagCredentials.getClientId());

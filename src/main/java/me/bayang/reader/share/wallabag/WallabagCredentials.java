@@ -34,9 +34,7 @@ public class WallabagCredentials {
     }
     
     public boolean isValid() {
-        return (! StringUtils.isBlank(this.getUsername()) 
-                && ! StringUtils.isBlank(this.getPassword())
-                && ! StringUtils.isBlank(this.getRefreshToken())
+        return (! StringUtils.isBlank(this.getRefreshToken())
                 && ! StringUtils.isBlank(this.getClientId())
                 && ! StringUtils.isBlank(this.getClientSecret())
                 && ! StringUtils.isBlank(this.getUrl())); 
