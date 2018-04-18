@@ -128,7 +128,7 @@ public class FileConfigStorageServiceImpl implements IStorageService {
         String accessToken = String.valueOf(token.accessToken());
         String refreshToken = String.valueOf(token.refreshToken());
         String scope = token.scope().toString();
-        LOGGER.debug("access {}, refresh {}, scope {}", accessToken, refreshToken, scope);
+//        LOGGER.debug("access {}, refresh {}, scope {}", accessToken, refreshToken, scope);
         
         tokenConfiguration.setProperty("inoreader.token.access", accessToken);
         tokenConfiguration.setProperty("inoreader.token.refresh", refreshToken);
@@ -242,7 +242,7 @@ public class FileConfigStorageServiceImpl implements IStorageService {
     
     @Override
     public void saveWallabagCredentials(WallabagCredentials wallabagCredentials) {
-        LOGGER.debug(wallabagCredentials.toString());
+//        LOGGER.debug(wallabagCredentials.toString());
         if (! StringUtils.isBlank(wallabagCredentials.getUrl())) {
             userConfiguration.setProperty("wallabag.url", wallabagCredentials.getUrl());
         }
