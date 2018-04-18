@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>lecter.desktop</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>lecter</name>
+  <summary>RSS cloud providers client</summary>
+  <description>
+    <p>
+      lecter is a desktop RSS reader.
+    </p>
+  </description>
+  <screenshots>
+    <!-- <screenshot type="default">
+      <caption>Update from Ubuntu with AppImageUpdate</caption>
+      <image>https://cloud.githubusercontent.com/assets/2480569/19410850/0390fe9c-92f6-11e6-9882-3ca6d360a190.jpg</image>
+    </screenshot> -->
+  </screenshots>
+  <url type="homepage">https://github.com/bayang/lecter</url>
+  <!-- <project_group>AppImage</project_group> -->
+  <!-- <provides>
+    <binary>appimaged</binary>
+  </provides> -->
+</component>

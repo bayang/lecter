@@ -56,17 +56,10 @@ public class OauthController {
                     Uri redirect = new LazyUri(new Precoded(newValue));
                     try {
                         token = connectServer.getGrant().withRedirect(redirect).accessToken(connectServer.getExecutor());
-                        LOGGER.debug("token : {} - {} - {} - {} - {}", token.accessToken(),token.expirationDate().toString(), token.refreshToken(), token.tokenType(), token.scope());
+//                        LOGGER.debug("token : {} - {} - {} - {} - {}", token.accessToken(),token.expirationDate().toString(), token.refreshToken(), token.tokenType(), token.scope());
                         connectServer.setToken(token);
                         connectServer.setShouldAskPermissionOrLogin(false);
                         connectServer.fetchAndSaveUSer();
-//                        String authorization = String.format("Bearer %s", token.accessToken());
-//                        Request request = new Request.Builder()
-//                                .url("https://www.inoreader.com/reader/api/0/user-info")
-//                                .addHeader("Authorization", authorization)
-//                                .build();
-//                        Response response = connectServer.getOkClient().newCall(request).execute();
-//                        LOGGER.debug(response.body().string());
                         stage.close();
                     } catch (IOException e) {
                         LOGGER.error("failure during oauth token fetching and processing", e);
