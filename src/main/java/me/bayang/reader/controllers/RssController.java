@@ -390,9 +390,9 @@ public class RssController {
                 Platform.runLater(() -> {
                     item.setRead(true);//change state to read and change color in listView
                     boolean removed = observableItemList.remove(item);
-                    LOGGER.debug("remove = {}", removed);
+//                    LOGGER.debug("remove = {}", removed);
                     boolean added = observableReadList.add(item);
-                    LOGGER.debug("add = {}", added);
+//                    LOGGER.debug("add = {}", added);
                     treeView.refresh();
                     int itemIdx = listView.getItems().indexOf(item);
 //                    LOGGER.debug("idx {}", itemIdx);
@@ -432,7 +432,7 @@ public class RssController {
         t.setOnSucceeded(e -> {
             webViewProgressBar.setVisible(false);
             MercuryResult m = t.getValue();
-            LOGGER.debug("{}",m);
+//            LOGGER.debug("{}",m);
             if (m != null && ! m.getContent().isEmpty()) {
                 String url = m.getUrl();
                 if (url.startsWith("/")) {
@@ -508,7 +508,7 @@ public class RssController {
         webView.getEngine().setUserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.113 Safari/537.36 JavaFx8");
         webView.setContextMenuEnabled(false);
         eventPrintingListener = event -> {
-            LOGGER.debug("{}-{}",event.getURL(), event.getSource().getClass().getName());
+//            LOGGER.debug("{}-{}",event.getURL(), event.getSource().getClass().getName());
             FXMain.getAppHostServices().showDocument(event.getURL().toString());
             return true;
         };
@@ -540,12 +540,14 @@ public class RssController {
             markReadButton.setDisable(false);
             addSubscriptionButton.setDisable(false);
             LOGGER.debug("Server successfully reached");
-            snackbarNotify("Server successfully reached");
+            snackbarNotify(FXMain.bundle.getString("initNetworkSuccess"));
+            // fetch unread at startup if network is available
+            launchRefresh();
         });
         t.setOnRunning(e -> {
             progressBar.setVisible(true);
             LOGGER.debug("Trying to reach server...Please wait...");
-            snackbarNotify("Trying to reach server...\nPlease wait...");
+            snackbarNotify(FXMain.bundle.getString("initNetworkWait"));
             refreshButton.setDisable(true);
             markReadButton.setDisable(true);
             addSubscriptionButton.setDisable(true);
@@ -556,7 +558,7 @@ public class RssController {
             addSubscriptionButton.setDisable(false);
             markReadButton.setDisable(false);
             LOGGER.debug("Failed to contact server");
-            snackbarNotifyBlocking("Failed to contact server.\nCheck connection and retry in a moment");
+            snackbarNotifyBlocking(FXMain.bundle.getString("initNetworkFailed"));
         });
         this.connectServer.getTaskExecutor().submit(t);
     }
@@ -735,15 +737,19 @@ public class RssController {
             snackbarNotifyBlocking(bundle.getString("pleaseLogin"));
         }
         else {
-            progressBar.setVisible(true);
-            progressBar.setProgress(0);
-            initializeTasks();
-            connectServer.getTaskExecutor().submit(unreadCountsTask);
-            connectServer.getTaskExecutor().submit(treeTask);
-            connectServer.getTaskExecutor().submit(itemListTask);
-            connectServer.getTaskExecutor().submit(starredListTask);
-            lastUpdateTime = Instant.now();
+            launchRefresh();
         }
+    }
+    
+    public void launchRefresh() {
+        progressBar.setVisible(true);
+        progressBar.setProgress(0);
+        initializeTasks();
+        connectServer.getTaskExecutor().submit(unreadCountsTask);
+        connectServer.getTaskExecutor().submit(treeTask);
+        connectServer.getTaskExecutor().submit(itemListTask);
+        connectServer.getTaskExecutor().submit(starredListTask);
+        lastUpdateTime = Instant.now();
     }
 
     @FXML

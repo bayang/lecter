@@ -9,6 +9,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -58,12 +60,9 @@
          <children>
             <Label text="%settingsActivate" />
             <JFXToggleButton fx:id="pocketActivate" contentDisplay="GRAPHIC_ONLY" />
+            <Label fx:id="pocketStatus" text="Label" />
          </children>
       </HBox>
-      <Label fx:id="pocketStatus" text="Label">
-         <VBox.margin>
-            <Insets bottom="10.0" />
-         </VBox.margin></Label>
       <JFXButton fx:id="pocketConfigure" buttonType="RAISED" onAction="#showPocketOauthStage" ripplerFill="#07c621" styleClass="generic-button" text="%settingsConfigure" />
       <Separator>
          <VBox.margin>
@@ -73,6 +72,14 @@
       <HBox alignment="CENTER_LEFT">
          <children>
             <Label styleClass="text-bigger" text="Wallabag" />
+            <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../wallabag_logo.png" />
+               </image>
+               <HBox.margin>
+                  <Insets left="5.0" />
+               </HBox.margin>
+            </ImageView>
          </children>
       </HBox>
       <HBox alignment="CENTER_LEFT">
@@ -81,7 +88,7 @@
             <JFXToggleButton fx:id="wallabagActivate" contentDisplay="GRAPHIC_ONLY" />
          </children>
       </HBox>
-      <GridPane alignment="CENTER_LEFT">
+      <GridPane alignment="CENTER_LEFT" vgap="18.0">
         <columnConstraints>
           <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" />
           <ColumnConstraints hgrow="SOMETIMES" maxWidth="300.0" minWidth="10.0" prefWidth="300.0" />
@@ -99,8 +106,8 @@
                   <Insets right="10.0" />
                </padding>
             </Label>
-            <JFXTextField fx:id="wallabagUrlField" promptText="%instanceUrlHint" GridPane.columnIndex="1" />
-            <JFXTextField fx:id="wallabagUserField" promptText="%userName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <JFXTextField fx:id="wallabagUrlField" labelFloat="true" promptText="%instanceUrlHint" GridPane.columnIndex="1" />
+            <JFXTextField fx:id="wallabagUserField" labelFloat="true" promptText="%userName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="%userName" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="1">
                <padding>
                   <Insets right="10.0" />
@@ -111,19 +118,19 @@
                   <Insets right="10.0" />
                </padding>
             </Label>
-            <JFXPasswordField fx:id="wallabagPasswordField" promptText="%password" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <JFXPasswordField fx:id="wallabagPasswordField" labelFloat="true" promptText="%password" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             <Label text="%clientId" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="3">
                <padding>
                   <Insets right="10.0" />
                </padding>
             </Label>
-            <JFXTextField fx:id="wallabagClientIdField" promptText="%clientId" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <JFXTextField fx:id="wallabagClientIdField" labelFloat="true" promptText="%clientId" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Label text="%clientSecret" GridPane.halignment="RIGHT" GridPane.hgrow="NEVER" GridPane.rowIndex="4">
                <padding>
                   <Insets right="10.0" />
                </padding>
             </Label>
-            <JFXTextField fx:id="wallabagClientSecretField" promptText="%clientSecret" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <JFXTextField fx:id="wallabagClientSecretField" labelFloat="true" promptText="%clientSecret" GridPane.columnIndex="1" GridPane.rowIndex="4" />
          </children>
       </GridPane>
       <JFXButton fx:id="wallabagConnect" onAction="#wallabagConnect" styleClass="generic-button" text="%connect" />

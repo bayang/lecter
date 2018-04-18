@@ -15,10 +15,13 @@ import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
+import com.jfoenix.validation.RequiredFieldValidator;
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
 import de.felixroske.jfxsupport.AbstractFxmlView;
 import de.felixroske.jfxsupport.FXMLController;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -122,6 +125,7 @@ public class SettingsController {
         wallabagUrlField.disableProperty().bind(Bindings.not(wallabagActivate.selectedProperty()));
         wallabagPasswordField.disableProperty().bind(Bindings.not(wallabagActivate.selectedProperty()));
         wallabagUserField.disableProperty().bind(Bindings.not(wallabagActivate.selectedProperty()));
+        
     }
     
     @FXML

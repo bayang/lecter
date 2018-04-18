@@ -147,13 +147,13 @@
             <artifactId>moshi-adapters</artifactId>
             <version>1.5.0</version>
         </dependency>
-        
+
         <dependency>
-      <groupId>org.jasypt</groupId>
-      <artifactId>jasypt</artifactId>
-      <version>1.9.2</version>
-      <scope>compile</scope>
-    </dependency>
+            <groupId>org.jasypt</groupId>
+            <artifactId>jasypt</artifactId>
+            <version>1.9.2</version>
+            <scope>compile</scope>
+        </dependency>
 
 
     </dependencies>
@@ -223,7 +223,8 @@
                             <vendor>bayang</vendor>
                             <appName>${project.artifactId}</appName>
                             <jvmArgs>
-                                <jvmArg>-Xmx512m</jvmArg>
+                                <jvmArg>-Xmx1g</jvmArg>
+                                <jvmArg>-Xms256m</jvmArg>
                                 <jvmArg>-Dspring.config.location=classpath:application.properties,classpath:/reader_config/reader.properties</jvmArg>
                             </jvmArgs>
                         </configuration>
