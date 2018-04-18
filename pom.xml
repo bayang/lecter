@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.bayang</groupId>
     <artifactId>lecter</artifactId>
-    <version>0.0.14</version>
+    <version>0.0.15</version>
     <name>lecter</name>
     <description>inoreader rss client</description>
 
@@ -12,7 +12,7 @@
         <java.version>1.8</java.version>
         <springboot-javafx.version>2.1.6</springboot-javafx.version>
         <spring.boot.version>2.0.0.RELEASE</spring.boot.version>
-        <native.release.version>0.0.14</native.release.version>
+        <native.release.version>0.0.15</native.release.version>
     </properties>
 
     <dependencies>
@@ -154,6 +154,12 @@
             <version>1.9.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.di72nn</groupId>
+            <artifactId>wallabag-api-wrapper</artifactId>
+            <version>0.0.1</version>
+            <scope>compile</scope>
+        </dependency>
 
 
     </dependencies>
@@ -170,6 +176,58 @@
     </dependencyManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse 
+                    m2e settings only. It has no influence on the Maven build itself. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.mojo</groupId>
+                                        <artifactId>aspectj-maven-plugin</artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals>
+                                            <goal>test-compile</goal>
+                                            <goal>compile</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-install-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [2.5,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>install-file</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute>
+                                            <runOnIncremental>false</runOnIncremental>
+                                        </execute>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -185,6 +243,27 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>com.di72nn</groupId>
+                            <artifactId>wallabag-api-wrapper</artifactId>
+                            <version>0.0.1</version>
+                            <packaging>jar</packaging>
+
+                            <file>${basedir}/src/main/resources/libs/api-wrapper-0.0.1.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -271,5 +350,7 @@
         </profile>
 
     </profiles>
+
+
 
 </project>
