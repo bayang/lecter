@@ -21,7 +21,7 @@ cp ../../src/main/deploy/package/linux/lecter.png .
 cp -R ../../src/main/deploy/icons/* usr/share/icons/hicolor/
 cp -R ../../src/main/deploy/icons/* usr/share/icons/default/
 mkdir -p usr/share/metainfo/
-cp ../../src/main/package/linux/lecter.appdata.xml usr/share/metainfo/
+cp ../../src/main/deploy/package/linux/lecter.appdata.xml usr/share/metainfo/
 ln -s lecter.wrapper AppRun
 
 cd ..

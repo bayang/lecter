@@ -7,18 +7,17 @@
   <summary>RSS cloud providers client</summary>
   <description>
     <p>
-      lecter is a desktop RSS reader.
+      lecter is a desktop RSS reader. It can fetch feeds from cloud providers such as Inoreader.
+    </p>
+    <p>
+      lecter supports sharing with third party providers like Pocket or Wallabag.
     </p>
   </description>
   <screenshots>
-    <!-- <screenshot type="default">
-      <caption>Update from Ubuntu with AppImageUpdate</caption>
-      <image>https://cloud.githubusercontent.com/assets/2480569/19410850/0390fe9c-92f6-11e6-9882-3ca6d360a190.jpg</image>
-    </screenshot> -->
+    <screenshot type="default">
+      <caption>lecter main screen</caption>
+      <image>https://raw.githubusercontent.com/bayang/lecter/master/screenshots/list_mobilizer_light.png</image>
+    </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/bayang/lecter</url>
-  <!-- <project_group>AppImage</project_group> -->
-  <!-- <provides>
-    <binary>appimaged</binary>
-  </provides> -->
 </component>

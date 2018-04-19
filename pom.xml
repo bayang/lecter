@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.bayang</groupId>
     <artifactId>lecter</artifactId>
-    <version>0.0.15</version>
+    <version>0.0.16</version>
     <name>lecter</name>
     <description>inoreader rss client</description>
 
@@ -12,7 +12,7 @@
         <java.version>1.8</java.version>
         <springboot-javafx.version>2.1.6</springboot-javafx.version>
         <spring.boot.version>2.0.0.RELEASE</spring.boot.version>
-        <native.release.version>0.0.15</native.release.version>
+        <native.release.version>0.0.16</native.release.version>
     </properties>
 
     <dependencies>
