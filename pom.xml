@@ -265,20 +265,7 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>linux</id>
-            <activation>
-                <property>
-                    <name>linux</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
+            <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
                         <version>3.0.2</version>
@@ -325,6 +312,66 @@
                             </execution>
                         </executions>
                     </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>linux</id>
+            <activation>
+                <property>
+                    <name>linux</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>3.0.2</version>
+                        <configuration>
+                            <delimiters>
+                                <delimiter>@</delimiter>
+                            </delimiters>
+                            <useDefaultDelimiters>false</useDefaultDelimiters>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.zenjava</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <version>8.6.0</version>
+                        <configuration>
+                            <mainClass>me.bayang.reader.FXMain</mainClass>
+                            <nativeReleaseVersion>${native.release.version}</nativeReleaseVersion>
+                            <verbose>true</verbose>
+                            <needShortcut>true</needShortcut>
+                            <needMenu>true</needMenu>
+                            <vendor>bayang</vendor>
+                            <appName>${project.artifactId}</appName>
+                            <jvmArgs>
+                                <jvmArg>-Xmx1g</jvmArg>
+                                <jvmArg>-Xms256m</jvmArg>
+                                <jvmArg>-Dspring.config.location=classpath:application.properties,classpath:/reader_config/reader.properties</jvmArg>
+                            </jvmArgs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                required before build-native
+                                <id>create-jfxjar</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build-jar</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>create-native</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build-native</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin> -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
