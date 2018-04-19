@@ -83,6 +83,12 @@ public class ShareLinkController {
                 if (response.isSuccessful()) {
                     LOGGER.debug("successfully added link to Pocket");
                 }
+                try {
+                    response.close();
+                }
+                catch (Exception e) {
+                    /* noop */
+                }
             }
             
             @Override
