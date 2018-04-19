@@ -40,7 +40,7 @@ Concerning Inoreader, Wallabag and Pocket, authentification and login are perfor
 
 We respect your privacy.
 
-The articles can be shared to Pocket and Wallabag directly from the lecter.
+The articles can be shared to Pocket and Wallabag directly from lecter.
 
 Support for Instapaper is planned.
 
@@ -72,7 +72,7 @@ You can see the different themes and layouts below :
 
 ## Installation
 
-At the moment we provide a .deb package and an appimage.
+At the moment we provide a .deb package, an appimage and a windows exe.
 
 An appimage is a standalone, no installation, package which is supposed to run seamlessly on all Linux platforms.
 
@@ -80,7 +80,7 @@ To use it just set executable permission to the .appimage file and double-click/
 
 You will be prompted to see whether you want desktop integration or not.
 
-Building .dmg and .exe should be possible once we find a build platform.
+Building .dmg should be possible once I find a build platform.
 
 
 ## Currently
