@@ -130,6 +130,16 @@
                   </JFXButton>
                      <Pane HBox.hgrow="ALWAYS" />
                   <CustomTextField fx:id="searchBar" prefWidth="300.0" promptText="%searchPrompt" styleClass="highlight-fill" />
+                  <MenuButton alignment="CENTER" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" minHeight="32.0" minWidth="48.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="48.0">
+                    <items>
+                      <MenuItem mnemonicParsing="false" onAction="#filterAll" styleClass="bigger-menu-text" text="%filterAll" />
+                      <MenuItem mnemonicParsing="false" onAction="#filterRead" styleClass="bigger-menu-text" text="%filterRead" />
+                      <MenuItem mnemonicParsing="false" onAction="#filterUnread" styleClass="bigger-menu-text" text="%filterUnRead" />
+                    </items>
+                    <graphic>
+                        <FontAwesomeIconView fx:id="filterIcon" fill="#a5a3a3" glyphName="FILTER" size="24.0" />
+                     </graphic>
+                  </MenuButton>
                   <Pane HBox.hgrow="ALWAYS" />
                   <JFXButton fx:id="switchViewButton" contentDisplay="GRAPHIC_ONLY" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#switchView" prefHeight="32.0" prefWidth="32.0" styleClass="toolbar-button" text="Button">
                      <graphic>

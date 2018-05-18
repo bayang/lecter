@@ -304,7 +304,7 @@ public class RssController {
         
         //handle event between treeView and listView
         treeView.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
-            
+            listView.scrollTo(0);
 //            LOGGER.debug("observableitemList size {}, observablereadItemList size {}", observableItemList.size(), observableReadList.size());
             if (starredList != null && newValue != null) {
                 if (newValue.getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
@@ -457,7 +457,7 @@ public class RssController {
             }
 //            LOGGER.debug("value {} - {}",oldV, newV);
             Predicate<Item> predicate  = item -> {
-                // If filter text is empty, display all persons.
+                // If filter text is empty, display all.
                 if (filteredData.isEmpty()) {
                     return true;
                 }
@@ -466,7 +466,7 @@ public class RssController {
                 }
                 String lowerCaseFilter = newV.toLowerCase();
                 if (item.toString().toLowerCase().contains(lowerCaseFilter)) {
-                    return true; // Filter matches first name.
+                    return true; // Filter matches
                 }
                 return false; // Does not match.
             };
@@ -1043,6 +1043,53 @@ public class RssController {
         unreadCountsMap.put("user/" + UserInfo.getUserId() + "/state/com.google/starred", c);
         treeView.refresh();
     }
+    
+    @FXML
+    public void filterAll() {
+        Predicate<Item> predicate  = item -> {
+            // display all
+            return true;
+        };
+        Predicate<Item> pred = predicate.and(currentPredicate);
+        filteredData.setPredicate(pred);
+        listView.refresh();
+        gridView.requestLayout();
+    }
+    
+    @FXML
+    public void filterRead() {
+        Predicate<Item> predicate  = item -> {
+            if (item == null) {
+                return false;
+            }
+            if (! item.isRead()) {
+                return true;
+            }
+            return false;
+        };
+        Predicate<Item> pred = predicate.and(currentPredicate);
+        filteredData.setPredicate(pred);
+        listView.refresh();
+        gridView.requestLayout();
+    }
+    
+    @FXML
+    public void filterUnread() {
+        Predicate<Item> predicate  = item -> {
+            if (item == null) {
+                return false;
+            }
+            if (item.isRead()) {
+                return true;
+            }
+            return false;
+        };
+        Predicate<Item> pred = predicate.and(currentPredicate);
+        filteredData.setPredicate(pred);
+        listView.refresh();
+        gridView.requestLayout();
+    }
+    
 
     private TreeItem<Feed> handleFolderFeedOrder() {
         root = new TreeItem<>(new Tag("root", "root")); //the root node doesn't show;
