@@ -1068,9 +1068,9 @@ public class RssController {
             return false;
         };
         Predicate<Item> pred = predicate.and(currentPredicate);
-        filteredData.setPredicate(pred);
-        listView.refresh();
-        gridView.requestLayout();
+            filteredData.setPredicate(pred);
+            listView.refresh();
+            gridView.requestLayout();
     }
     
     @FXML
@@ -1085,9 +1085,10 @@ public class RssController {
             return false;
         };
         Predicate<Item> pred = predicate.and(currentPredicate);
-        filteredData.setPredicate(pred);
-        listView.refresh();
-        gridView.requestLayout();
+            filteredData.setPredicate(pred);
+            listView.refresh();
+            gridView.requestLayout();
+            
     }
     
 
