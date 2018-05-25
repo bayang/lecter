@@ -103,6 +103,9 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
         });
         this.readProperty = new SimpleBooleanProperty(false);
         this.readProperty.addListener(e -> this.pseudoClassStateChanged(READ_PSEUDO_CLASS, readProperty.get()));
+        this.itemProperty().addListener((observable, oldItem, newItem) -> {
+            this.updateItem(newItem, newItem == null);
+        });
     }
 
     @Override

@@ -34,7 +34,6 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import eu.lestard.advanced_bindings.api.CollectionBindings;
 import javafx.application.Platform;
-import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -68,7 +67,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import javafx.util.Duration;
 import me.bayang.reader.FXMain;
 import me.bayang.reader.backend.UserInfo;
@@ -87,6 +85,7 @@ import me.bayang.reader.share.Provider;
 import me.bayang.reader.share.pocket.PocketClient;
 import me.bayang.reader.share.wallabag.WallabagClient;
 import me.bayang.reader.storage.IStorageService;
+import me.bayang.reader.utils.Filters;
 import me.bayang.reader.view.AboutPopupView;
 import me.bayang.reader.view.AddSubscriptionView;
 import me.bayang.reader.view.EditSubscriptionView;
@@ -192,10 +191,9 @@ public class RssController {
     
     private List<Item> itemList = new ArrayList<>();
     private List<Item> readItemList = new ArrayList<>();
-    private ObservableList<Item> observableItemList = FXCollections.observableArrayList(itemExtractor());
-    private ObservableList<Item> observableReadList = FXCollections.observableArrayList(itemExtractor());
+    private ObservableList<Item> observableItemList = FXCollections.observableArrayList(Filters.itemExtractor());
+    private ObservableList<Item> observableReadList = FXCollections.observableArrayList(Filters.itemExtractor());
     // FIXME find a less greedy data structure
-//    private ObservableList<Item> observableAllList = CollectionBindings.concat(observableItemList, observableReadList);
     private ObservableList<Item> observableAllList;
     private FilteredList<Item> filteredData;
     private Predicate <? super Item> currentPredicate;
@@ -234,12 +232,7 @@ public class RssController {
     
     private Item currentlySelectedItem = null;
     
-    public static Callback<Item, Observable[]> itemExtractor() {
-        Callback<Item, Observable[]> itemExtractor = (Item i) -> {
-            return new Observable[]{i.readProperty()};
-        };
-        return itemExtractor;
-    }
+    private Map<TreeItem<Feed>, Object> selected = new HashMap<>();
     
     @FXML
     private void initialize() {
@@ -259,6 +252,7 @@ public class RssController {
         initGridViewListener();
         pocketShareMenu.disableProperty().bind(Bindings.not(configStorage.pocketEnabledProperty()));
         wallabagShareMenu.disableProperty().bind(Bindings.not(configStorage.wallabagEnabledProperty()));
+        
     }
 
     private void initGridViewListener() {
@@ -907,20 +901,20 @@ public class RssController {
         olderItemsListTask.setOnSucceeded(event -> {
             progressBar.setVisible(false);
             Platform.runLater(() -> {
-            for (Item i : olderItemsListTask.getValue()) {
-                if (observableReadList.stream().noneMatch(item -> item.getId().equals(i.getId()))) {
-                        observableReadList.add(i);
+                for (Item i : olderItemsListTask.getValue()) {
+                    if (observableReadList.stream().noneMatch(item -> item.getId().equals(i.getId()))) {
+                            observableReadList.add(i);
+                    }
+                    else{
+                        LOGGER.debug("not adding {}", i);
+                    }
                 }
-                else{
-                    LOGGER.debug("not adding {}", i);
-                }
-            }
-            LOGGER.debug("finish loadOlderReadArticles " + olderItemsListTask.getValue().size());
-            int idx = treeView.getSelectionModel().getSelectedIndex();
-            // hack to force content to be sorted after inserting older read items
-            // in some cases the selection was not refreshed
-            treeView.getSelectionModel().clearSelection();
-            treeView.getSelectionModel().select(idx);
+                LOGGER.debug("finish loadOlderReadArticles " + olderItemsListTask.getValue().size());
+                int idx = treeView.getSelectionModel().getSelectedIndex();
+                // hack to force content to be sorted after inserting older read items
+                // in some cases the selection was not refreshed
+                treeView.getSelectionModel().clearSelection();
+                treeView.getSelectionModel().select(idx);
             });
         });     
         connectServer.getTaskExecutor().submit(olderItemsListTask);
@@ -1046,52 +1040,49 @@ public class RssController {
     
     @FXML
     public void filterAll() {
-        Predicate<Item> predicate  = item -> {
-            // display all
-            return true;
-        };
-        Predicate<Item> pred = predicate.and(currentPredicate);
+        Predicate<Item> pred = Filters.NO_FILTER_PREDICATE.and(currentPredicate);
         filteredData.setPredicate(pred);
         listView.refresh();
-        gridView.requestLayout();
+     // hack to force gridview content to be refreshed after changing predicate
+        if (gridModeproperty.get() && ! selected.containsKey(treeView.getSelectionModel().getSelectedItem())) {
+            refreshingHack();
+            filterAll();
+        }
     }
     
     @FXML
     public void filterRead() {
-        Predicate<Item> predicate  = item -> {
-            if (item == null) {
-                return false;
-            }
-            if (! item.isRead()) {
-                return true;
-            }
-            return false;
-        };
-        Predicate<Item> pred = predicate.and(currentPredicate);
-            filteredData.setPredicate(pred);
-            listView.refresh();
-            gridView.requestLayout();
+        Predicate<Item> pred = Filters.FILTER_READ_PREDICATE.and(currentPredicate);
+        filteredData.setPredicate(pred);
+        listView.refresh();
+        // hack to force gridview content to be refreshed after changing predicate
+        if (gridModeproperty.get() && ! selected.containsKey(treeView.getSelectionModel().getSelectedItem())) {
+            refreshingHack();
+            filterRead();
+        }
     }
     
     @FXML
     public void filterUnread() {
-        Predicate<Item> predicate  = item -> {
-            if (item == null) {
-                return false;
-            }
-            if (item.isRead()) {
-                return true;
-            }
-            return false;
-        };
-        Predicate<Item> pred = predicate.and(currentPredicate);
-            filteredData.setPredicate(pred);
-            listView.refresh();
-            gridView.requestLayout();
-            
+        Predicate<Item> pred = Filters.FILTER_UNREAD_PREDICATE.and(currentPredicate);
+        filteredData.setPredicate(pred);
+        listView.refresh();
+     // hack to force gridview content to be refreshed after changing predicate
+        if (gridModeproperty.get() && ! selected.containsKey(treeView.getSelectionModel().getSelectedItem())) {
+            refreshingHack();
+            filterUnread();
+        }
     }
     
-
+    // hack to force gridview content to be refreshed after changing predicate
+    private void refreshingHack() {
+        selected.put(treeView.getSelectionModel().getSelectedItem(), new Object());
+        int idx = treeView.getSelectionModel().getSelectedIndex();
+        treeView.getSelectionModel().clearSelection();
+        treeView.getSelectionModel().selectLast();
+        treeView.getSelectionModel().select(idx);
+    }
+    
     private TreeItem<Feed> handleFolderFeedOrder() {
         root = new TreeItem<>(new Tag("root", "root")); //the root node doesn't show;
         root.setExpanded(true);
