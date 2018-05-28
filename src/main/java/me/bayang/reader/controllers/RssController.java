@@ -906,7 +906,7 @@ public class RssController {
                             observableReadList.add(i);
                     }
                     else{
-                        LOGGER.debug("not adding {}", i);
+                        LOGGER.debug("not adding {}", i.getId());
                     }
                 }
                 LOGGER.debug("finish loadOlderReadArticles " + olderItemsListTask.getValue().size());
