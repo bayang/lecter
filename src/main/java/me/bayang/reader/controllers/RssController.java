@@ -901,13 +901,17 @@ public class RssController {
         olderItemsListTask.setOnSucceeded(event -> {
             progressBar.setVisible(false);
             Platform.runLater(() -> {
+                List<Item> itemsToAdd = new ArrayList<>();
                 for (Item i : olderItemsListTask.getValue()) {
                     if (observableReadList.stream().noneMatch(item -> item.getId().equals(i.getId()))) {
-                            observableReadList.add(i);
+                        itemsToAdd.add(i);
                     }
                     else{
                         LOGGER.debug("not adding {}", i.getId());
                     }
+                }
+                if (! itemsToAdd.isEmpty()) {
+                    observableReadList.addAll(itemsToAdd);
                 }
                 LOGGER.debug("finish loadOlderReadArticles " + olderItemsListTask.getValue().size());
                 int idx = treeView.getSelectionModel().getSelectedIndex();
