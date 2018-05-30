@@ -115,6 +115,8 @@ public class ConnectServer {
     
     public static String markFeedReadURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/read";
     
+    public static String markFeedUnreadURL = API_BASE_URL + "/edit-tag?r=user/-/state/com.google/read";
+    
     public static String markStarredURL = API_BASE_URL + "/edit-tag?a=user/-/state/com.google/starred";
     
     public static String markUnstarredURL = API_BASE_URL + "/edit-tag?r=user/-/state/com.google/starred";
@@ -310,6 +312,15 @@ public class ConnectServer {
     @Async("threadPoolTaskExecutor")
     public void markAsRead(String decimalId) {
         HttpUrl URL = HttpUrl.parse(markFeedReadURL);
+        BufferedReader reader = connectServer(URL.newBuilder()
+                .setQueryParameter("i", decimalId)
+                .build());
+        closeReader(reader);
+    }
+    
+    @Async("threadPoolTaskExecutor")
+    public void markUnread(String decimalId) {
+        HttpUrl URL = HttpUrl.parse(markFeedUnreadURL);
         BufferedReader reader = connectServer(URL.newBuilder()
                 .setQueryParameter("i", decimalId)
                 .build());

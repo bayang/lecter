@@ -32,7 +32,6 @@ import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 import de.felixroske.jfxsupport.FXMLController;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
-import eu.lestard.advanced_bindings.api.CollectionBindings;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -85,6 +84,7 @@ import me.bayang.reader.share.Provider;
 import me.bayang.reader.share.pocket.PocketClient;
 import me.bayang.reader.share.wallabag.WallabagClient;
 import me.bayang.reader.storage.IStorageService;
+import me.bayang.reader.utils.AggregatedObservableArrayList;
 import me.bayang.reader.utils.Filters;
 import me.bayang.reader.view.AboutPopupView;
 import me.bayang.reader.view.AddSubscriptionView;
@@ -193,12 +193,13 @@ public class RssController {
     private List<Item> readItemList = new ArrayList<>();
     private ObservableList<Item> observableItemList = FXCollections.observableArrayList(Filters.itemExtractor());
     private ObservableList<Item> observableReadList = FXCollections.observableArrayList(Filters.itemExtractor());
-    // FIXME find a less greedy data structure
+    private AggregatedObservableArrayList<Item> aggregatedLists = new AggregatedObservableArrayList<>();
     private ObservableList<Item> observableAllList;
     private FilteredList<Item> filteredData;
     private Predicate <? super Item> currentPredicate;
     private SortedList<Item> sortedData;
     private List<Item> starredList;
+    
     private Instant lastUpdateTime;
     private Task<TreeItem<Feed>> treeTask;
     private Task<List<Item>> itemListTask;
@@ -236,9 +237,7 @@ public class RssController {
     
     @FXML
     private void initialize() {
-        observableItemList.addAll(itemList);
-        observableReadList.addAll(readItemList);
-        observableAllList = CollectionBindings.concat(observableItemList, observableReadList);
+        initializeDataStructure();
         treeView.setDisable(true);
         splitPane.getItems().remove(gridContainer);
         eventHandleInitialize();
@@ -253,6 +252,14 @@ public class RssController {
         pocketShareMenu.disableProperty().bind(Bindings.not(configStorage.pocketEnabledProperty()));
         wallabagShareMenu.disableProperty().bind(Bindings.not(configStorage.wallabagEnabledProperty()));
         
+    }
+    
+    private void initializeDataStructure() {
+        observableItemList.addAll(itemList);
+        observableReadList.addAll(readItemList);
+        aggregatedLists.appendList(observableItemList);
+        aggregatedLists.appendList(observableReadList);
+        observableAllList = aggregatedLists.getAggregatedList();
     }
 
     private void initGridViewListener() {
@@ -292,7 +299,7 @@ public class RssController {
                 } else if (mercuryRadioButton.isSelected()) {
                     launchMercuryTask(newValue);
                 }
-                markItemRead(newValue);
+                markItemRead(newValue, true);
             }
         }));
         
@@ -363,7 +370,7 @@ public class RssController {
         }));
     }
     
-    public void markItemRead(Item item) {
+    public void markItemRead(Item item, boolean refreshUi) {
       //send mark feed read to server if not in the starred list
         if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
             if (!item.isRead()) {
@@ -387,15 +394,53 @@ public class RssController {
 //                    LOGGER.debug("remove = {}", removed);
                     boolean added = observableReadList.add(item);
 //                    LOGGER.debug("add = {}", added);
-                    treeView.refresh();
-                    int itemIdx = listView.getItems().indexOf(item);
+                    if (refreshUi) {
+                        treeView.refresh();
+                        int itemIdx = listView.getItems().indexOf(item);
 //                    LOGGER.debug("idx {}", itemIdx);
-                    listView.getSelectionModel().clearSelection();
-                    listView.getSelectionModel().select(itemIdx);
+                        listView.getSelectionModel().clearSelection();
+                        listView.getSelectionModel().select(itemIdx);
+                    }
                 });
             }
         }
     }
+    
+    public void markItemUnread(Item item) {
+        //send mark feed read to server if not in the starred list
+          if (!treeView.getSelectionModel().getSelectedItem().getValue().getId().equals("user/" + UserInfo.getUserId() + "/state/com.google/starred")) {
+              if (item.isRead()) {
+                  connectServer.markUnread(item.getDecimalId());
+
+                  String streamId = item.getOrigin().getStreamId();
+                  Integer count = unreadCountsMap.get(streamId);
+                  unreadCountsMap.put(streamId, ++count);
+
+                  Integer allCount = unreadCountsMap.get("All Items");
+                  unreadCountsMap.put("All Items", ++allCount);
+                  //set parent count
+                  if (getParentItem(streamId) != null) {
+                      String parent = getParentItem(streamId).getValue().getId();
+                      Integer parentCount = unreadCountsMap.get(parent);
+                      unreadCountsMap.put(parent, ++parentCount);
+                  }
+                  Platform.runLater(() -> {
+                      item.setRead(false);//change state to read and change color in listView
+                      boolean removed = observableReadList.remove(item);
+//                      LOGGER.debug("remove = {}", removed);
+                      boolean added = observableItemList.add(item);
+//                      LOGGER.debug("add = {}", added);
+//                      if (refreshUi) {
+//                          treeView.refresh();
+//                          int itemIdx = listView.getItems().indexOf(item);
+////                      LOGGER.debug("idx {}", itemIdx);
+//                          listView.getSelectionModel().clearSelection();
+//                          listView.getSelectionModel().select(itemIdx);
+//                      }
+                  });
+              }
+          }
+      }
 
     private void initializeRadioButton() {
         //initialize the radio button

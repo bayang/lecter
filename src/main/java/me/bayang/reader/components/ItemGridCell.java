@@ -26,6 +26,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import me.bayang.reader.FXMain;
 import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.backend.inoreader.FolderFeedOrder;
 import me.bayang.reader.controllers.RssController;
@@ -79,12 +80,14 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
         setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY) {
                 this.rssController.showWebView(this.currentItem);
-                this.rssController.markItemRead(this.currentItem);
+                this.rssController.markItemRead(this.currentItem, true);
             }
         });
-        MenuItem starItem = new MenuItem("Mark Starred");
-        MenuItem unStarItem = new MenuItem("Mark Unstarred");
-        menu.getItems().addAll(starItem, unStarItem);
+        MenuItem starItem = new MenuItem(FXMain.bundle.getString("markStarred"));
+        MenuItem unStarItem = new MenuItem(FXMain.bundle.getString("markUnstarred"));
+        MenuItem markItemRead = new MenuItem(FXMain.bundle.getString("markRead"));
+        MenuItem markItemUnread = new MenuItem(FXMain.bundle.getString("markUnread"));
+        menu.getItems().addAll(starItem, unStarItem, markItemRead, markItemUnread);
 
         starItem.setOnAction(event -> {
             LOGGER.debug("mark star " + this.currentItem.getDecimalId() + " "+this.currentItem.getSummary());
@@ -95,6 +98,14 @@ private final Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
             LOGGER.debug("unstar " + this.currentItem.getDecimalId() + " "+this.currentItem.getSummary());
             this.connectServer.unStar(this.currentItem.getDecimalId());
             this.rssController.removeFromStarredList(currentItem);
+        });
+        markItemRead.setOnAction(event -> {
+            LOGGER.debug("read " + this.currentItem.getDecimalId() + " "+this.currentItem.getSummary());
+            this.rssController.markItemRead(this.currentItem, false);
+        });
+        markItemUnread.setOnAction(event -> {
+            LOGGER.debug("unread " + currentItem.getDecimalId());
+            this.rssController.markItemUnread(currentItem);
         });
         this.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.SECONDARY) {

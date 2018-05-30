@@ -27,6 +27,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import me.bayang.reader.FXMain;
 import me.bayang.reader.backend.inoreader.ConnectServer;
 import me.bayang.reader.backend.inoreader.FolderFeedOrder;
 import me.bayang.reader.controllers.RssController;
@@ -69,14 +70,18 @@ public class ItemListCell extends JFXListCell<Item> {
     private static PseudoClass READ_PSEUDO_CLASS = PseudoClass.getPseudoClass("read");
     
     private BooleanProperty readProperty;
+    
+    private Item currentItem;
 
     public ItemListCell(RssController rssController, ConnectServer connectServer) {
         this.connectServer = connectServer;
         this.rssController = rssController;
         this.getStyleClass().add("readable-cell");
-        MenuItem starItem = new MenuItem("Mark Starred");
-        MenuItem unStarItem = new MenuItem("Mark Unstarred");
-        menu.getItems().addAll(starItem, unStarItem);
+        MenuItem starItem = new MenuItem(FXMain.bundle.getString("markStarred"));
+        MenuItem unStarItem = new MenuItem(FXMain.bundle.getString("markUnstarred"));
+        MenuItem markItemRead = new MenuItem(FXMain.bundle.getString("markRead"));
+        MenuItem markItemUnread = new MenuItem(FXMain.bundle.getString("markUnread"));
+        menu.getItems().addAll(starItem, unStarItem, markItemRead, markItemUnread);
 
         starItem.setOnAction(event -> {
             LOGGER.debug("mark star " + getListView().getSelectionModel().getSelectedItem().getDecimalId());
@@ -86,6 +91,14 @@ public class ItemListCell extends JFXListCell<Item> {
         unStarItem.setOnAction(event -> {
             LOGGER.debug("unstar " + this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
             this.connectServer.unStar(this.getListView().getSelectionModel().getSelectedItem().getDecimalId());
+        });
+        markItemRead.setOnAction(event -> {
+            LOGGER.debug("read " + currentItem.getDecimalId());
+            this.rssController.markItemRead(currentItem, false);
+        });
+        markItemUnread.setOnAction(event -> {
+            LOGGER.debug("unread " + currentItem.getDecimalId());
+            this.rssController.markItemUnread(currentItem);
         });
         this.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
@@ -100,6 +113,7 @@ public class ItemListCell extends JFXListCell<Item> {
     @Override
     protected void updateItem(Item item, boolean empty) {
         super.updateItem(item, empty);
+        this.currentItem = item;
         this.prefWidthProperty().bind( this.getListView().widthProperty().subtract( 20 ) );
         if (empty || item == null) {
             setText(null);
